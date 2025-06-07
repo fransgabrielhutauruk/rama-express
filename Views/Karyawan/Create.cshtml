@@ -1,0 +1,24 @@
+﻿@model RamaExpress.Models.Karyawan
+
+<div class="container">
+	<h2>Tambah Akun Karyawan</h2>
+	<form asp-action="Create" method="post">
+	<div>
+		<label asp-for="Nama" class="form-label">Nama</label>
+		<input asp-for="Nama" class="form-control" />
+	</div>
+	<div>
+		<label asp-for="Posisi" class="form-label">Posisi</label>
+		<input asp-for="Posisi" class="form-control" />
+	</div>
+	<div>
+		<label asp-for="Email" class="form-label">Email</label>
+		<input asp-for="Email" type="email" class="form-control" />
+	</div>
+	<div>
+		<label asp-for="Password" class="form-label">Password</label>
+		<input asp-for="Password" type="password" class="form-control" />
+	</div>
+	<button type="submit" class="btn btn-primary mt-3">Tambah Karyawan</button>
+	</form>
+</div>

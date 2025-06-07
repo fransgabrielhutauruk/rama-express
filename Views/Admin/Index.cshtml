@@ -1,0 +1,27 @@
+﻿@model IEnumerable<RamaExpress.Models.Admin>
+
+<div class="container">
+	<h2>My Admin</h2>
+
+	<table class="table table-bordered">
+		<thead class="table-light"> 
+			<tr>
+				<th>Id</th>
+				<th>Nama</th>
+				<th>Email</th>
+				<th>Password</th
+			</tr>
+		</thead>
+		<tbody>
+			@foreach(var item in Model)
+			{
+				 <tr>
+					<td>@item.Id</td>
+					<td>@item.Nama</td>
+					<td>@item.Email</td>
+					<td>@item.Password</td>
+				 </tr>
+			}
+		</tbody>
+	</table>
+</div>
