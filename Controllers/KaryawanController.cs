@@ -25,17 +25,17 @@ namespace RamaExpress.Controllers
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(Karyawan karyawan)
-        {
-            if (ModelState.IsValid)
-            {
-                await _karyawanService.Add(karyawan);
+        //[HttpPost]
+        //public async Task<IActionResult> Create(UserController user)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        await _karyawanService.Add(user);
 
-                return RedirectToAction("Index");
-            }
-            return View(karyawan);
-        }
+        //        return RedirectToAction("Index");
+        //    }
+        //    return View(user);
+        //}
 
     }
 }

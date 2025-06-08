@@ -18,7 +18,22 @@ namespace RamaExpress.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Tentang()
+        {
+            return View();
+        }
+
+        public IActionResult Kontak()
+        {
+            return View();
+        }
+
+        public IActionResult Layanan()
+        {
+            return View();
+        }
+
+        public IActionResult Training()
         {
             return View();
         }

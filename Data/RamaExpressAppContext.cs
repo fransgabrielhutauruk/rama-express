@@ -7,8 +7,7 @@ namespace RamaExpress.Data
     {
         public RamaExpressAppContext(DbContextOptions<RamaExpressAppContext> options) : base(options) { }
         
-        public DbSet<Admin> Admin {  get; set; }
-        public DbSet<Karyawan> Karyawan{ get; set; }
+        public DbSet<User> User{ get; set; }
 
     }
 }

@@ -1,0 +1,68 @@
+﻿<header class="bg-white shadow-sm sticky-top py-1">
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <!-- Brand/Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="fas fa-shipping-fast text-primary me-2" style="font-size: 1.5rem;"></i>
+                <span class="fw-bold text-primary fs-4">PT RAMA EXPRESS</span>
+            </a>
+
+            <!-- Mobile menu toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Menu -->
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active fw-semibold px-3" aria-current="page" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" aria-current="page" asp-controller="Home" asp-action="Tentang">
+                            <i class="fas fa-info-circle me-1"></i>Tentang
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" aria-current="page" asp-controller="Home" asp-action="Kontak">
+                            <i class="fas fa-phone me-1"></i>Kontak
+                        </a>
+                    </li>
+                    @* <li class="nav-item dropdown"> *@
+                    @*     <a class="nav-link dropdown-toggle fw-semibold px-3" href="#" id="layananDropdown" *@
+                    @*        role="button" data-bs-toggle="dropdown" aria-expanded="false"> *@
+                    @*         <i class="fas fa-truck me-1"></i>Layanan *@
+                    @*     </a> *@
+                    @*     <ul class="dropdown-menu border-0 shadow-sm"> *@
+                    @*         <li><a class="dropdown-item" href="#">Express Delivery</a></li> *@
+                    @*         <li><a class="dropdown-item" href="#">Regular Shipping</a></li> *@
+                    @*         <li><a class="dropdown-item" href="#">International</a></li> *@
+                    @*         <li><hr class="dropdown-divider"></li> *@
+                    @*         <li><a class="dropdown-item" href="#">Track Package</a></li> *@
+                    @*     </ul> *@
+                    @* </li> *@
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" aria-current="page" asp-controller="Home" asp-action="Layanan">
+                            <i class="fas fa-phone me-1"></i>Layanan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" asp-controller="Home" asp-action="Training">
+                            <i class="fas fa-graduation-cap me-1"></i>Training
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Login/User Section -->
+                <div class="d-flex align-items-center ms-auto">
+                    <a class="btn btn-outline-primary me-2" asp-controller="User" asp-action="Login">
+                        <i class="fas fa-sign-in-alt me-1"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

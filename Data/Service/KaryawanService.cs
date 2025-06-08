@@ -10,15 +10,15 @@ namespace RamaExpress.Data.Service
         {
             _context = context;
         }
-        public async Task Add(Karyawan karyawan)
+        public async Task Add(User karyawan)
         {
-            _context.Karyawan.Add(karyawan);
+            _context.User.Add(karyawan);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Karyawan>> GetAll()
+        public async Task<IEnumerable<User>> GetAll()
         {
-            var karyawan = await _context.Karyawan.ToListAsync();
+            var karyawan = await _context.User.ToListAsync();
             return karyawan;
         }
     }
