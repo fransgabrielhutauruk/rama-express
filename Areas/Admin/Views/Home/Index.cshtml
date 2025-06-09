@@ -1,0 +1,525 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RamaExpress - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            z-index: 1000;
+            transition: width 0.3s ease-in-out;
+            overflow-y: auto;
+        }
+
+            .sidebar.collapsed {
+                width: 70px;
+            }
+
+        .main-content {
+            margin-left: 250px;
+            transition: margin-left 0.3s ease-in-out;
+            min-height: 100vh;
+        }
+
+            .main-content.expanded {
+                margin-left: 70px;
+            }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-brand {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-brand .brand-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-brand:hover {
+            color: #3498db;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+            position: relative;
+        }
+
+            .nav-link .nav-text {
+                transition: opacity 0.3s ease;
+            }
+
+        .sidebar.collapsed .nav-link .nav-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255,255,255,0.1);
+            border-left-color: #3498db;
+        }
+
+        .nav-link.active {
+            color: #fff;
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* Tooltip for collapsed sidebar */
+        .sidebar.collapsed .nav-link {
+            position: relative;
+        }
+
+            .sidebar.collapsed .nav-link::after {
+                content: attr(data-title);
+                position: absolute;
+                left: 70px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #2c3e50;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                white-space: nowrap;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                z-index: 1001;
+                font-size: 0.875rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            }
+
+            .sidebar.collapsed .nav-link:hover::after {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.8);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+            .sidebar-toggle:hover {
+                background: rgba(255,255,255,0.1);
+                color: #fff;
+            }
+
+        .user-profile {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed .user-info .user-details {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .user-info {
+            justify-content: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .dropdown-menu {
+            background: #2c3e50;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .dropdown-item {
+            color: rgba(255,255,255,0.8);
+        }
+
+            .dropdown-item:hover {
+                background-color: rgba(255,255,255,0.1);
+                color: #fff;
+            }
+
+        @@media (max-width: 768px) {
+            .sidebar
+
+        {
+            width: 70px;
+        }
+
+        .main-content {
+            margin-left: 70px;
+        }
+
+        .sidebar .sidebar-brand .brand-text,
+        .sidebar .nav-link .nav-text,
+        .sidebar .user-info .user-details {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-link {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .sidebar .user-info {
+            justify-content: center;
+        }
+
+        }
+
+        .content-wrapper {
+            padding: 2rem;
+        }
+
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <i class="bi bi-truck"></i>
+                <span class="brand-text">RamaExpress</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <ul class="nav flex-column sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link active" href="/admin/dashboard" data-title="Dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/orders" data-title="Orders">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/shipments" data-title="Shipments">
+                    <i class="bi bi-truck"></i>
+                    <span class="nav-text">Shipments</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/customers" data-title="Customers">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Customers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/tracking" data-title="Tracking">
+                    <i class="bi bi-geo-alt"></i>
+                    <span class="nav-text">Tracking</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/routes" data-title="Routes">
+                    <i class="bi bi-map"></i>
+                    <span class="nav-text">Routes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/vehicles" data-title="Vehicles">
+                    <i class="bi bi-bus-front"></i>
+                    <span class="nav-text">Vehicles</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/drivers" data-title="Drivers">
+                    <i class="bi bi-person-badge"></i>
+                    <span class="nav-text">Drivers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/reports" data-title="Reports">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/settings" data-title="Settings">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- User Profile Section -->
+        <div class="user-profile">
+            <div class="dropdown">
+                <a href="#" class="user-info" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="user-avatar">
+                        A
+                    </div>
+                    <div class="user-details">
+                        <div class="fw-semibold">Admin User</div>
+                        <small class="text-muted">Administrator</small>
+                    </div>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/admin/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="/admin/preferences"><i class="bi bi-gear me-2"></i>Preferences</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-custom">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center ms-auto">
+                    <button class="btn btn-outline-primary me-3">
+                        <i class="bi bi-bell"></i>
+                        <span class="badge bg-danger rounded-pill ms-1">3</span>
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Quick Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-plus-circle me-2"></i>New Order</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-truck me-2"></i>Add Shipment</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>New Customer</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="mb-0">Welcome to RamaExpress Admin Dashboard</h4>
+                        </div>
+                        <div class="card-body">
+                            <p>This is your admin dashboard. Use the sidebar navigation to access different sections of the application.</p>
+
+                            <!-- Sample Dashboard Cards -->
+                            <div class="row mt-4">
+                                <div class="col-xl-3 col-md-6 mb-4">
+                                    <div class="card border-left-primary shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                        Total Orders
+                                                    </div>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800">1,247</div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="bi bi-box-seam fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3 col-md-6 mb-4">
+                                    <div class="card border-left-success shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                        Active Shipments
+                                                    </div>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800">89</div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="bi bi-truck fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3 col-md-6 mb-4">
+                                    <div class="card border-left-info shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                        Total Customers
+                                                    </div>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800">432</div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="bi bi-people fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3 col-md-6 mb-4">
+                                    <div class="card border-left-warning shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                        Pending Tasks
+                                                    </div>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="bi bi-exclamation-triangle fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="py-3 bg-secondary text-center mt-auto">
+            <div class="container">
+                <p class="mb-0 text-light">
+                    Copyright © 2025 PT Rama Express
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar toggle functionality
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleIcon = sidebarToggle.querySelector('i');
+
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+
+            // Change toggle icon
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.className = 'bi bi-chevron-right';
+            } else {
+                toggleIcon.className = 'bi bi-chevron-left';
+            }
+        });
+
+        // Active link highlighting
+        const navLinks = document.querySelectorAll('.nav-link');
+        const currentPath = window.location.pathname;
+
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            }
+        });
+
+        // Auto-collapse sidebar on mobile
+        function checkScreenSize() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                toggleIcon.className = 'bi bi-chevron-right';
+            }
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+        checkScreenSize(); // Check on initial load
+    </script>

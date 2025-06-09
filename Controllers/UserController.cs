@@ -51,16 +51,25 @@ namespace RamaExpress.Controllers
             // Successful login
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("Username", user.Nama);
+            HttpContext.Session.SetString("UserRole", user.Role);
 
-            return RedirectToAction("Index", "Dashboard");
+            if (user.Role?.ToLower() == "admin")
+            {
+                return RedirectToAction("Index", "Home", new { area = "Admin" });
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home", new { area = "Karyawan" });
+            }
         }
 
-        //[HttpGet]
-        //public IActionResult Logout()
-        //{
-        //    HttpContext.Session.Clear();
-        //    return RedirectToAction("Login");
-        //}
+        [HttpGet]
+        [Route("logout")]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
 
         //public async Task<IActionResult> Register(RegisterViewModel model)
         //{
