@@ -2,8 +2,156 @@
     ViewData["Title"] = "Kontak";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Kontak</h1>
-    <h2>tes edited</h2>
+<!-- Container -->
+<div class="container mt-5" data-aos="fade-up">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Kontak Kami</h1>
+        <p class="lead text-primary">PT RAMA EXPRESS</p>
+        <p class="text-muted">
+            PT Rama Express Pekanbaru adalah perusahaan yang bergerak di bidang jasa ekspedisi pengiriman barang antar pulau dan provinsi di Indonesia, baik dalam skala kecil maupun besar
+        </p>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="row g-4 mb-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Kontak</h5>
+                    <p><strong>Telepon:</strong><br>(021) 612 4086</p>
+                    <p><strong>Email:</strong><br><a href="mailto:marketing@ramaindonesia.com" class="text-decoration-none">marketing@ramaindonesia.com</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Jam Kerja</h5>
+                    <p><strong>Senin – Jumat:</strong><br>09.00 – 17.00</p>
+                    <p><strong>Sabtu:</strong><br>09.00 – 13.00</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Kantor</h5>
+                    <p>Jl Mangga Dua Dalam, Ruko Bahan Bangunan (RBB), Bl</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Form Kontak</h5>
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nama</label>
+                            <input type="text" class="form-control" id="name" placeholder="Masukkan nama Anda">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="nama@email.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Pesan</label>
+                            <textarea class="form-control" id="message" rows="5" placeholder="Tulis pesan Anda di sini"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Kirim Pesan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Map -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="300">
+        <div class="col">
+            <h5 class="mb-3 text-center">Lokasi Kantor Kami</h5>
+            <div class="ratio ratio-16x9">
+                <iframe src="https://www.google.com/maps?q=Jl+Mangga+Dua+Dalam,+Pekanbaru&output=embed" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
 </div>
-gfdj
+
+<!-- AOS Animation Library -->
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #fff5f5;
+            color: #212529;
+        }
+
+        .text-accent {
+            color: #dc3545;
+        }
+
+        .btn-accent {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+        }
+
+            .btn-accent:hover {
+                background-color: #bb2d3b;
+            }
+
+        .card {
+            border-radius: 1rem;
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0.75rem 1.5rem rgba(220, 53, 69, 0.3);
+            }
+
+        .card-title {
+            font-weight: 600;
+            color: #dc3545;
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+        .btn-primary {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background-color: #bb2d3b;
+            }
+
+        h1.display-4,
+        .lead.text-primary {
+            color: #dc3545 !important;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+    </style>
+}
+
+}
+
+
