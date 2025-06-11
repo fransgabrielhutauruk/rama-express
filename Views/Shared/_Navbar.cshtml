@@ -56,12 +56,30 @@
                     </li>
                 </ul>
 
-                <!-- Login/User Section -->
-                <div class="d-flex align-items-center ms-auto">
-                    <a class="btn btn-outline-primary me-2" asp-controller="User" asp-action="Login">
-                        <i class="fas fa-sign-in-alt me-1"></i>Login
-                    </a>
-                </div>
+                @if (Context.Session.GetString("UserRole")?.ToLower() == "admin")
+                {
+                    <div class="d-flex align-items-center ms-auto">
+                        <a class="btn btn-outline-primary me-2" asp-controller="Home" asp-action="Index" asp-area="Admin">
+                            <i class="fas fa-sign-in-alt me-1"></i>Admin
+                        </a>
+                    </div>
+                }
+                else if (Context.Session.GetString("UserRole")?.ToLower() == "karyawan")
+                {
+                    <div class="d-flex align-items-center ms-auto">
+                        <a class="btn btn-outline-primary me-2" asp-controller="Home" asp-action="Index" asp-area="Karyawan">
+                            <i class="fas fa-sign-in-alt me-1"></i>Karyawan
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex align-items-center ms-auto">
+                        <a class="btn btn-outline-primary me-2" asp-controller="User" asp-action="Login">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </div>
+                }
             </div>
         </div>
     </nav>

@@ -20,10 +20,8 @@
   <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
-    <Folder Include="Areas\Karyawan\Controllers\" />
     <Folder Include="Areas\Karyawan\Data\" />
     <Folder Include="Areas\Karyawan\Models\" />
-    <Folder Include="Areas\Karyawan\Views\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 

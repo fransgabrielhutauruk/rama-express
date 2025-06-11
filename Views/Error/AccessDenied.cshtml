@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Akses Ditolak";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Akses Ditolak</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-lock text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="card-title">Anda tidak memiliki akses ke halaman ini!</h5>
+                    <p class="card-text">
+                        Maaf, Anda tidak memiliki izin untuk mengakses halaman yang diminta.
+                        Silakan hubungi administrator sistem jika Anda merasa ini adalah kesalahan.
+                    </p>
+                    <div class="mt-4">
+                        <a href="javascript:history.back()" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> Kembali
+                        </a>
+                        @if (Context.Session.GetString("UserRole")?.ToLower() == "admin")
+                        {
+                            <a href="@Url.Action("Index", "Home", new { area = "Admin" })" class="btn btn-primary">
+                                <i class="fas fa-home"></i> Dashboard Admin
+                            </a>
+                        }
+                        else if (Context.Session.GetString("UserRole")?.ToLower() == "karyawan")
+                        {
+                            <a href="@Url.Action("Index", "Home", new { area = "Karyawan" })" class="btn btn-primary">
+                                <i class="fas fa-home"></i> Dashboard Karyawan
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "User")" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+</style>
