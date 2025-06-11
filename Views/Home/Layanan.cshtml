@@ -2,8 +2,125 @@
     ViewData["Title"] = "Layanan";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Layanan</h1>
-    <p>TESSSSS</p>
-    <p>cobaaaaaa</p>
+<div class="container mt-5" data-aos="fade-up">
+    <div class="text-center mb-5">
+        <h1 class="display-4 text-primary fw-bold">Layanan Kami</h1>
+        <p class="lead text-muted">PT Rama Express menyediakan berbagai layanan ekspedisi yang cepat, aman, dan terpercaya untuk pengiriman antar pulau dan provinsi di seluruh Indonesia.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
+            <div class="card h-100 shadow service-card border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-truck display-4 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Pengiriman Darat</h5>
+                    <p class="card-text text-muted">Layanan truk ekspedisi dengan jangkauan antar kota dan provinsi yang efisien dan ekonomis.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
+            <div class="card h-100 shadow service-card border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-airplane display-4 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Pengiriman Udara</h5>
+                    <p class="card-text text-muted">Layanan pengiriman ekspres via udara untuk dokumen dan barang penting dalam waktu cepat.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+            <div class="card h-100 shadow service-card border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam display-4 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Layanan Kargo</h5>
+                    <p class="card-text text-muted">Solusi kargo besar untuk keperluan bisnis dengan biaya kompetitif dan jadwal fleksibel.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="400">
+            <div class="card h-100 shadow service-card border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history display-4 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Pengiriman Same Day</h5>
+                    <p class="card-text text-muted">Layanan cepat dalam hari yang sama untuk pengiriman dalam kota besar.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="500">
+            <div class="card h-100 shadow service-card border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-globe-asia-australia display-4 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Distribusi Nasional</h5>
+                    <p class="card-text text-muted">Layanan distribusi menyeluruh ke seluruh Indonesia dengan sistem tracking real-time.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="zoom-in" data-aos-delay="600">
+            <div class="card h-100 shadow service-card border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-warehouse display-4 text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold">Layanan Gudang</h5>
+                    <p class="card-text text-muted">Penyimpanan barang sementara di gudang kami sebelum dikirim ke tujuan akhir.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center my-5" data-aos="fade-up">
+        <h3 class="text-primary fw-bold">Butuh Bantuan Menentukan Layanan?</h3>
+        <p class="text-muted mb-4">Tim kami siap membantu Anda memilih layanan terbaik sesuai kebutuhan pengiriman Anda.</p>
+        <a href="/Kontak" class="btn btn-primary btn-lg">Hubungi Kami</a>
+    </div>
 </div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #f0f8ff;
+        }
+
+        .service-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 1rem;
+            background-color: #ffffff;
+        }
+
+            .service-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 1rem 2rem rgba(13, 110, 253, 0.2);
+            }
+
+        .card-title {
+            color: #0d6efd;
+        }
+
+        .card-text {
+            font-size: 0.95rem;
+        }
+
+        h1.display-4,
+        h3.text-primary {
+            color: #0d6efd;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background-color: #0b5ed7;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
+}
