@@ -1,0 +1,507 @@
+@model RamaExpress.Models.AboutViewModel
+@{
+    ViewData["Title"] = "Tentang Kami - " + Model.CompanyName;
+    var contactForm = ViewBag.ContactForm as RamaExpress.Models.ContactFormModel ?? new RamaExpress.Models.ContactFormModel();
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+         /* About Page Styles */
+         .about-page {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+         }
+
+         /* Hero Section */
+         .hero-section {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 100px 0;
+             min-height: 500px;
+             display: flex;
+             align-items: center;
+         }
+
+         .hero-title {
+             font-size: 3.5rem;
+             font-weight: 700;
+             margin-bottom: 20px;
+             line-height: 1.2;
+         }
+
+         .hero-subtitle {
+             font-size: 1.25rem;
+             opacity: 0.9;
+             margin-bottom: 30px;
+         }
+
+         .hero-image-placeholder {
+             background: rgba(255,255,255,0.1);
+             border-radius: 15px;
+             height: 300px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-size: 1.2rem;
+             backdrop-filter: blur(10px);
+         }
+
+         /* Section Headers */
+         .section-header {
+             margin-bottom: 60px;
+         }
+
+         .section-title {
+             font-size: 2.5rem;
+             font-weight: 600;
+             color: #333;
+             margin-bottom: 15px;
+         }
+
+         .title-divider {
+             width: 80px;
+             height: 4px;
+             background: linear-gradient(45deg, #667eea, #764ba2);
+             margin: 0 auto 20px;
+             border-radius: 2px;
+         }
+
+         .section-subtitle {
+             font-size: 1.1rem;
+             color: #666;
+             max-width: 600px;
+             margin: 0 auto;
+         }
+
+         /* Company Profile Section */
+         .company-profile-section {
+             padding: 80px 0;
+             background-color: #f8f9fa;
+         }
+
+         .profile-image-placeholder {
+             background: linear-gradient(45deg, #e9ecef, #dee2e6);
+             border-radius: 15px;
+             height: 400px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: #6c757d;
+             font-size: 1.1rem;
+             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+         }
+
+         .profile-title {
+             font-size: 2rem;
+             font-weight: 600;
+             color: #333;
+             margin-bottom: 25px;
+         }
+
+         .profile-description {
+             font-size: 1.1rem;
+             color: #555;
+             line-height: 1.8;
+             margin-bottom: 20px;
+         }
+
+         .profile-text {
+             font-size: 1rem;
+             color: #666;
+             line-height: 1.7;
+         }
+
+         /* Services Section */
+         .services-section {
+             padding: 80px 0;
+             background-color: white;
+         }
+
+         .service-card {
+             background: white;
+             border-radius: 10px;
+             padding: 30px 20px;
+             text-align: center;
+             box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             height: 100%;
+             border: 1px solid #f0f0f0;
+         }
+
+         .service-card:hover {
+             transform: translateY(-5px);
+             box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+         }
+
+         .service-icon {
+             font-size: 2.5rem;
+             color: #667eea;
+             margin-bottom: 20px;
+         }
+
+         .service-title {
+             font-size: 1.1rem;
+             font-weight: 600;
+             color: #333;
+             margin-bottom: 10px;
+         }
+
+         .service-description {
+             font-size: 0.9rem;
+             color: #666;
+             line-height: 1.5;
+         }
+
+         /* Values Section */
+         .values-section {
+             padding: 80px 0;
+             background-color: #f8f9fa;
+         }
+
+         .values-image-placeholder {
+             background: linear-gradient(45deg, #e9ecef, #dee2e6);
+             border-radius: 15px;
+             height: 400px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: #6c757d;
+             font-size: 1.1rem;
+             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+         }
+
+         .value-item {
+             display: flex;
+             align-items: flex-start;
+             margin-bottom: 30px;
+         }
+
+         .value-icon {
+             flex-shrink: 0;
+             width: 60px;
+             height: 60px;
+             background: linear-gradient(45deg, #667eea, #764ba2);
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             margin-right: 20px;
+         }
+
+         .value-icon i {
+             font-size: 1.5rem;
+             color: white;
+         }
+
+         .value-text {
+             flex: 1;
+         }
+
+         .value-title {
+             font-size: 1.3rem;
+             font-weight: 600;
+             color: #333;
+             margin-bottom: 8px;
+         }
+
+         .value-description {
+             font-size: 1rem;
+             color: #666;
+             line-height: 1.6;
+             margin: 0;
+         }
+
+         /* Contact Section */
+         .contact-section {
+             padding: 80px 0;
+             background-color: white;
+         }
+
+         .contact-form-wrapper {
+             background: #f8f9fa;
+             border-radius: 15px;
+             padding: 40px;
+             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+         }
+
+         .form-group {
+             margin-bottom: 25px;
+         }
+
+         .form-label {
+             font-weight: 600;
+             color: #333;
+             margin-bottom: 8px;
+             display: block;
+         }
+
+         .form-control {
+             border: 2px solid #e9ecef;
+             border-radius: 8px;
+             padding: 12px 15px;
+             font-size: 1rem;
+             transition: border-color 0.3s ease, box-shadow 0.3s ease;
+         }
+
+         .form-control:focus {
+             border-color: #667eea;
+             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+             outline: none;
+         }
+
+         .btn-submit {
+             background: linear-gradient(45deg, #667eea, #764ba2);
+             border: none;
+             padding: 12px 40px;
+             font-size: 1.1rem;
+             font-weight: 600;
+             border-radius: 8px;
+             color: white;
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+         }
+
+         .btn-submit:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+             color: white;
+         }
+
+         /* Alert Styles */
+         .alert {
+             border-radius: 8px;
+             padding: 15px 20px;
+             margin-bottom: 30px;
+         }
+
+         .alert-success {
+             background-color: #d4edda;
+             border-color: #c3e6cb;
+             color: #155724;
+         }
+
+         /* Responsive Design */
+        @@media (max-width: 768px) {
+             .hero-title {
+                 font-size: 2.5rem;
+             }
+
+             .section-title {
+                 font-size: 2rem;
+             }
+
+             .hero-section {
+                 padding: 50px 0;
+             }
+
+             .company-profile-section,
+             .services-section,
+             .values-section,
+             .contact-section {
+                 padding: 50px 0;
+             }
+         }
+    </style>
+</head>
+<body>
+    <div class="about-page">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="hero-content">
+                            <h1 class="hero-title">Tentang @Model.CompanyName</h1>
+                            <p class="hero-subtitle">Partner Terpercaya untuk Solusi Outsourcing Terbaik</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="hero-image-placeholder">
+                            <i class="fas fa-building fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Company Profile Section -->
+        <section class="company-profile-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-header text-center">
+                            <h2 class="section-title">Profil Perusahaan</h2>
+                            <div class="title-divider"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="profile-image-placeholder">
+                            <i class="fas fa-users fa-3x"></i>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="profile-content">
+                            <h3 class="profile-title">Tentang Perusahaan</h3>
+                            <p class="profile-description">@Model.CompanyDescription</p>
+
+                            @if(!string.IsNullOrEmpty(Model.CompanyVision))
+                            {
+                            <h4 class="profile-title">Visi</h4>
+                            <p class="profile-text">@Model.CompanyVision</p>
+                            }
+
+                            @if(!string.IsNullOrEmpty(Model.CompanyMission))
+                            {
+                            <h4 class="profile-title">Misi</h4>
+                            <p class="profile-text">@Model.CompanyMission</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="services-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-header text-center">
+                            <h2 class="section-title">Layanan Kami</h2>
+                            <div class="title-divider"></div>
+                            <p class="section-subtitle">Berbagai layanan yang kami tawarkan untuk menunjang aktivitas bisnis Anda</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    @foreach (var service in Model.Services)
+                    {
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="service-card">
+                            <div class="service-icon">
+                                <i class="@service.IconClass"></i>
+                            </div>
+                            <h4 class="service-title">@service.ServiceName</h4>
+                            <p class="service-description">@service.Description</p>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Company Values Section -->
+        <section class="values-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-header text-center">
+                            <h2 class="section-title">Nilai-nilai Perusahaan</h2>
+                            <div class="title-divider"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="values-image-placeholder">
+                            <i class="fas fa-handshake fa-3x"></i>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="values-content">
+                            @foreach (var value in Model.Values)
+                            {
+                            <div class="value-item">
+                                <div class="value-icon">
+                                    <i class="@value.IconClass"></i>
+                                </div>
+                                <div class="value-text">
+                                    <h4 class="value-title">@value.Title</h4>
+                                    <p class="value-description">@value.Description</p>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Form Section -->
+        <section class="contact-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-header text-center">
+                            <h2 class="section-title">Hubungi Kami</h2>
+                            <div class="title-divider"></div>
+                            <p class="section-subtitle">Jika ada pertanyaan lebih lanjut mengenai layanan yang ditawarkan, silahkan hubungi kami dengan mengisi data pada kolom berikut.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        }
+
+                        <div class="contact-form-wrapper">
+                            <form asp-controller="About" asp-action="SubmitContact" method="post" class="contact-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="FullName" class="form-label">Nama Lengkap</label>
+                                            <input type="text" name="FullName" class="form-control" placeholder="Masukkan nama lengkap Anda" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="Email" class="form-label">Email</label>
+                                            <input type="email" name="Email" class="form-control" placeholder="Masukkan email Anda" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="PhoneNumber" class="form-label">Nomor Telepon</label>
+                                            <input type="tel" name="PhoneNumber" class="form-control" placeholder="Masukkan nomor telepon Anda" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="Message" class="form-label">Pesan</label>
+                                            <textarea name="Message" class="form-control" rows="5" placeholder="Tulis pesan Anda di sini" required></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
+                                        <button type="submit" class="btn btn-submit">Kirim Pesan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
