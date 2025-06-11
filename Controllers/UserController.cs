@@ -19,12 +19,15 @@ namespace RamaExpress.Controllers
 
         // GET: Display the login form
         [HttpGet]
+        [Route("Login")]
         public IActionResult Login()
         {
             return View();
         }
 
         // POST: /User/Login
+        [HttpPost]
+        [Route("Login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
