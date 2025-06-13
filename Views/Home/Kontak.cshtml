@@ -2,66 +2,66 @@
     ViewData["Title"] = "Kontak";
 }
 
-<!-- Container -->
-<div class="container mt-5" data-aos="fade-up">
+<div class="container py-5" data-aos="fade-up">
     <div class="text-center mb-5">
-        <h1 class="display-4">Kontak Kami</h1>
-        <p class="lead text-primary">PT RAMA EXPRESS</p>
-        <p class="text-muted">
-            PT Rama Express Pekanbaru adalah perusahaan yang bergerak di bidang jasa ekspedisi pengiriman barang antar pulau dan provinsi di Indonesia, baik dalam skala kecil maupun besar
+        <h1 class="display-4 text-primary">Kontak Kami</h1>
+        <p class="lead text-muted">PT Rama Express - Layanan Ekspedisi Cepat dan Handal</p>
+        <p class="text-secondary">
+            Kami siap membantu kebutuhan pengiriman Anda ke seluruh Indonesia. Hubungi kami untuk informasi lebih lanjut atau gunakan formulir di bawah ini.
         </p>
     </div>
 
-    <!-- Contact Info -->
-    <div class="row g-4 mb-5" data-aos="fade-up" data-aos-delay="100">
+    <!-- Informasi Kontak -->
+    <div class="row g-4 mb-5 text-center">
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Kontak</h5>
-                    <p><strong>Telepon:</strong><br>(021) 612 4086</p>
-                    <p><strong>Email:</strong><br><a href="mailto:marketing@ramaindonesia.com" class="text-decoration-none">marketing@ramaindonesia.com</a></p>
+                    <i class="bi bi-telephone-fill fs-2 text-primary"></i>
+                    <h5 class="mt-3">Telepon</h5>
+                    <p class="text-muted">(021) 612 4086</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Jam Kerja</h5>
-                    <p><strong>Senin – Jumat:</strong><br>09.00 – 17.00</p>
-                    <p><strong>Sabtu:</strong><br>09.00 – 13.00</p>
+                    <i class="bi bi-envelope-fill fs-2 text-primary"></i>
+                    <h5 class="mt-3">Email</h5>
+                    <p><a href="mailto:marketing@ramaindonesia.com" class="text-decoration-none text-muted">marketing@ramaindonesia.com</a></p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Kantor</h5>
-                    <p>Jl Mangga Dua Dalam, Ruko Bahan Bangunan (RBB), Bl</p>
+                    <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
+                    <h5 class="mt-3">Alamat</h5>
+                    <p class="text-muted">Jl. Mangga Dua Dalam, Ruko Bahan Bangunan (RBB), Blok F6 No.14, Jakarta Pusat</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Contact Form -->
-    <div class="row mb-5" data-aos="fade-up" data-aos-delay="200">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow-sm">
+    <!-- Form Kontak -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Form Kontak</h5>
+                    <h5 class="card-title mb-4 text-primary">Formulir Kontak</h5>
                     <form>
                         <div class="mb-3">
                             <label for="name" class="form-label">Nama</label>
-                            <input type="text" class="form-control" id="name" placeholder="Masukkan nama Anda">
+                            <input type="text" class="form-control" id="name" placeholder="Nama lengkap Anda">
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" placeholder="nama@email.com">
+                            <input type="email" class="form-control" id="email" placeholder="email@domain.com">
                         </div>
                         <div class="mb-3">
                             <label for="message" class="form-label">Pesan</label>
-                            <textarea class="form-control" id="message" rows="5" placeholder="Tulis pesan Anda di sini"></textarea>
+                            <textarea class="form-control" id="message" rows="4" placeholder="Tulis pesan Anda di sini..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Kirim Pesan</button>
+                        <button type="submit" class="btn btn-primary w-100">Kirim Pesan</button>
                     </form>
                 </div>
             </div>
@@ -69,17 +69,17 @@
     </div>
 
     <!-- Google Map -->
-    <div class="row mb-5" data-aos="fade-up" data-aos-delay="300">
+    <div class="row mb-5">
         <div class="col">
-            <h5 class="mb-3 text-center">Lokasi Kantor Kami</h5>
-            <div class="ratio ratio-16x9">
-                <iframe src="https://www.google.com/maps?q=Jl+Mangga+Dua+Dalam,+Pekanbaru&output=embed" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            <h5 class="text-center text-primary mb-3">Lokasi Kantor</h5>
+            <div class="ratio ratio-16x9 shadow rounded">
+                <iframe src="https://www.google.com/maps?q=Jl+Mangga+Dua+Dalam,+Jakarta&output=embed"
+                        width="100%" height="450" style="border:0;" allowfullscreen loading="lazy"></iframe>
             </div>
         </div>
     </div>
 </div>
 
-<!-- AOS Animation Library -->
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -90,68 +90,39 @@
 @section Styles {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
     <style>
         body {
-            background-color: #fff5f5;
+            background-color: #f5faff;
             color: #212529;
         }
 
-        .text-accent {
-            color: #dc3545;
-        }
-
-        .btn-accent {
-            background-color: #dc3545;
-            border: none;
-            color: white;
-        }
-
-            .btn-accent:hover {
-                background-color: #bb2d3b;
-            }
-
         .card {
             border-radius: 1rem;
-            border: none;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
             .card:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 0.75rem 1.5rem rgba(220, 53, 69, 0.3);
+                box-shadow: 0 0.75rem 1.5rem rgba(13, 110, 253, 0.2);
             }
 
-        .card-title {
-            font-weight: 600;
-            color: #dc3545;
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
         }
+
+            .btn-primary:hover {
+                background-color: #0b5ed7;
+            }
 
         .form-control::placeholder {
             color: #adb5bd;
         }
 
-        .btn-primary {
-            background-color: #dc3545;
-            border: none;
-            color: white;
-        }
-
-            .btn-primary:hover {
-                background-color: #bb2d3b;
-            }
-
-        h1.display-4,
-        .lead.text-primary {
-            color: #dc3545 !important;
-        }
-
-        .text-muted {
-            color: #6c757d !important;
+        a.text-decoration-none:hover {
+            text-decoration: underline;
         }
     </style>
 }
-
-}
-
-

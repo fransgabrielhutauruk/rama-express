@@ -3,125 +3,135 @@
 }
 
 <!-- Hero Section -->
-<div class="hero-section text-white text-center d-flex align-items-center justify-content-center flex-column" data-aos="fade-in">
-    <h1 class="display-3 fw-bold mb-3">Selamat Datang di <span class="text-accent">Rama Express</span></h1>
-    <p class="lead">Mitra terpercaya Anda dalam layanan ekspedisi antar pulau dan provinsi di seluruh Indonesia.</p>
-    <a href="/Kontak" class="btn btn-accent btn-lg mt-4">Hubungi Kami</a>
+<div class="container-fluid hero-image text-white text-center py-5 mb-5">
+    <div class="container py-5">
+        <h1 class="display-3 fw-bold">Selamat Datang di Rama Express</h1>
+        <p class="lead">Solusi pengiriman cepat, aman, dan terpercaya ke seluruh Indonesia</p>
+        <a href="/Kontak" class="btn btn-light btn-lg mt-3 px-4 py-2">Hubungi Kami</a>
+    </div>
 </div>
 
-<!-- About Section -->
-<div class="container py-5" data-aos="fade-up">
+<!-- Tentang Kami -->
+<div class="container my-5" data-aos="fade-up">
     <div class="row align-items-center">
         <div class="col-md-6 mb-4 mb-md-0">
-            <img src="https://images.unsplash.com/photo-1593933950971-7c3a775a6fe2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ekspedisi" class="img-fluid rounded shadow">
+            <img src="~/images/ramaexpress.png" alt="Tentang Rama Express" class="img-fluid rounded shadow">
         </div>
-        <div class="col-md-6 text-black">
-            <h2 class="fw-bold text-black">Tentang Kami</h2>
-
-            <p>
-                PT Rama Express adalah perusahaan ekspedisi profesional yang siap melayani pengiriman barang antar pulau dan provinsi, baik dalam skala kecil maupun besar. Dengan pengalaman dan jaringan yang luas, kami hadir untuk memenuhi kebutuhan logistik Anda secara aman, cepat, dan terpercaya
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- Services Section -->
-<div class="bg-light py-5" data-aos="fade-up" data-aos-delay="100">
-    <div class="container">
-        <h2 class="text-center mb-5 text-accent fw-bold">Layanan Kami</h2>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm text-center">
-                    <div class="card-body">
-                        <h5 class="card-title text-accent">Pengiriman Antar Kota</h5>
-                        <p class="card-text">Layanan cepat dan aman untuk pengiriman barang ke seluruh kota besar di Indonesia.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm text-center">
-                    <div class="card-body">
-                        <h5 class="card-title text-accent">Ekspedisi Antar Pulau</h5>
-                        <p class="card-text">Kami menjangkau daerah terpencil hingga kota besar di berbagai pulau di Indonesia.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm text-center">
-                    <div class="card-body">
-                        <h5 class="card-title text-accent">Kargo dan Logistik</h5>
-                        <p class="card-text">Solusi kargo untuk pengiriman dalam jumlah besar dengan efisiensi dan profesionalisme tinggi.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="col-md-6">
+            <h2 class="text-primary fw-bold mb-3">Tentang Rama Express</h2>
+            <p class="text-muted">Rama Express adalah perusahaan ekspedisi yang berdedikasi untuk memberikan layanan pengiriman barang antar pulau dan provinsi di Indonesia, baik dalam skala kecil maupun besar. Kami menjamin kecepatan, keamanan, dan kepuasan pelanggan dalam setiap pengiriman.</p>
+            <ul class="list-unstyled text-muted">
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i>Jangkauan Nasional</li>
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i>Armada Lengkap & Modern</li>
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i>Pelayanan Pelanggan 24/7</li>
+            </ul>
         </div>
     </div>
 </div>
 
-<!-- AOS Scripts -->
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script>
-        AOS.init();
-    </script>
-}
+<!-- Layanan Unggulan -->
+<div class="container my-5" data-aos="fade-up" data-aos-delay="100">
+    <div class="text-center mb-4">
+        <h2 class="text-primary fw-bold">Layanan Kami</h2>
+        <p class="text-muted">Layanan unggulan Rama Express untuk memenuhi berbagai kebutuhan logistik Anda.</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-truck fs-1 text-primary mb-3"></i>
+                    <h5 class="fw-bold">Pengiriman Reguler</h5>
+                    <p class="text-muted">Layanan standar untuk pengiriman dengan tarif terjangkau dan waktu terukur.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-lightning-charge-fill fs-1 text-primary mb-3"></i>
+                    <h5 class="fw-bold">Pengiriman Ekspres</h5>
+                    <p class="text-muted">Pengiriman cepat untuk kebutuhan mendesak, barang Anda sampai tepat waktu.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam fs-1 text-primary mb-3"></i>
+                    <h5 class="fw-bold">Pengiriman Kargo</h5>
+                    <p class="text-muted">Untuk pengiriman dalam jumlah besar dengan efisiensi dan harga kompetitif.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<!-- Custom Styles -->
+<!-- CTA -->
+<div class="bg-primary text-white text-center py-5 mt-5" data-aos="zoom-in">
+    <h2 class="mb-3 fw-bold">Siap Kirim Barang Anda?</h2>
+    <a href="/Kontak" class="btn btn-light btn-lg px-4 py-2">Hubungi Kami Sekarang</a>
+</div>
+
 @section Styles {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 
     <style>
         body {
-            background-color: #fff5f5;
-            color: #212529;
+            background-color: #f4faff;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        .text-accent {
-            color: #dc3545;
-        }
-
-        .btn-accent {
-            background-color: #dc3545;
-            border: none;
-            color: white;
-        }
-
-            .btn-accent:hover {
-                background-color: #bb2d3b;
-            }
-
-        .hero-section {
-            height: 90vh;
-            background: linear-gradient(rgba(220, 53, 69, 0.7), rgba(220, 53, 69, 0.7)), url('https://images.unsplash.com/photo-1593121926538-7d6cc748beab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
-            padding: 0 1rem;
-        }
-
-        h1 span.text-accent {
-            color: #fff3f3;
+        h2 {
+            font-size: 2rem;
         }
 
         .card {
             border-radius: 1rem;
-            border: none;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
             .card:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 0.75rem 1.5rem rgba(220, 53, 69, 0.3);
+                box-shadow: 0 0.75rem 1.5rem rgba(0, 123, 255, 0.2);
             }
 
-        .card-title {
-            font-weight: 600;
+        .btn-light:hover {
+            background-color: #e2e6ea;
         }
 
-        h2 {
-            color: #fff;
+        .hero-image {
+            background-image: url('https://www.mobilemodularcontainers.com/blog/application/files/cache/thumbnails/3717ee3402ac9b8145ad35a7fc7f4f16.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
         }
 
-        .bg-light {
-            background-color: #fff3f3 !important;
-        }
+            .hero-image::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                background-color: rgba(0, 64, 128, 0.5); /* semi-transparan biru gelap */
+                z-index: 1;
+            }
+
+            .hero-image .container {
+                position: relative;
+                z-index: 2;
+            }
+
     </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
 }
