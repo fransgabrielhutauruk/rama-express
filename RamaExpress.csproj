@@ -18,10 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Admin\Data\" />
-    <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Karyawan\Data\" />
     <Folder Include="Areas\Karyawan\Models\" />
+    <Folder Include="Data\Service\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 

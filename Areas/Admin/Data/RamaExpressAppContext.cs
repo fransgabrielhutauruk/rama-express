@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RamaExpress.Models;
+using RamaExpress.Areas.Admin.Models;
 
-namespace RamaExpress.Data
+namespace RamaExpress.Areas.Admin.Data
 {
     public class RamaExpressAppContext : DbContext
     {
         public RamaExpressAppContext(DbContextOptions<RamaExpressAppContext> options) : base(options) { }
         
-        public DbSet<User> User{ get; set; }
+        public DbSet<Models.User> User{ get; set; }
 
     }
 }
