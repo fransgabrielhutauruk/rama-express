@@ -1,0 +1,362 @@
+﻿@model RamaExpress.Areas.Admin.Models.KaryawanListViewModel
+@{
+    ViewData["Title"] = "Manajemen Karyawan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Manajemen Karyawan</h1>
+                    <p class="text-muted mb-0">Kelola akun karyawan RamaExpress</p>
+                </div>
+                <div>
+                    <a asp-area="Admin" asp-controller="Karyawan" asp-action="Create" 
+                       class="btn btn-primary shadow-sm">
+                        <i class="bi bi-plus-lg me-2"></i>Tambah Karyawan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-light p-3 rounded shadow-sm">
+                <form id="filterForm" method="get">
+                    <!-- Hidden inputs for sorting -->
+                    <input type="hidden" name="sortField" id="sortField" value="@Model.SortField" />
+                    <input type="hidden" name="sortDirection" id="sortDirection" value="@Model.SortDirection" />
+                    
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" name="searchTerm" 
+                                       value="@Model.SearchTerm" placeholder="Cari nama atau email karyawan...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" name="statusFilter">
+                                <option value="">Semua Status</option>
+                                <!option value="aktif" @(Model.StatusFilter == "aktif" ? "selected" : "")>Aktif</!option>
+                                <!option value="nonaktif" @(Model.StatusFilter == "nonaktif" ? "selected" : "")>Non-Aktif</!option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="pageSize">
+                                <!option value="10" @(Model.PageSize == 10 ? "selected" : "")>10 per halaman</!option>
+                                <!option value="20" @(Model.PageSize == 20 ? "selected" : "")>20 per halaman</!option>
+                                <!option value="50" @(Model.PageSize == 50 ? "selected" : "")>50 per halaman</!option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Info -->
+    @if (Model.TotalCount > 0)
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="text-muted mb-0">
+                        Menampilkan @Model.StartRecord - @Model.EndRecord dari @Model.TotalCount karyawan
+                    </p>
+                    <div class="d-flex align-items-center">
+                        <small class="text-muted me-3">
+                            Halaman @Model.CurrentPage dari @Model.TotalPages
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Data Table Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded">
+                <div class="card-body p-0">
+                    @if (Model.Users != null && Model.Users.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="karyawanTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col" class="sortable" data-sort="Nama">
+                                            <div class="d-flex align-items-center justify-content-between cursor-pointer">
+                                                <span><i class="bi bi-person me-2"></i>Nama Karyawan</span>
+                                                <span class="sort-indicator">
+                                                    <i class="@Model.GetSortClass("Nama")"></i>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="sortable" data-sort="Posisi">
+                                            <div class="d-flex align-items-center justify-content-between cursor-pointer">
+                                                <span><i class="bi bi-briefcase me-2"></i>Posisi</span>
+                                                <span class="sort-indicator">
+                                                    <i class="@Model.GetSortClass("Posisi")"></i>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="sortable" data-sort="Email">
+                                            <div class="d-flex align-items-center justify-content-between cursor-pointer">
+                                                <span><i class="bi bi-envelope me-2"></i>Email</span>
+                                                <span class="sort-indicator">
+                                                    <i class="@Model.GetSortClass("Email")"></i>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="text-center sortable" data-sort="CreatedAt">
+                                            <div class="d-flex align-items-center justify-content-center cursor-pointer">
+                                                <span><i class="bi bi-calendar me-2"></i>Bergabung</span>
+                                                <span class="sort-indicator ms-2">
+                                                    <i class="@Model.GetSortClass("CreatedAt")"></i>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="text-center sortable" data-sort="IsActive">
+                                            <div class="d-flex align-items-center justify-content-center cursor-pointer">
+                                                <span><i class="bi bi-toggle-on me-2"></i>Status</span>
+                                                <span class="sort-indicator ms-2">
+                                                    <i class="@Model.GetSortClass("IsActive")"></i>
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="text-center" style="width: 200px;">
+                                            <i class="bi bi-gear me-2"></i>Aksi
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Users)
+                                    {
+                                        <tr class="align-middle">
+                                            <td>@item.Nama</td>
+                                            <td>@item.Posisi</td>
+                                            <td><span class="text-primary">@item.Email</span></td>
+                                            <td class="text-center">
+                                                <small class="text-muted">
+                                                    @(item.CreatedAt.ToString("dd MMM yyyy") ?? "N/A")
+                                                </small>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-lg me-1"></i>Aktif
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-x-lg me-1"></i>Non-Aktif
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a asp-area="Admin" asp-controller="Karyawan" asp-action="Details" 
+                                                       asp-route-id="@item.Id" class="btn btn-outline-info btn-sm" title="Lihat Detail">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a asp-area="Admin" asp-controller="Karyawan" asp-action="Edit" 
+                                                       asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm" title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                            onclick="confirmDelete(@item.Id, '@item.Nama')" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <div class="pagination-info">
+                                    <small class="text-muted">Total @Model.TotalCount data</small>
+                                </div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <!-- Previous Page -->
+                                        <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                                            <a class="page-link" href="@GetPageUrl(Model.CurrentPage - 1)">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- Page Numbers -->
+                                        @{
+                                            int startPage = Math.Max(1, Model.CurrentPage - 2);
+                                            int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                                        }
+                                        @for (int i = startPage; i <= endPage; i++)
+                                        {
+                                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                                <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                                            </li>
+                                        }
+                                        
+                                        <!-- Next Page -->
+                                        <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                                            <a class="page-link" href="@GetPageUrl(Model.CurrentPage + 1)">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-people display-1 text-muted"></i>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.StatusFilter))
+                            {
+                                <h4 class="text-muted">Tidak Ada Data yang Sesuai</h4>
+                                <p class="text-muted mb-4">Coba ubah filter atau kata kunci pencarian</p>
+                                <a asp-action="Index" class="btn btn-outline-primary">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Reset Filter
+                                </a>
+                            }
+                            else
+                            {
+                                <h4 class="text-muted">Belum Ada Data Karyawan</h4>
+                                <p class="text-muted mb-4">Mulai tambahkan karyawan untuk mengelola tim Anda</p>
+                                <a asp-area="Admin" asp-controller="Karyawan" asp-action="Create" class="btn btn-primary">
+                                    <i class="bi bi-plus-lg me-2"></i>Tambah Karyawan Pertama
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetPageUrl(int page)
+    {
+        return Url.Action("Index", new { 
+            page = page, 
+            searchTerm = Model.SearchTerm, 
+            statusFilter = Model.StatusFilter, 
+            pageSize = Model.PageSize,
+            sortField = Model.SortField,
+            sortDirection = Model.SortDirection 
+        });
+    }
+}
+
+<style>
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+    
+    .sortable:hover {
+        background-color: lightslategray !important;
+    }
+    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .sort-indicator {
+        font-size: 0.8em;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+    
+    .sortable:hover .sort-indicator {
+        opacity: 1;
+    }
+    
+    .sort-indicator .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .sort-indicator .text-muted {
+        color: #6c757d !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sorting functionality
+        const sortableHeaders = document.querySelectorAll('.sortable');
+        
+        sortableHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const sortField = this.getAttribute('data-sort');
+                const currentSortField = document.getElementById('sortField').value;
+                const currentSortDirection = document.getElementById('sortDirection').value;
+                
+                // Determine new sort direction
+                let newSortDirection = 'asc';
+                if (currentSortField === sortField && currentSortDirection === 'asc') {
+                    newSortDirection = 'desc';
+                }
+                
+                // Update URL with new sort parameters
+                const url = new URL(window.location);
+                url.searchParams.set('sortField', sortField);
+                url.searchParams.set('sortDirection', newSortDirection);
+                url.searchParams.set('page', '1'); // Reset to first page
+                
+                // Navigate to new URL
+                window.location.href = url.toString();
+            });
+        });
+        
+        // Auto-submit form when page size changes
+        document.querySelector('select[name="pageSize"]').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+    
+    // Delete confirmation function
+    function confirmDelete(id, nama) {
+        if (confirm(`Apakah Anda yakin ingin menghapus karyawan ${nama}?`)) {
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("Delete", "Karyawan", new { area = "Admin" })';
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'id';
+            input.value = id;
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+<script src="~/js/karyawan-table.js"></script>

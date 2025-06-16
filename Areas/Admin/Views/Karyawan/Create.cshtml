@@ -1,4 +1,5 @@
-﻿@model RamaExpress.Models.User
+﻿@using RamaExpress.Areas.Admin.Models
+@model User
 
 <div class="container">
 	<h2>Tambah Akun Karyawan</h2>
@@ -18,7 +19,7 @@
 	<div>
 		<label asp-for="Password" class="form-label">Password</label>
 		<input asp-for="Password" type="password" class="form-control" />
-	</div>
+	</div> 
 	<button type="submit" class="btn btn-primary mt-3">Tambah Karyawan</button>
 	</form>
 </div>

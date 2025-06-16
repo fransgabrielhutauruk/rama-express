@@ -36,10 +36,6 @@ namespace RamaExpress.Middleware
 
             else if (path.StartsWith("/karyawan"))
             {
-                Console.WriteLine($"path: {path}");
-                Console.WriteLine($"Role: {userRole}");
-                Console.WriteLine($"userId: {userId}");
-
                 if (userId == null)
                 {
                     context.Response.Redirect("/Login");

@@ -3,8 +3,9 @@ using RamaExpress.Models;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using RamaExpress.Data;
 using Microsoft.AspNetCore.Identity;
+using RamaExpress.Areas.Admin.Data;
+using RamaExpress.Areas.Admin.Models;
 
 namespace RamaExpress.Controllers
 {

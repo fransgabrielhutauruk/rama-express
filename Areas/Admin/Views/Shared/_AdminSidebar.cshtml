@@ -1,0 +1,262 @@
+﻿<!-- _AdminSidebar.cshtml -->
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        z-index: 1000;
+        transition: width 0.3s ease-in-out;
+        overflow-y: auto;
+    }
+
+        .sidebar.collapsed {
+            width: 70px;
+            overflow-x: hidden;
+        }
+
+    .sidebar-header {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sidebar-brand {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-brand .brand-text {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar-brand:hover {
+        color: #3498db;
+    }
+
+    .sidebar-nav {
+        padding: 1rem 0;
+    }
+
+    .nav-item {
+        margin-bottom: 0.25rem;
+    }
+
+    .nav-link {
+        color: rgba(255,255,255,0.8);
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        white-space: nowrap;
+        position: relative;
+    }
+
+        .nav-link .nav-text {
+            transition: opacity 0.3s ease;
+        }
+
+    .sidebar.collapsed .nav-link .nav-text {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar.collapsed .nav-link {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+
+    .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255,255,255,0.1);
+        border-left-color: #3498db;
+    }
+
+    .nav-link.active {
+        color: #fff;
+        background-color: rgba(52, 152, 219, 0.2);
+        border-left-color: #3498db;
+    }
+
+    .nav-link i {
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    /* Tooltip for collapsed sidebar */
+    .sidebar.collapsed .nav-link {
+        position: relative;
+    }
+
+        .sidebar.collapsed .nav-link::after {
+            content: attr(data-title);
+            position: absolute;
+            left: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .sidebar.collapsed .nav-link:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    .user-profile {
+        padding: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: auto;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: rgba(255,255,255,0.8);
+        transition: all 0.3s ease;
+    }
+
+    .sidebar.collapsed .user-info .user-details {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar.collapsed .user-info {
+        justify-content: center;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .dropdown-menu {
+        background: #2c3e50;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .dropdown-item {
+        color: rgba(255,255,255,0.8);
+    }
+
+        .dropdown-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+    @@media (max-width: 768px) {
+        .sidebar
+
+    {
+        width: 70px;
+    }
+
+    .main-content {
+        margin-left: 70px;
+    }
+
+    .sidebar .sidebar-brand .brand-text,
+    .sidebar .nav-link .nav-text,
+    .sidebar .user-info .user-details {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar .nav-link {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+
+    .sidebar .user-info {
+        justify-content: center;
+    }
+
+    }
+</style>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header d-flex text-center justify-content-center" style="height:70px">
+        <a href="#" class="sidebar-brand">
+            <i class="bi bi-truck"></i>
+            <span class="brand-text">RamaExpress</span>
+        </a>
+    </div>
+
+    <!-- Navigation Menu -->
+    <ul class="nav flex-column sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+               asp-area="Admin" asp-controller="Home" asp-action="Index" data-title="Dashboard">
+                <i class="bi bi-speedometer2"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pelatihan" ? "active" : "")"
+               asp-area="Admin" asp-controller="Home" asp-action="Pelatihan" data-title="Pelatihan">
+                <i class="bi bi-book"></i>
+                <span class="nav-text">Pelatihan</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "LaporanPelatihan" ? "active" : "")"
+               asp-area="Admin" asp-controller="Home" asp-action="LaporanPelatihan" data-title="Laporan Pelatihan">
+                <i class="bi bi-graph-up"></i>
+                <span class="nav-text">Laporan Pelatihan</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Sertifikat" ? "active" : "")"
+               asp-area="Admin" asp-controller="Home" asp-action="Sertifikat" data-title="Sertifikat">
+                <i class="bi bi-award"></i>
+                <span class="nav-text">Sertifikat</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Karyawan" ? "active" : "")"
+               asp-area="Admin" asp-controller="Karyawan" asp-action="Index" data-title="Karyawan">
+                <i class="bi bi-people"></i>
+                <span class="nav-text">Karyawan</span>
+            </a>
+        </li>
+    </ul>
+</nav>

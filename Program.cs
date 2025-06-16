@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using RamaExpress.Data;
-using RamaExpress.Data.Service;
+using RamaExpress.Areas.Admin.Data;
+using RamaExpress.Areas.Admin.Data.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
