@@ -1,0 +1,272 @@
+﻿@model RamaExpress.Areas.Admin.Models.PosisiListViewModel
+@{
+    ViewData["Title"] = "Manajemen Posisi";
+    // Declare variables once at the top
+    var employeeCounts = ViewBag.EmployeeCounts as Dictionary<int, int>;
+    var totalEmployees = employeeCounts?.Values.Sum() ?? 0;
+    var avgEmployees = Model.TotalCount > 0 && totalEmployees > 0
+        ? Math.Round((double)totalEmployees / Model.TotalCount, 1)
+        : 0;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Manajemen Posisi</h1>
+                    <p class="text-muted mb-0">Kelola posisi/jabatan karyawan RamaExpress</p>
+                </div>
+                <div>
+                    <a asp-area="Admin" asp-controller="Posisi" asp-action="Create"
+                       class="btn btn-primary shadow-sm">
+                        <i class="bi bi-plus-lg me-2"></i>Tambah Posisi
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Total Posisi</h5>
+                            <h2 class="mb-0">@Model.TotalCount</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-briefcase fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Total Karyawan</h5>
+                            <h2 class="mb-0">@totalEmployees</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Rata-rata per Posisi</h5>
+                            <h2 class="mb-0">@avgEmployees</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>Daftar Posisi
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Posisis != null && Model.Posisis.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col" class="text-center" style="width: 80px;">No</th>
+                                        <th scope="col">
+                                            <i class="bi bi-briefcase me-2"></i>Nama Posisi
+                                        </th>
+                                        <th scope="col" class="text-center" style="width: 200px;">
+                                            <i class="bi bi-people me-2"></i>Jumlah Karyawan
+                                        </th>
+                                        <th scope="col" class="text-center" style="width: 200px;">
+                                            <i class="bi bi-gear me-2"></i>Aksi
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int counter = 1;
+                                    }
+                                    @foreach (var item in Model.Posisis)
+                                    {
+                                        <tr class="align-middle">
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary">@counter</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                         style="width: 40px; height: 40px;">
+                                                        <i class="bi bi-briefcase"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">@item.Name</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                    var currentEmployeeCount = employeeCounts?.ContainsKey(item.Id) == true ?
+                                                    employeeCounts[item.Id] : 0;
+                                                }
+                                                @if (currentEmployeeCount > 0)
+                                                {
+                                                    <span class="badge bg-success fs-6">@currentEmployeeCount Karyawan</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary fs-6">Belum Ada</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a asp-area="Admin" asp-controller="Posisi" asp-action="Edit"
+                                                       asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm" title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            onclick="confirmDelete(@item.Id, '@item.Name', @currentEmployeeCount)" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        counter++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-briefcase display-1 text-muted"></i>
+                            </div>
+                            <h4 class="text-muted">Belum Ada Data Posisi</h4>
+                            <p class="text-muted mb-4">Mulai tambahkan posisi untuk mengelola jabatan karyawan</p>
+                            <a asp-area="Admin" asp-controller="Posisi" asp-action="Create" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-2"></i>Tambah Posisi Pertama
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Form for Delete -->
+<form id="deleteForm" method="post" asp-area="Admin" asp-controller="Posisi" asp-action="Delete" style="display: none;">
+    <input type="hidden" name="id" id="deleteId" />
+</form>
+
+<!-- Single Script Section -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Success Message
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    title: 'Berhasil!',
+                    html: `
+                    <p class="m-0">@Html.Raw(TempData["SuccessMessage"])</p>
+                    `,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745',
+                    timer: 4000,
+                    timerProgressBar: true,
+                });
+        </text>
+
+
+    }
+
+        // Error Message
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    title: 'Terjadi Kesalahan!',
+                    html: `
+                        <div class="text-center">
+                            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
+                            <p class="mt-3">@Html.Raw(TempData["ErrorMessage"])</p>
+                        </div>
+                    `,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
+        </text>
+    }
+    });
+
+    // Delete confirmation function
+    function confirmDelete(id, nama, employeeCount) {
+        if (employeeCount > 0) {
+            Swal.fire({
+                title: 'Tidak Dapat Dihapus!',
+                html: `
+                    <div class="text-center">
+                        <i class="bi bi-shield-exclamation text-warning" style="font-size: 3rem;"></i>
+                        <p class="mt-3">Posisi <strong>'${nama}'</strong> masih digunakan oleh <strong>${employeeCount} karyawan</strong>.</p>
+                        <p class="text-muted">Hapus atau ubah posisi karyawan terlebih dahulu sebelum menghapus posisi ini.</p>
+                    </div>
+                `,
+                icon: 'warning',
+                confirmButtonText: 'Mengerti',
+                confirmButtonColor: '#ffc107',
+                showCancelButton: true,
+                cancelButtonText: 'Kelola Karyawan',
+                cancelButtonColor: '#0d6efd'
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = '@Url.Action("Index", "Karyawan", new { area = "Admin" })';
+                }
+            });
+            return;
+        }
+
+        Swal.fire({
+                title: 'Hapus Posisi?',
+                text: `Apakah Anda yakin ingin menghapus posisi ${nama}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        });
+    }
+</script>

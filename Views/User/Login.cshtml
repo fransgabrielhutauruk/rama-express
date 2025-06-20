@@ -13,8 +13,8 @@
                             <h3 class="text-center text-primary">RAMA EXPRESS</h3>
 
                             <h5 class="text-center text-secondary mb-3">LOGIN</h5>
-     
-                            <form asp-action="Login" method="post" asp-area="">
+
+                            <form asp-action="Login" method="post" asp-area="" id="loginForm">
 
                                 <!-- Email Field -->
                                 <div class="mb-2">
@@ -40,21 +40,37 @@
                                     <span asp-validation-for="Password" class="text-danger small"></span>
                                 </div>
 
-                                @* <!-- Validation Summary --> *@
-                                @* <div asp-validation-summary="ModelOnly" class="alert alert-danger mt-3" role="alert"> *@
-                                @*     <i class="fas fa-exclamation-triangle me-2"></i> *@
-                                @* </div> *@
-
+                                <!-- Enhanced Error Display -->
                                 @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
                                 {
-                                    <div class="alert alert-danger border-0 rounded-3 mt-3 mb-0 text-center" role="alert">
+                                    <div class="alert alert-danger border-0 rounded-3 mt-3 mb-0" role="alert" id="errorAlert">
                                         <i class="fas fa-exclamation-triangle me-2"></i>
-                                        <span class="fw-normal">Email atau Password anda salah, silahkan periksa kembali</span>
+                                        @{
+                                            var errors = ViewData.ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage).ToList();
+                                        }
+                                        @if (errors.Any())
+                                        {
+                                            @if (errors.Count == 1)
+                                            {
+                                                <span class="fw-normal">@errors.First()</span>
+                                            }
+                                            else
+                                            {
+                                                <div class="fw-normal">
+                                                    <ul class="mb-0 ps-3">
+                                                        @foreach (var error in errors)
+                                                        {
+                                                            <li>@error</li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            }
+                                        }
                                     </div>
                                 }
 
                                 <!-- Login Button -->
-                                <button type="submit" class="btn btn-primary w-100 mb-2 mt-3">
+                                <button type="submit" class="btn btn-primary w-100 mb-2 mt-3" id="loginBtn">
                                     <i class="fas fa-sign-in-alt me-2"></i>Login
                                 </button>
 
@@ -97,15 +113,45 @@
 
     // Form validation enhancement
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
+        const form = document.getElementById('loginForm');
         const inputs = document.querySelectorAll('.form-control');
+        const loginBtn = document.getElementById('loginBtn');
 
         inputs.forEach(input => {
             input.addEventListener('input', function() {
                 if (this.classList.contains('is-invalid')) {
                     this.classList.remove('is-invalid');
                 }
+                // Hide error alert when user starts typing
+                const errorAlert = document.getElementById('errorAlert');
+                if (errorAlert) {
+                    errorAlert.style.display = 'none';
+                }
             });
+        });
+
+        // Add loading state to login button
+        form.addEventListener('submit', function(e) {
+            // Use setTimeout to check after browser validation completes
+            setTimeout(() => {
+                // Check required fields manually
+                const emailField = document.querySelector('input[name="Email"]');
+                const passwordField = document.querySelector('input[name="Password"]');
+
+                const isEmailEmpty = !emailField.value.trim();
+                const isPasswordEmpty = !passwordField.value.trim();
+                const hasVisibleErrors = document.querySelector('.alert-danger:not([style*="display: none"])');
+                const hasValidationErrors = document.querySelector('.text-danger:not(:empty)');
+
+                // Only show loading if all conditions are met
+                if (!isEmailEmpty && !isPasswordEmpty && !hasVisibleErrors && !hasValidationErrors) {
+                    // Check if form wasn't prevented from submitting
+                    if (!e.defaultPrevented) {
+                        loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+                        loginBtn.disabled = true;
+                    }
+                }
+            }, 10); // Small delay to let validation complete
         });
     });
 </script>

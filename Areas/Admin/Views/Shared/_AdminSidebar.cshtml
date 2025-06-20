@@ -1,5 +1,4 @@
-﻿<!-- _AdminSidebar.cshtml -->
-<style>
+﻿<style>
     .sidebar {
         position: fixed;
         top: 0;
@@ -101,7 +100,6 @@
         flex-shrink: 0;
     }
 
-    /* Tooltip for collapsed sidebar */
     .sidebar.collapsed .nav-link {
         position: relative;
     }
@@ -211,9 +209,7 @@
     }
 </style>
 
-<!-- Sidebar -->
 <nav class="sidebar" id="sidebar">
-    <!-- Sidebar Header -->
     <div class="sidebar-header d-flex text-center justify-content-center" style="height:70px">
         <a href="#" class="sidebar-brand">
             <i class="bi bi-truck"></i>
@@ -221,7 +217,6 @@
         </a>
     </div>
 
-    <!-- Navigation Menu -->
     <ul class="nav flex-column sidebar-nav">
         <li class="nav-item">
             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
@@ -256,6 +251,13 @@
                asp-area="Admin" asp-controller="Karyawan" asp-action="Index" data-title="Karyawan">
                 <i class="bi bi-people"></i>
                 <span class="nav-text">Karyawan</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Posisi" ? "active" : "")"
+               asp-area="Admin" asp-controller="Posisi" asp-action="Index" data-title="Posisi">
+                <i class="bi bi-briefcase"></i>
+                <span class="nav-text">Posisi</span>
             </a>
         </li>
     </ul>

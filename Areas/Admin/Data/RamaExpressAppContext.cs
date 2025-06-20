@@ -8,6 +8,7 @@ namespace RamaExpress.Areas.Admin.Data
         public RamaExpressAppContext(DbContextOptions<RamaExpressAppContext> options) : base(options) { }
         
         public DbSet<Models.User> User{ get; set; }
+        public DbSet<Posisi> Posisi { get; set; }
 
     }
 }

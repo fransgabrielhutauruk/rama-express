@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RamaExpress.Areas.Admin.Models;
 
 namespace RamaExpress.Areas.Admin.Data.Service
@@ -21,7 +22,7 @@ namespace RamaExpress.Areas.Admin.Data.Service
         public async Task<(IEnumerable<Models.User> Users, int TotalCount)> GetAll(int page = 1, int pageSize = 15)
         {
             var query = _context.User
-                .Where(u => u.Role != null && u.Role.ToLower() == "karyawan");
+                .Where(u => u.Role != null && u.Role.ToLower() == "karyawan" && !u.IsDeleted);
 
             var totalCount = await query.CountAsync();
 
@@ -41,15 +42,13 @@ namespace RamaExpress.Areas.Admin.Data.Service
             string statusFilter = null)
         {
             var query = _context.User
-                .Where(u => u.Role != null && u.Role.ToLower() == "karyawan");
+                .Where(u => u.Role != null && u.Role.ToLower() == "karyawan" && !u.IsDeleted);
 
-            // Apply search filter
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(u => u.Nama.Contains(searchTerm) || u.Email.Contains(searchTerm));
             }
 
-            // Apply status filter
             if (!string.IsNullOrEmpty(statusFilter))
             {
                 bool isActive = statusFilter.ToLower() == "aktif";
@@ -76,9 +75,8 @@ namespace RamaExpress.Areas.Admin.Data.Service
             string sortDirection = "asc")
         {
             var query = _context.User
-                .Where(u => u.Role != null && u.Role.ToLower() == "karyawan");
+                .Where(u => u.Role != null && u.Role.ToLower() == "karyawan" && !u.IsDeleted);
 
-            // Apply search filter
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(u => u.Nama.Contains(searchTerm) ||
@@ -86,14 +84,12 @@ namespace RamaExpress.Areas.Admin.Data.Service
                                         u.Posisi.Contains(searchTerm));
             }
 
-            // Apply status filter
             if (!string.IsNullOrEmpty(statusFilter))
             {
                 bool isActive = statusFilter.ToLower() == "aktif";
                 query = query.Where(u => u.IsActive == isActive);
             }
 
-            // Apply sorting
             query = ApplySorting(query, sortField, sortDirection);
 
             var totalCount = await query.CountAsync();
@@ -108,12 +104,10 @@ namespace RamaExpress.Areas.Admin.Data.Service
 
         private IQueryable<Models.User> ApplySorting(IQueryable<Models.User> query, string sortField, string sortDirection)
         {
-            // Validate sort field
             var validSortFields = new[] { "Nama", "Email", "Posisi", "CreatedAt", "IsActive" };
             if (!validSortFields.Contains(sortField))
                 sortField = "Nama";
 
-            // Validate sort direction
             if (sortDirection != "asc" && sortDirection != "desc")
                 sortDirection = "asc";
 
@@ -141,6 +135,147 @@ namespace RamaExpress.Areas.Admin.Data.Service
 
                 _ => query.OrderBy(u => u.Nama)
             };
+        }
+
+        public async Task<(bool Success, string Message, User? User)> AddKaryawan(User karyawan)
+        {
+            try
+            {
+                if (await IsEmailExists(karyawan.Email))
+                {
+                    return (false, "Email sudah digunakan oleh pengguna lain", null);
+                }
+
+                var hasher = new PasswordHasher<User>();
+                karyawan.Password = hasher.HashPassword(karyawan, karyawan.Password);
+
+                karyawan.Role = "karyawan";
+                karyawan.CreatedAt = DateTime.Now;
+                karyawan.IsActive = true;
+                karyawan.IsDeleted = false;
+                karyawan.UpdatedAt = null;
+                karyawan.DeletedAt = null;
+
+                karyawan.Email = karyawan.Email.ToLower().Trim();
+                karyawan.Nama = karyawan.Nama.Trim();
+                if (!string.IsNullOrEmpty(karyawan.Posisi))
+                {
+                    karyawan.Posisi = karyawan.Posisi.Trim();
+                }
+
+                _context.User.Add(karyawan);
+                await _context.SaveChangesAsync();
+
+                return (true, $"Karyawan {karyawan.Nama} berhasil ditambahkan", karyawan);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Terjadi kesalahan: {ex.Message}", null);
+            }
+        }
+
+        public async Task<bool> IsEmailExists(string email, int? excludeId = null)
+        {
+            var query = _context.User
+                .Where(u => u.Email.ToLower() == email.ToLower().Trim() && !u.IsDeleted);
+
+            if (excludeId.HasValue)
+            {
+                query = query.Where(u => u.Id != excludeId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
+
+        public async Task<User?> GetById(int id)
+        {
+            return await _context.User
+                .Where(u => u.Id == id && u.Role.ToLower() == "karyawan" && !u.IsDeleted)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<(bool Success, string Message, User? User)> UpdateKaryawan(User karyawan)
+        {
+            try
+            {
+                var existingUser = await GetById(karyawan.Id);
+                if (existingUser == null)
+                {
+                    return (false, "Karyawan tidak ditemukan", null);
+                }
+
+                if (await IsEmailExists(karyawan.Email, karyawan.Id))
+                {
+                    return (false, "Email sudah digunakan oleh pengguna lain", null);
+                }
+
+                existingUser.Nama = karyawan.Nama.Trim();
+                existingUser.Email = karyawan.Email.ToLower().Trim();
+                existingUser.Posisi = string.IsNullOrEmpty(karyawan.Posisi) ? null : karyawan.Posisi.Trim();
+                existingUser.UpdatedAt = DateTime.Now;
+
+                if (!string.IsNullOrEmpty(karyawan.Password))
+                {
+                    var hasher = new PasswordHasher<User>();
+                    existingUser.Password = hasher.HashPassword(existingUser, karyawan.Password);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return (true, $"Data karyawan {existingUser.Nama} berhasil diperbarui", existingUser);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Terjadi kesalahan: {ex.Message}", null);
+            }
+        }
+
+        public async Task<(bool Success, string Message)> DeleteKaryawan(int id)
+        {
+            try
+            {
+                var user = await GetById(id);
+                if (user == null)
+                {
+                    return (false, "Karyawan tidak ditemukan");
+                }
+
+                user.IsDeleted = true;
+                user.DeletedAt = DateTime.Now;
+                user.UpdatedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                return (true, $"Karyawan {user.Nama} berhasil dihapus");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Terjadi kesalahan: {ex.Message}");
+            }
+        }
+
+        public async Task<(bool Success, string Message)> ToggleActiveStatus(int id)
+        {
+            try
+            {
+                var user = await GetById(id);
+                if (user == null)
+                {
+                    return (false, "Karyawan tidak ditemukan");
+                }
+
+                user.IsActive = !user.IsActive;
+                user.UpdatedAt = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                string status = user.IsActive ? "diaktifkan" : "dinonaktifkan";
+                return (true, $"Karyawan {user.Nama} berhasil {status}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Terjadi kesalahan: {ex.Message}");
+            }
         }
     }
 }

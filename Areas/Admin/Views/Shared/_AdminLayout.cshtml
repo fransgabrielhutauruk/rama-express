@@ -25,10 +25,9 @@
 
         .content-wrapper {
             flex: 1;
-            padding: 0rem 1.2rem ;
+            padding: 0rem 1.2rem;
         }
 
-        /* Dashboard Card Styles */
         .border-left-primary {
             border-left: 0.25rem solid #4e73df !important;
         }
@@ -61,14 +60,12 @@
 <body class="d-flex flex-column min-vh-100">
     @await Html.PartialAsync("_AdminSidebar")
 
-    <!-- Main Content -->
     <div class="main-content" id="mainContent">
         @await Html.PartialAsync("_AdminBreadcrumb")
         <main role="main" class="content-wrapper">
             @RenderBody()
         </main>
 
-        <!-- Footer -->
         <footer class="py-3 bg-secondary text-center mt-auto">
             <div class="container">
                 <p class="mb-0 text-light">
@@ -77,9 +74,11 @@
             </div>
         </footer>
     </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
@@ -95,7 +94,6 @@
                     sidebar.classList.toggle('collapsed');
                     mainContent.classList.toggle('expanded');
 
-                    // Change toggle icon
                     if (sidebar.classList.contains('collapsed')) {
                         toggleIcon.className = 'bi bi-layout-sidebar';
                     } else {
@@ -103,7 +101,6 @@
                     }
                 });
 
-                // Auto-collapse sidebar on mobile
                 function checkScreenSize() {
                     if (window.innerWidth <= 768) {
                         sidebar.classList.add('collapsed');
@@ -115,7 +112,7 @@
                 }
 
                 window.addEventListener('resize', checkScreenSize);
-                checkScreenSize(); // Check on initial load
+                checkScreenSize();
             }
         });
     </script>

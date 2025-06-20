@@ -4,7 +4,38 @@
 }
 
 <div class="container-fluid py-4">
-    <!-- Header Section -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: '@Html.Raw(TempData["SuccessMessage"])',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            });
+        </script>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Error!',
+                    text: '@Html.Raw(TempData["ErrorMessage"])',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        </script>
+    }
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
@@ -22,12 +53,10 @@
         </div>
     </div>
 
-    <!-- Search and Filter Section -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="bg-light p-3 rounded shadow-sm">
                 <form id="filterForm" method="get">
-                    <!-- Hidden inputs for sorting -->
                     <input type="hidden" name="sortField" id="sortField" value="@Model.SortField" />
                     <input type="hidden" name="sortDirection" id="sortDirection" value="@Model.SortDirection" />
                     
@@ -51,8 +80,8 @@
                         <div class="col-md-2">
                             <select class="form-select" name="pageSize">
                                 <!option value="10" @(Model.PageSize == 10 ? "selected" : "")>10 per halaman</!option>
+                                <!option value="15" @(Model.PageSize == 15 ? "selected" : "")>15 per halaman</!option>
                                 <!option value="20" @(Model.PageSize == 20 ? "selected" : "")>20 per halaman</!option>
-                                <!option value="50" @(Model.PageSize == 50 ? "selected" : "")>50 per halaman</!option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -66,7 +95,6 @@
         </div>
     </div>
 
-    <!-- Results Info -->
     @if (Model.TotalCount > 0)
     {
         <div class="row mb-3">
@@ -85,7 +113,6 @@
         </div>
     }
 
-    <!-- Data Table Section -->
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm border-0 rounded">
@@ -205,7 +232,6 @@
                                             </a>
                                         </li>
                                         
-                                        <!-- Page Numbers -->
                                         @{
                                             int startPage = Math.Max(1, Model.CurrentPage - 2);
                                             int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
@@ -217,7 +243,6 @@
                                             </li>
                                         }
                                         
-                                        <!-- Next Page -->
                                         <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
                                             <a class="page-link" href="@GetPageUrl(Model.CurrentPage + 1)">
                                                 <i class="bi bi-chevron-right"></i>
@@ -257,6 +282,10 @@
         </div>
     </div>
 </div>
+
+<form id="deleteForm" method="post" asp-area="Admin" asp-controller="Karyawan" asp-action="Delete" style="display: none;">
+    <input type="hidden" name="id" id="deleteId" />
+</form>
 
 @functions {
     string GetPageUrl(int page)
@@ -306,57 +335,54 @@
     }
 </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Sorting functionality
-        const sortableHeaders = document.querySelectorAll('.sortable');
-        
-        sortableHeaders.forEach(header => {
-            header.addEventListener('click', function() {
-                const sortField = this.getAttribute('data-sort');
-                const currentSortField = document.getElementById('sortField').value;
-                const currentSortDirection = document.getElementById('sortDirection').value;
-                
-                // Determine new sort direction
-                let newSortDirection = 'asc';
-                if (currentSortField === sortField && currentSortDirection === 'asc') {
-                    newSortDirection = 'desc';
-                }
-                
-                // Update URL with new sort parameters
-                const url = new URL(window.location);
-                url.searchParams.set('sortField', sortField);
-                url.searchParams.set('sortDirection', newSortDirection);
-                url.searchParams.set('page', '1'); // Reset to first page
-                
-                // Navigate to new URL
-                window.location.href = url.toString();
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortableHeaders = document.querySelectorAll('.sortable');
+            
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortField = this.getAttribute('data-sort');
+                    const currentSortField = document.getElementById('sortField').value;
+                    const currentSortDirection = document.getElementById('sortDirection').value;
+                    
+                    let newSortDirection = 'asc';
+                    if (currentSortField === sortField && currentSortDirection === 'asc') {
+                        newSortDirection = 'desc';
+                    }
+                    
+                    const url = new URL(window.location);
+                    url.searchParams.set('sortField', sortField);
+                    url.searchParams.set('sortDirection', newSortDirection);
+                    url.searchParams.set('page', '1'); // Reset to first page
+                    
+                    window.location.href = url.toString();
+                });
+            });
+            
+            document.querySelector('select[name="pageSize"]').addEventListener('change', function() {
+                document.getElementById('filterForm').submit();
             });
         });
         
-        // Auto-submit form when page size changes
-        document.querySelector('select[name="pageSize"]').addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
-        });
-    });
-    
-    // Delete confirmation function
-    function confirmDelete(id, nama) {
-        if (confirm(`Apakah Anda yakin ingin menghapus karyawan ${nama}?`)) {
-            // Create form and submit
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '@Url.Action("Delete", "Karyawan", new { area = "Admin" })';
-            
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'id';
-            input.value = id;
-            
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
+        function confirmDelete(id, nama) {
+            Swal.fire({
+                title: 'Hapus Karyawan?',
+                text: `Apakah Anda yakin ingin menghapus karyawan ${nama}? Data yang dihapus tidak dapat dikembalikan.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteId').value = id;
+                    document.getElementById('deleteForm').submit();
+                }
+            });
         }
-    }
-</script>
-<script src="~/js/karyawan-table.js"></script>
+    </script>
+}
