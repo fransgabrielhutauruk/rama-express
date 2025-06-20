@@ -1,0 +1,175 @@
+﻿@using RamaExpress.Areas.Admin.Models
+@model Posisi
+@{
+    ViewData["Title"] = "Edit Posisi";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Edit Posisi</h1>
+                    <p class="text-muted mb-0">Perbarui informasi posisi "@Model.Name"</p>
+                </div>
+                <div>
+                    <a asp-area="Admin" asp-controller="Posisi" asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 rounded">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Informasi Posisi
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Error Messages -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Periksa kembali data yang dimasukkan:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" asp-area="Admin" asp-controller="Posisi" method="post" id="editForm">
+                        <input asp-for="Id" type="hidden" />
+
+                        <div class="row g-3">
+                            <!-- Nama Posisi -->
+                            <div class="col-12">
+                                <label asp-for="Name" class="form-label fw-semibold">
+                                    <i class="bi bi-briefcase me-2 text-primary"></i>Nama Posisi
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Name" class="form-control form-control-lg"
+                                       placeholder="Contoh: Driver, Manager, Supervisor" required />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                                <small class="text-muted">Maksimal 50 karakter</small>
+                            </div>
+                        </div>
+
+                        <!-- Warning if used by employees -->
+                        <div class="alert alert-warning mt-4" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Perhatian:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Perubahan nama posisi akan mempengaruhi semua karyawan yang menggunakan posisi ini</li>
+                                <li>Pastikan nama baru masih sesuai dengan jabatan karyawan</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-area="Admin" asp-controller="Posisi" asp-action="Index"
+                               class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Batal
+                            </a>
+                            <button type="submit" class="btn btn-warning" id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Perbarui Posisi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert Notifications -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: '@Html.Raw(TempData["SuccessMessage"])',
+                icon: 'success',
+                confirmButtonText: 'Lihat Daftar Posisi',
+                confirmButtonColor: '#28a745',
+                timer: 4000,
+                timerProgressBar: true,
+                showCancelButton: true,
+                cancelButtonText: 'Edit Lagi',
+                cancelButtonColor: '#6c757d'
+            }).then(function(result) {
+                if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
+                    window.location.href = '@Url.Action("Index", "Posisi", new { area = "Admin" })';
+                }
+            });
+        });
+    </script>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Error!',
+                text: '@Html.Raw(TempData["ErrorMessage"])',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545'
+            });
+        });
+    </script>
+}
+
+<!-- Inline Scripts to avoid section conflict -->
+<script>
+    // Form loading state
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        const form = this;
+        const btn = document.getElementById('submitBtn');
+
+        // Check if form is valid
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        // Check required fields
+        const nameField = form.querySelector('input[name="Name"]');
+        const isNameEmpty = !nameField.value.trim();
+
+        if (!isNameEmpty) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...';
+            btn.disabled = true;
+        }
+    });
+
+    // Remove error state when user types
+    document.querySelectorAll('.form-control').forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+</script>

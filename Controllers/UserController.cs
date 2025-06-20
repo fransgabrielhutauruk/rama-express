@@ -18,7 +18,6 @@ namespace RamaExpress.Controllers
             _context = context;
         }
 
-        // GET: Display the login form
         [HttpGet]
         [Route("Login")]
         public IActionResult Login()
@@ -26,7 +25,6 @@ namespace RamaExpress.Controllers
             return View();
         }
 
-        // POST: /User/Login
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -35,7 +33,7 @@ namespace RamaExpress.Controllers
                 return View(model);
 
             var user = await _context.User
-                .FirstOrDefaultAsync(u => u.Email == model.Email);
+                .FirstOrDefaultAsync(u => u.Email == model.Email && u.IsDeleted == false    );
 
             if (user == null)
             {
@@ -52,7 +50,18 @@ namespace RamaExpress.Controllers
                 return View(model);
             }
 
-            // Successful login
+            if (user.IsDeleted)
+            {
+                ModelState.AddModelError("", "Akun tidak ditemukan atau telah dihapus");
+                return View(model);
+            }
+
+            if (!user.IsActive)
+            {
+                ModelState.AddModelError("", "Akun Anda sedang tidak aktif. Silakan hubungi administrator");
+                return View(model);
+            }
+
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("Username", user.Nama);
             HttpContext.Session.SetString("UserRole", user.Role);
@@ -74,25 +83,5 @@ namespace RamaExpress.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
-
-        //public async Task<IActionResult> Register(RegisterViewModel model)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return View(model);
-
-        //    var hasher = new PasswordHasher<User>();
-        //    var user = new User
-        //    {
-        //        Email = model.Email,
-        //        Nama = model.Nama,
-        //        // store the hashed password
-        //        Password = hasher.HashPassword(null, model.Password)
-        //    };
-
-        //    _context.User.Add(user);
-        //    await _context.SaveChangesAsync();
-
-        //    return RedirectToAction("Login");
-        //}
     }
 }

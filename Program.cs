@@ -4,7 +4,6 @@ using RamaExpress.Areas.Admin.Data.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
@@ -16,6 +15,8 @@ builder.Services.AddDbContext<RamaExpressAppContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
 builder.Services.AddScoped<IKaryawanService, KaryawanService>();
+builder.Services.AddScoped<IPosisiService, PosisiService>();
+
 
 var app = builder.Build();
 

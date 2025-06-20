@@ -1,18 +1,23 @@
 ﻿@using RamaExpress.Areas.Admin.Models
 @model User
 @{
-    ViewData["Title"] = "Tambah Karyawan";
+    ViewData["Title"] = "Edit Karyawan";
 }
 
 <div class="container-fluid py-4">
+    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-primary">Tambah Karyawan Baru</h1>
-                    <p class="text-muted mb-0">Tambahkan akun karyawan baru ke sistem RamaExpress</p>
+                    <h1 class="h3 mb-1 text-primary">Edit Karyawan</h1>
+                    <p class="text-muted mb-0">Perbarui informasi karyawan @Model.Nama</p>
                 </div>
                 <div>
+                    <a asp-area="Admin" asp-controller="Karyawan" asp-action="Details" asp-route-id="@Model.Id"
+                       class="btn btn-outline-info me-2">
+                        <i class="bi bi-eye me-2"></i>Lihat Detail
+                    </a>
                     <a asp-area="Admin" asp-controller="Karyawan" asp-action="Index"
                        class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-2"></i>Kembali
@@ -22,15 +27,17 @@
         </div>
     </div>
 
+    <!-- Form Section -->
     <div class="row justify-content-center">
         <div class="col-lg-12">
             <div class="card shadow-sm border-0 rounded">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
-                        <i class="bi bi-person-plus me-2"></i>Informasi Karyawan
+                        <i class="bi bi-pencil-square me-2"></i>Edit Informasi Karyawan
                     </h5>
                 </div>
                 <div class="card-body p-4">
+                    <!-- Success/Error Messages -->
                     @if (TempData["SuccessMessage"] != null)
                     {
                         <script>
@@ -72,8 +79,11 @@
                         </div>
                     }
 
-                    <form asp-action="Create" asp-area="Admin" asp-controller="Karyawan" method="post" id="createForm">
+                    <form asp-action="Edit" asp-area="Admin" asp-controller="Karyawan" method="post" id="editForm">
+                        <input asp-for="Id" type="hidden" />
+
                         <div class="row g-3">
+                            <!-- Nama -->
                             <div class="col-md-6">
                                 <label asp-for="Nama" class="form-label fw-semibold">
                                     <i class="bi bi-person me-2 text-primary"></i>Nama Lengkap
@@ -84,12 +94,14 @@
                                 <span asp-validation-for="Nama" class="text-danger small"></span>
                             </div>
 
+                            <!-- Posisi - Updated to Dropdown -->
                             <div class="col-md-6">
                                 <label asp-for="Posisi" class="form-label fw-semibold">
                                     <i class="bi bi-briefcase me-2 text-primary"></i>Posisi/Jabatan
+                                    <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <select asp-for="Posisi" class="form-select" asp-items="ViewBag.PosisiList">
+                                    <select asp-for="Posisi" class="form-select" asp-items="ViewBag.PosisiList" required>
                                         <option value="">-- Pilih Posisi --</option>
                                     </select>
                                     <a href="@Url.Action("Create", "Posisi", new { area = "Admin" })"
@@ -106,6 +118,7 @@
                                 </small>
                             </div>
 
+                            <!-- Email -->
                             <div class="col-md-6">
                                 <label asp-for="Email" class="form-label fw-semibold">
                                     <i class="bi bi-envelope me-2 text-primary"></i>Email
@@ -116,39 +129,61 @@
                                 <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
 
+                            <!-- Password -->
                             <div class="col-md-6">
                                 <label asp-for="Password" class="form-label fw-semibold">
-                                    <i class="bi bi-lock me-2 text-primary"></i>Password
-                                    <span class="text-danger">*</span>
+                                    <i class="bi bi-lock me-2 text-primary"></i>Password Baru
+                                    <small class="text-muted">(Kosongkan jika tidak ingin mengubah)</small>
                                 </label>
                                 <div class="input-group">
                                     <input asp-for="Password" type="password" id="passwordInput" class="form-control"
-                                           placeholder="Minimal 6 karakter" required minlength="6" />
+                                           placeholder="Minimal 6 karakter jika diisi" minlength="6" />
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
                                         <i class="bi bi-eye" id="toggleIcon"></i>
                                     </button>
                                 </div>
                                 <span asp-validation-for="Password" class="text-danger small"></span>
+                                <small class="text-muted">Jika diisi, password lama akan diganti dengan yang baru</small>
                             </div>
                         </div>
 
+                        <!-- Current Status Info -->
                         <div class="alert alert-info mt-4" role="alert">
                             <i class="bi bi-info-circle me-2"></i>
-                            <strong>Informasi:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>Akun karyawan akan otomatis aktif setelah dibuat</li>
-                                <li>Karyawan dapat login menggunakan email dan password yang dibuat</li>
-                                <li>Posisi yang dipilih akan digunakan untuk sistem pelatihan nantinya</li>
-                            </ul>
+                            <strong>Status Saat Ini:</strong>
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success ms-2">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger ms-2">Non-Aktif</span>
+                            }
+                            <br>
+                            <small class="mt-2 d-block">
+                                Terdaftar sejak: @Model.CreatedAt.ToString("dd MMMM yyyy")
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <br>
+                                    <span>Terakhir diperbarui: @Model.UpdatedAt.Value.ToString("dd MMMM yyyy HH:mm")</span>
+                                }
+                            </small>
                         </div>
 
+                        <!-- Action Buttons -->
                         <div class="d-flex justify-content-between mt-4">
-                            <a asp-area="Admin" asp-controller="Karyawan" asp-action="Index"
-                               class="btn btn-secondary">
-                                <i class="bi bi-x-circle me-2"></i>Batal
-                            </a>
-                            <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="bi bi-check-circle me-2"></i>Tambah Karyawan
+                            <div>
+                                <a asp-area="Admin" asp-controller="Karyawan" asp-action="Details" asp-route-id="@Model.Id"
+                                   class="btn btn-info me-2">
+                                    <i class="bi bi-eye me-2"></i>Lihat Detail
+                                </a>
+                                <a asp-area="Admin" asp-controller="Karyawan" asp-action="Index"
+                                   class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Batal
+                                </a>
+                            </div>
+                            <button type="submit" class="btn btn-warning" id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Perbarui Data
                             </button>
                         </div>
                     </form>
@@ -158,7 +193,10 @@
     </div>
 </div>
 
+<!-- Inline Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Password toggle
     function togglePassword() {
         const input = document.getElementById('passwordInput');
         const icon = document.getElementById('toggleIcon');
@@ -173,11 +211,18 @@
         }
     }
 
-    document.getElementById('createForm').addEventListener('submit', function(e) {
+    // Form loading state - only when form is valid
+    document.getElementById('editForm').addEventListener('submit', function(e) {
         const form = this;
         const btn = document.getElementById('submitBtn');
 
-        const requiredFields = form.querySelectorAll('input[required]');
+        // Check if form is valid using HTML5 validation
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        // Additional custom validation check
+        const requiredFields = form.querySelectorAll('input[required], select[required]');
         let isValid = true;
 
         requiredFields.forEach(function(field) {
@@ -186,12 +231,19 @@
             }
         });
 
+        // Check password length if provided
+        const passwordField = document.getElementById('passwordInput');
+        if (passwordField.value && passwordField.value.length < 6) {
+            isValid = false;
+        }
+
         if (isValid) {
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...';
             btn.disabled = true;
         }
     });
 
+    // Remove error state when user types
     document.querySelectorAll('.form-control, .form-select').forEach(function(input) {
         input.addEventListener('input', function() {
             if (this.classList.contains('is-invalid')) {
@@ -204,6 +256,22 @@
                 this.classList.remove('is-invalid');
             }
         });
+    });
+
+    // Show confirmation when password is changed
+    document.getElementById('passwordInput').addEventListener('blur', function() {
+        if (this.value.length > 0) {
+            Swal.fire({
+                title: 'Konfirmasi Perubahan Password',
+                text: 'Password akan diubah jika Anda menyimpan perubahan ini.',
+                icon: 'info',
+                showCancelButton: false,
+                confirmButtonText: 'Mengerti',
+                confirmButtonColor: '#0d6efd',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
     });
 
     // Auto focus to name field
