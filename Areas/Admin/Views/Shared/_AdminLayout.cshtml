@@ -62,6 +62,9 @@
 
     <div class="main-content" id="mainContent">
         @await Html.PartialAsync("_AdminBreadcrumb")
+
+        @Html.AntiForgeryToken()
+
         <main role="main" class="content-wrapper">
             @RenderBody()
         </main>

@@ -129,7 +129,7 @@
      // Specific function for deleting by ID and name
      window.confirmDelete = function(id, nama, controller = null, area = null, model=null) {
 		 const deleteUrl = model ?
-			 `/${area}/${controller}/${model}/Delete/` :
+			 `/${area}/${controller}/${model}/Delete` :
 			 `/${area}/${controller}/Delete`  
 
          showDeleteConfirm(

@@ -11,10 +11,11 @@ namespace RamaExpress.Areas.Admin.Data.Service
             int pageSize = 10,
             string searchTerm = null,
             string statusFilter = null);
-        Task<Pelatihan> GetById(int id);
-        Task Add(Pelatihan pelatihan);
-        Task Update(Pelatihan pelatihan);
-        Task Delete(int id);
+        Task<Pelatihan?> GetById(int id);
+        Task<(bool Success, string Message, Pelatihan? Pelatihan)> Add(Pelatihan pelatihan);
+        Task<(bool Success, string Message, Pelatihan? Pelatihan)> Update(Pelatihan pelatihan);
+        Task<(bool Success, string Message)> Delete(int id);
         Task<bool> Exists(int id);
+        Task<bool> IsKodeExists(string kode, int? excludeId = null);
     }
 }

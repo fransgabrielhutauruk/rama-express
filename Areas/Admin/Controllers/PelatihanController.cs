@@ -67,35 +67,37 @@ namespace RamaExpress.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Pelatihan model, List<int> SelectedPositions)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                model.CreatedAt = DateTime.Now;
-                model.IsActive = true;
-
-                // Add pelatihan
-                await _pelatihanService.Add(model);
-
-                // Add position assignments
-                if (SelectedPositions != null && SelectedPositions.Any())
-                {
-                    foreach (var posisiId in SelectedPositions)
-                    {
-                        var assignment = new PelatihanPosisi
-                        {
-                            PelatihanId = model.Id,
-                            PosisiId = posisiId
-                        };
-                        _context.PelatihanPosisi.Add(assignment);
-                    }
-                    await _context.SaveChangesAsync();
-                }
-
-                TempData["Success"] = "Pelatihan berhasil ditambahkan!";
-                return RedirectToAction(nameof(Index));
+                ViewBag.Positions = await GetPositionsSelectList();
+                return View(model);
             }
 
-            ViewBag.Positions = await GetPositionsSelectList();
-            return View(model);
+            var result = await _pelatihanService.Add(model);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Message;
+                ViewBag.Positions = await GetPositionsSelectList();
+                return View(model);
+            }
+
+            // Add position assignments
+            if (SelectedPositions != null && SelectedPositions.Any())
+            {
+                foreach (var posisiId in SelectedPositions)
+                {
+                    var assignment = new PelatihanPosisi
+                    {
+                        PelatihanId = result.Pelatihan.Id,
+                        PosisiId = posisiId
+                    };
+                    _context.PelatihanPosisi.Add(assignment);
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["SuccessMessage"] = result.Message;
+            return RedirectToAction(nameof(Index));
         }
 
         [Route("Admin/Pelatihan/Edit/{id}")]
@@ -105,7 +107,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var pelatihan = await _pelatihanService.GetById(id);
             if (pelatihan == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             ViewBag.Positions = await GetPositionsSelectList();
@@ -123,51 +126,69 @@ namespace RamaExpress.Areas.Admin.Controllers
         {
             if (id != model.Id)
             {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                model.UpdatedAt = DateTime.Now;
-                await _pelatihanService.Update(model);
-
-                // Update position assignments
-                var existingAssignments = await _context.PelatihanPosisi
-                    .Where(pp => pp.PelatihanId == id)
-                    .ToListAsync();
-
-                _context.PelatihanPosisi.RemoveRange(existingAssignments);
-
-                if (SelectedPositions != null && SelectedPositions.Any())
-                {
-                    foreach (var posisiId in SelectedPositions)
-                    {
-                        var assignment = new PelatihanPosisi
-                        {
-                            PelatihanId = model.Id,
-                            PosisiId = posisiId
-                        };
-                        _context.PelatihanPosisi.Add(assignment);
-                    }
-                }
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Pelatihan berhasil diperbarui!";
+                TempData["ErrorMessage"] = "Data tidak valid";
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Positions = await GetPositionsSelectList();
-            ViewBag.SelectedPositions = SelectedPositions;
-            return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Positions = await GetPositionsSelectList();
+                ViewBag.SelectedPositions = SelectedPositions;
+                return View(model);
+            }
+
+            var result = await _pelatihanService.Update(model);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Message;
+                ViewBag.Positions = await GetPositionsSelectList();
+                ViewBag.SelectedPositions = SelectedPositions;
+                return View(model);
+            }
+
+            // Update position assignments
+            var existingAssignments = await _context.PelatihanPosisi
+                .Where(pp => pp.PelatihanId == id)
+                .ToListAsync();
+
+            _context.PelatihanPosisi.RemoveRange(existingAssignments);
+
+            if (SelectedPositions != null && SelectedPositions.Any())
+            {
+                foreach (var posisiId in SelectedPositions)
+                {
+                    var assignment = new PelatihanPosisi
+                    {
+                        PelatihanId = model.Id,
+                        PosisiId = posisiId
+                    };
+                    _context.PelatihanPosisi.Add(assignment);
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = result.Message;
+            return RedirectToAction(nameof(Index));
         }
 
-        [Route("Admin/Pelatihan/Delete/{id}")]
+        [Route("Admin/Pelatihan/Delete")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _pelatihanService.Delete(id);
-            TempData["Success"] = "Pelatihan berhasil dihapus!";
+            Console.WriteLine($"Delete called with ID: {id}");
+
+            var result = await _pelatihanService.Delete(id);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -178,7 +199,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var pelatihan = await _pelatihanService.GetById(pelatihanId);
             if (pelatihan == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             var materials = await _materiService.GetByPelatihanId(pelatihanId);
@@ -194,7 +216,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var pelatihan = await _pelatihanService.GetById(pelatihanId);
             if (pelatihan == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             var model = new PelatihanMateri
@@ -210,16 +233,25 @@ namespace RamaExpress.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMaterial(PelatihanMateri model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _materiService.Add(model);
-                TempData["Success"] = "Materi berhasil ditambahkan!";
-                return RedirectToAction(nameof(Materials), new { pelatihanId = model.PelatihanId });
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
             }
 
-            var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
-            ViewBag.Pelatihan = pelatihan;
-            return View(model);
+            var result = await _materiService.Add(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(Materials), new { pelatihanId = model.PelatihanId });
         }
 
         [Route("Admin/Pelatihan/Materials/Edit/{id}")]
@@ -229,7 +261,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var material = await _materiService.GetById(id);
             if (material == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Materi tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             ViewBag.Pelatihan = material.Pelatihan;
@@ -242,19 +275,29 @@ namespace RamaExpress.Areas.Admin.Controllers
         {
             if (id != model.Id)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Data tidak valid";
+                return RedirectToAction(nameof(Index));
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _materiService.Update(model);
-                TempData["Success"] = "Materi berhasil diperbarui!";
-                return RedirectToAction(nameof(Materials), new { pelatihanId = model.PelatihanId });
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
             }
 
-            var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
-            ViewBag.Pelatihan = pelatihan;
-            return View(model);
+            var result = await _materiService.Update(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(Materials), new { pelatihanId = model.PelatihanId });
         }
 
         [Route("Admin/Pelatihan/Materials/Delete/{id}")]
@@ -264,12 +307,22 @@ namespace RamaExpress.Areas.Admin.Controllers
             var material = await _materiService.GetById(id);
             if (material == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Materi tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             var pelatihanId = material.PelatihanId;
-            await _materiService.Delete(id);
-            TempData["Success"] = "Materi berhasil dihapus!";
+            var result = await _materiService.Delete(id);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
             return RedirectToAction(nameof(Materials), new { pelatihanId = pelatihanId });
         }
 
@@ -280,7 +333,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var pelatihan = await _pelatihanService.GetById(pelatihanId);
             if (pelatihan == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             var questions = await _soalService.GetByPelatihanId(pelatihanId);
@@ -296,7 +350,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var pelatihan = await _pelatihanService.GetById(pelatihanId);
             if (pelatihan == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             var model = new PelatihanSoal
@@ -312,16 +367,25 @@ namespace RamaExpress.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateQuestion(PelatihanSoal model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _soalService.Add(model);
-                TempData["Success"] = "Soal berhasil ditambahkan!";
-                return RedirectToAction(nameof(ExamQuestions), new { pelatihanId = model.PelatihanId });
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
             }
 
-            var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
-            ViewBag.Pelatihan = pelatihan;
-            return View(model);
+            var result = await _soalService.Add(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(ExamQuestions), new { pelatihanId = model.PelatihanId });
         }
 
         [Route("Admin/Pelatihan/Exam/Edit/{id}")]
@@ -331,7 +395,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             var question = await _soalService.GetById(id);
             if (question == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Soal tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             ViewBag.Pelatihan = question.Pelatihan;
@@ -344,19 +409,29 @@ namespace RamaExpress.Areas.Admin.Controllers
         {
             if (id != model.Id)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Data tidak valid";
+                return RedirectToAction(nameof(Index));
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _soalService.Update(model);
-                TempData["Success"] = "Soal berhasil diperbarui!";
-                return RedirectToAction(nameof(ExamQuestions), new { pelatihanId = model.PelatihanId });
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
             }
 
-            var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
-            ViewBag.Pelatihan = pelatihan;
-            return View(model);
+            var result = await _soalService.Update(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(ExamQuestions), new { pelatihanId = model.PelatihanId });
         }
 
         [Route("Admin/Pelatihan/Exam/Delete/{id}")]
@@ -366,13 +441,56 @@ namespace RamaExpress.Areas.Admin.Controllers
             var question = await _soalService.GetById(id);
             if (question == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Soal tidak ditemukan";
+                return RedirectToAction(nameof(Index));
             }
 
             var pelatihanId = question.PelatihanId;
-            await _soalService.Delete(id);
-            TempData["Success"] = "Soal berhasil dihapus!";
+            var result = await _soalService.Delete(id);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
             return RedirectToAction(nameof(ExamQuestions), new { pelatihanId = pelatihanId });
+        }
+
+        // AJAX MOVE METHODS
+        [Route("Admin/Pelatihan/Materials/MoveUp/{id}")]
+        [HttpPost]
+        public async Task<IActionResult> MoveMaterialUp(int id)
+        {
+            var result = await _materiService.MoveUp(id);
+            return Json(new { success = result.Success, message = result.Message });
+        }
+
+        [Route("Admin/Pelatihan/Materials/MoveDown/{id}")]
+        [HttpPost]
+        public async Task<IActionResult> MoveMaterialDown(int id)
+        {
+            var result = await _materiService.MoveDown(id);
+            return Json(new { success = result.Success, message = result.Message });
+        }
+
+        [Route("Admin/Pelatihan/Exam/MoveUp/{id}")]
+        [HttpPost]
+        public async Task<IActionResult> MoveQuestionUp(int id)
+        {
+            var result = await _soalService.MoveUp(id);
+            return Json(new { success = result.Success, message = result.Message });
+        }
+
+        [Route("Admin/Pelatihan/Exam/MoveDown/{id}")]
+        [HttpPost]
+        public async Task<IActionResult> MoveQuestionDown(int id)
+        {
+            var result = await _soalService.MoveDown(id);
+            return Json(new { success = result.Success, message = result.Message });
         }
 
         private async Task<SelectList> GetPositionsSelectList()
@@ -395,174 +513,6 @@ namespace RamaExpress.Areas.Admin.Controllers
             catch (Exception)
             {
                 return new SelectList(new List<SelectListItem>(), "Value", "Text");
-            }
-        }
-
-        [Route("Admin/Pelatihan/Materials/MoveUp/{id}")]
-        [HttpPost]
-        public async Task<IActionResult> MoveMaterialUp(int id)
-        {
-            try
-            {
-                var material = await _materiService.GetById(id);
-                if (material == null)
-                {
-                    return Json(new { success = false, message = "Materi tidak ditemukan" });
-                }
-
-                // Find the material above this one
-                var materials = await _materiService.GetByPelatihanId(material.PelatihanId);
-                var currentMaterial = materials.FirstOrDefault(m => m.Id == id);
-                var previousMaterial = materials
-                    .Where(m => m.Urutan < currentMaterial.Urutan)
-                    .OrderByDescending(m => m.Urutan)
-                    .FirstOrDefault();
-
-                if (previousMaterial == null)
-                {
-                    return Json(new { success = false, message = "Materi sudah berada di urutan teratas" });
-                }
-
-                // Swap the order
-                var tempOrder = currentMaterial.Urutan;
-                currentMaterial.Urutan = previousMaterial.Urutan;
-                previousMaterial.Urutan = tempOrder;
-
-                // Update both materials
-                await _materiService.Update(currentMaterial);
-                await _materiService.Update(previousMaterial);
-
-                return Json(new { success = true, message = "Urutan materi berhasil diubah" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
-            }
-        }
-
-        [Route("Admin/Pelatihan/Materials/MoveDown/{id}")]
-        [HttpPost]
-        public async Task<IActionResult> MoveMaterialDown(int id)
-        {
-            try
-            {
-                var material = await _materiService.GetById(id);
-                if (material == null)
-                {
-                    return Json(new { success = false, message = "Materi tidak ditemukan" });
-                }
-
-                // Find the material below this one
-                var materials = await _materiService.GetByPelatihanId(material.PelatihanId);
-                var currentMaterial = materials.FirstOrDefault(m => m.Id == id);
-                var nextMaterial = materials
-                    .Where(m => m.Urutan > currentMaterial.Urutan)
-                    .OrderBy(m => m.Urutan)
-                    .FirstOrDefault();
-
-                if (nextMaterial == null)
-                {
-                    return Json(new { success = false, message = "Materi sudah berada di urutan terbawah" });
-                }
-
-                // Swap the order
-                var tempOrder = currentMaterial.Urutan;
-                currentMaterial.Urutan = nextMaterial.Urutan;
-                nextMaterial.Urutan = tempOrder;
-
-                // Update both materials
-                await _materiService.Update(currentMaterial);
-                await _materiService.Update(nextMaterial);
-
-                return Json(new { success = true, message = "Urutan materi berhasil diubah" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
-            }
-        }
-
-        [Route("Admin/Pelatihan/Exam/MoveUp/{id}")]
-        [HttpPost]
-        public async Task<IActionResult> MoveQuestionUp(int id)
-        {
-            try
-            {
-                var question = await _soalService.GetById(id);
-                if (question == null)
-                {
-                    return Json(new { success = false, message = "Soal tidak ditemukan" });
-                }
-
-                // Find the question above this one
-                var questions = await _soalService.GetByPelatihanId(question.PelatihanId);
-                var currentQuestion = questions.FirstOrDefault(q => q.Id == id);
-                var previousQuestion = questions
-                    .Where(q => q.Urutan < currentQuestion.Urutan)
-                    .OrderByDescending(q => q.Urutan)
-                    .FirstOrDefault();
-
-                if (previousQuestion == null)
-                {
-                    return Json(new { success = false, message = "Soal sudah berada di urutan teratas" });
-                }
-
-                // Swap the order
-                var tempOrder = currentQuestion.Urutan;
-                currentQuestion.Urutan = previousQuestion.Urutan;
-                previousQuestion.Urutan = tempOrder;
-
-                // Update both questions
-                await _soalService.Update(currentQuestion);
-                await _soalService.Update(previousQuestion);
-
-                return Json(new { success = true, message = "Urutan soal berhasil diubah" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
-            }
-        }
-
-        [Route("Admin/Pelatihan/Exam/MoveDown/{id}")]
-        [HttpPost]
-        public async Task<IActionResult> MoveQuestionDown(int id)
-        {
-            try
-            {
-                var question = await _soalService.GetById(id);
-                if (question == null)
-                {
-                    return Json(new { success = false, message = "Soal tidak ditemukan" });
-                }
-
-                // Find the question below this one
-                var questions = await _soalService.GetByPelatihanId(question.PelatihanId);
-                var currentQuestion = questions.FirstOrDefault(q => q.Id == id);
-                var nextQuestion = questions
-                    .Where(q => q.Urutan > currentQuestion.Urutan)
-                    .OrderBy(q => q.Urutan)
-                    .FirstOrDefault();
-
-                if (nextQuestion == null)
-                {
-                    return Json(new { success = false, message = "Soal sudah berada di urutan terbawah" });
-                }
-
-                // Swap the order
-                var tempOrder = currentQuestion.Urutan;
-                currentQuestion.Urutan = nextQuestion.Urutan;
-                nextQuestion.Urutan = tempOrder;
-
-                // Update both questions
-                await _soalService.Update(currentQuestion);
-                await _soalService.Update(nextQuestion);
-
-                return Json(new { success = true, message = "Urutan soal berhasil diubah" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
             }
         }
     }
