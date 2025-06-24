@@ -16,7 +16,9 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 
 builder.Services.AddScoped<IKaryawanService, KaryawanService>();
 builder.Services.AddScoped<IPosisiService, PosisiService>();
-
+builder.Services.AddScoped<IPelatihanService, PelatihanService>();
+builder.Services.AddScoped<IPelatihanMateriService, PelatihanMateriService>();
+builder.Services.AddScoped<IPelatihanSoalService, PelatihanSoalService>();
 
 var app = builder.Build();
 

@@ -78,7 +78,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             {
                 TempData["SuccessMessage"] = result.Message;
                 await LoadPosisiDropdown();
-                return View("Create", new User());
+                return RedirectToAction(nameof(Index));
+
             }
             else
             {
@@ -157,7 +158,8 @@ namespace RamaExpress.Areas.Admin.Controllers
             {
                 TempData["SuccessMessage"] = result.Message;
                 await LoadPosisiDropdown();
-                return View(model);
+                return RedirectToAction(nameof(Index));
+
             }
             else
             {

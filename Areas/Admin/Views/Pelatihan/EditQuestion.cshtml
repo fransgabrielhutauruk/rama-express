@@ -1,0 +1,97 @@
+﻿@model RamaExpress.Areas.Admin.Models.PelatihanSoal
+@{
+    ViewData["Title"] = "Edit Soal";
+    var pelatihan = ViewBag.Pelatihan as RamaExpress.Areas.Admin.Models.Pelatihan;
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Soal Ujian</h4>
+                    <small>Pelatihan: @pelatihan.Judul</small>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditQuestion" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="PelatihanId" />
+                        <input type="hidden" asp-for="Urutan" />
+                        <input type="hidden" asp-for="CreatedAt" />
+
+                        <div class="mb-4">
+                            <label asp-for="Pertanyaan" class="form-label fw-semibold">
+                                <i class="bi bi-question-circle text-primary me-1"></i>Pertanyaan
+                            </label>
+                            <textarea asp-for="Pertanyaan" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Pertanyaan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="OpsiA" class="form-label fw-semibold">
+                                    <span class="badge bg-secondary me-1">A</span>Opsi A
+                                </label>
+                                <input asp-for="OpsiA" class="form-control" />
+                                <span asp-validation-for="OpsiA" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="OpsiB" class="form-label fw-semibold">
+                                    <span class="badge bg-secondary me-1">B</span>Opsi B
+                                </label>
+                                <input asp-for="OpsiB" class="form-control" />
+                                <span asp-validation-for="OpsiB" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="OpsiC" class="form-label fw-semibold">
+                                    <span class="badge bg-secondary me-1">C</span>Opsi C
+                                </label>
+                                <input asp-for="OpsiC" class="form-control" />
+                                <span asp-validation-for="OpsiC" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="OpsiD" class="form-label fw-semibold">
+                                    <span class="badge bg-secondary me-1">D</span>Opsi D
+                                </label>
+                                <input asp-for="OpsiD" class="form-control" />
+                                <span asp-validation-for="OpsiD" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="JawabanBenar" class="form-label fw-semibold">
+                                <i class="bi bi-check-circle text-success me-1"></i>Jawaban Benar
+                            </label>
+                            <select asp-for="JawabanBenar" class="form-select">
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                            <span asp-validation-for="JawabanBenar" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a asp-action="ExamQuestions" asp-route-pelatihanId="@pelatihan.Id"
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Kembali
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

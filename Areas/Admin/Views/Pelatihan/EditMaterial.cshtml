@@ -1,0 +1,154 @@
+﻿@model RamaExpress.Areas.Admin.Models.PelatihanMateri
+@{
+    ViewData["Title"] = "Edit Materi";
+    var pelatihan = ViewBag.Pelatihan as RamaExpress.Areas.Admin.Models.Pelatihan;
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Materi</h4>
+                    <small>Pelatihan: @pelatihan.Judul</small>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditMaterial" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="PelatihanId" />
+                        <input type="hidden" asp-for="Urutan" />
+                        <input type="hidden" asp-for="CreatedAt" />
+
+                        <div class="mb-3">
+                            <label asp-for="Judul" class="form-label fw-semibold">
+                                <i class="bi bi-text-left text-primary me-1"></i>Judul Materi
+                            </label>
+                            <input asp-for="Judul" class="form-control" />
+                            <span asp-validation-for="Judul" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TipeKonten" class="form-label fw-semibold">
+                                <i class="bi bi-file-earmark text-primary me-1"></i>Tipe Konten
+                            </label>
+                            <select asp-for="TipeKonten" class="form-select" id="tipeKonten" onchange="toggleContentInput()">
+                                <option value="text">Teks</option>
+                                <option value="video">Video (YouTube/URL)</option>
+                                <option value="image">Gambar</option>
+                            </select>
+                            <span asp-validation-for="TipeKonten" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Text Content -->
+                        <div class="mb-3" id="textContent" style="display: none;">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-file-text text-primary me-1"></i>Konten Teks
+                            </label>
+                            <textarea id="textEditor" class="form-control" rows="10">@(Model.TipeKonten == "text" ? Model.Konten : "")</textarea>
+                        </div>
+
+                        <!-- Video Content -->
+                        <div class="mb-3" id="videoContent" style="display: none;">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-play-circle text-primary me-1"></i>URL Video
+                            </label>
+                            <input type="url" id="videoUrl" class="form-control"
+                                   value="@(Model.TipeKonten == "video" ? Model.Konten : "")" />
+                            <small class="text-muted">Masukkan URL YouTube (https://wwww.youtube.com) atau video online lainnya</small>
+                        </div>
+
+                        <!-- Image Content -->
+                        <div class="mb-3" id="imageContent" style="display: none;">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-image text-primary me-1"></i>Gambar
+                            </label>
+                            @if (Model.TipeKonten == "image" && !string.IsNullOrEmpty(Model.Konten))
+                            {
+                                <div class="mb-2">
+                                    <img src="@Model.Konten" class="img-fluid rounded" style="max-height: 200px;">
+                                    <p class="text-muted small mt-1">Gambar saat ini</p>
+                                </div>
+                            }
+                            <input type="file" id="imageFile" class="form-control" accept="image/*" />
+                            <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
+                            <div id="imagePreview" class="mt-3"></div>
+                        </div>
+
+                        <!-- Hidden input for actual content -->
+                        <input type="hidden" asp-for="Konten" id="kontenInput" />
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a asp-action="Materials" asp-route-pelatihanId="@pelatihan.Id"
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Kembali
+                            </a>
+                            <button type="submit" class="btn btn-primary" onclick="prepareSubmit()">
+                                <i class="bi bi-save me-2"></i>Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize content display based on current type
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleContentInput();
+    });
+
+    function toggleContentInput() {
+        const tipeKonten = document.getElementById('tipeKonten').value;
+
+        // Hide all content inputs
+        document.getElementById('textContent').style.display = 'none';
+        document.getElementById('videoContent').style.display = 'none';
+        document.getElementById('imageContent').style.display = 'none';
+
+        // Show selected content input
+        if (tipeKonten === 'text') {
+            document.getElementById('textContent').style.display = 'block';
+        } else if (tipeKonten === 'video') {
+            document.getElementById('videoContent').style.display = 'block';
+        } else if (tipeKonten === 'image') {
+            document.getElementById('imageContent').style.display = 'block';
+        }
+    }
+
+    // Image preview
+    document.getElementById('imageFile')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function prepareSubmit() {
+        const tipeKonten = document.getElementById('tipeKonten').value;
+        const kontenInput = document.getElementById('kontenInput');
+
+        if (tipeKonten === 'text') {
+            kontenInput.value = document.getElementById('textEditor').value;
+        } else if (tipeKonten === 'video') {
+            kontenInput.value = document.getElementById('videoUrl').value;
+        } else if (tipeKonten === 'image') {
+            // For existing image, keep current value if no new file selected
+            const fileInput = document.getElementById('imageFile');
+            if (fileInput.files[0]) {
+                kontenInput.value = fileInput.files[0].name; // In real implementation, upload to server
+            }
+        }
+    }
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
