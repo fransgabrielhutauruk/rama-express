@@ -1,0 +1,329 @@
+﻿@model IEnumerable<RamaExpress.Areas.Admin.Models.PelatihanMateri>
+@{
+    ViewData["Title"] = "Kelola Materi Pelatihan";
+    var pelatihan = ViewBag.Pelatihan as RamaExpress.Areas.Admin.Models.Pelatihan;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Materi Pelatihan</h1>
+                    <p class="text-muted mb-0">
+                        <strong>@pelatihan.Kode</strong> - @pelatihan.Judul
+                    </p>
+                </div>
+                <div>
+                    <a asp-action="CreateMaterial" asp-route-pelatihanId="@pelatihan.Id"
+                       class="btn btn-primary shadow-sm">
+                        <i class="bi bi-plus-lg me-2"></i>Tambah Materi
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm ms-2">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Materials List -->
+    <div class="row">
+        <div class="col-12">
+            @if (Model != null && Model.Any())
+            {
+                <div class="row" id="materialsContainer">
+                    @foreach (var item in Model.OrderBy(m => m.Urutan))
+                    {
+                        <div class="col-lg-6 mb-4" data-material-id="@item.Id" data-order="@item.Urutan">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <span class="badge bg-primary me-2">@item.Urutan</span>
+                                        @item.Judul
+                                    </h5>
+                                    <div class="btn-group">
+                                        @{
+                                            var isFirst = item.Urutan == Model.Min(m => m.Urutan);
+                                            var isLast = item.Urutan == Model.Max(m => m.Urutan);
+                                        }
+                                        <button class="btn btn-sm btn-outline-secondary @(isFirst ? "opacity-50" : "")"
+                                                onclick="moveUp(@item.Id)"
+                                                title="Pindah ke atas"
+                                        @(isFirst ? "disabled" : "")>
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary @(isLast ? "opacity-50" : "")"
+                                                onclick="moveDown(@item.Id)"
+                                                title="Pindah ke bawah"
+                                        @(isLast ? "disabled" : "")>
+                                            <i class="bi bi-arrow-down"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <span class="badge @GetTypeBadgeClass(item.TipeKonten) mb-2">
+                                            <i class="@GetTypeIcon(item.TipeKonten) me-1"></i>
+                                            @GetTypeDisplayName(item.TipeKonten)
+                                        </span>
+                                    </div>
+
+                                    @if (item.TipeKonten == "text")
+                                    {
+                                        <div class="text-muted small mb-3" style="max-height: 100px; overflow-y: auto;">
+                                            @Html.Raw(item.Konten?.Length > 200 ? item.Konten.Substring(0, 200) + "..." : item.Konten)
+                                        </div>
+                                    }
+                                    else if (item.TipeKonten == "video")
+                                    {
+                                        <p class="text-muted small mb-3">
+                                            <i class="bi bi-link-45deg me-1"></i>
+                                            <a href="@item.Konten" target="_blank" class="text-decoration-none">
+                                                Lihat Video
+                                            </a>
+                                        </p>
+                                    }
+                                    else if (item.TipeKonten == "image")
+                                    {
+                                        <p class="text-muted small mb-3">
+                                            <i class="bi bi-image me-1"></i>
+                                            Gambar: @item.Konten
+                                        </p>
+                                    }
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            Dibuat: @item.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                                        </small>
+                                        <div class="btn-group">
+                                            <a asp-action="EditMaterial" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    onclick="confirmDeleteMaterial(@item.Id, '@item.Judul')" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
+                        <h4 class="text-muted">Belum Ada Materi</h4>
+                        <p class="text-muted mb-4">Mulai tambahkan materi untuk pelatihan ini</p>
+                        <a asp-action="CreateMaterial" asp-route-pelatihanId="@pelatihan.Id"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-2"></i>Tambah Materi Pertama
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetTypeBadgeClass(string type)
+    {
+        return type switch
+        {
+            "text" => "bg-info",
+            "video" => "bg-danger",
+            "image" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetTypeIcon(string type)
+    {
+        return type switch
+        {
+            "text" => "bi bi-file-text",
+            "video" => "bi bi-play-circle",
+            "image" => "bi bi-image",
+            _ => "bi bi-file"
+        };
+    }
+
+    string GetTypeDisplayName(string type)
+    {
+        return type switch
+        {
+            "text" => "Teks",
+            "video" => "Video",
+            "image" => "Gambar",
+            _ => "Lainnya"
+        };
+    }
+}
+
+<script>
+    function moveUp(materialId) {
+           // Show loading state
+           const upButton = document.querySelector(`button[onclick="moveUp(${materialId})"]`);
+           const originalContent = upButton.innerHTML;
+           upButton.disabled = true;
+           upButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+           fetch(`/Admin/Pelatihan/Materials/MoveUp/${materialId}`, {
+               method: 'POST',
+               headers: {
+                   'Content-Type': 'application/json',
+                   'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+               }
+           })
+           .then(response => response.json())
+           .then(data => {
+               if (data.success) {
+                   // Show success message
+                   showAlert('success', data.message);
+                   // Reload the page to reflect new order
+                   setTimeout(() => {
+                       window.location.reload();
+                   }, 1000);
+               } else {
+                   showAlert('danger', data.message);
+                   // Restore button
+                   upButton.disabled = false;
+                   upButton.innerHTML = originalContent;
+               }
+           })
+           .catch(error => {
+               console.error('Error:', error);
+               showAlert('danger', 'Terjadi kesalahan saat memindahkan materi');
+               // Restore button
+               upButton.disabled = false;
+               upButton.innerHTML = originalContent;
+           });
+       }
+
+       function moveDown(materialId) {
+           // Show loading state
+           const downButton = document.querySelector(`button[onclick="moveDown(${materialId})"]`);
+           const originalContent = downButton.innerHTML;
+           downButton.disabled = true;
+           downButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+           fetch(`/Admin/Pelatihan/Materials/MoveDown/${materialId}`, {
+               method: 'POST',
+               headers: {
+                   'Content-Type': 'application/json',
+                   'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+               }
+           })
+           .then(response => response.json())
+           .then(data => {
+               if (data.success) {
+                   // Show success message
+                   showAlert('success', data.message);
+                   // Reload the page to reflect new order
+                   setTimeout(() => {
+                       window.location.reload();
+                   }, 1000);
+               } else {
+                   showAlert('danger', data.message);
+                   // Restore button
+                   downButton.disabled = false;
+                   downButton.innerHTML = originalContent;
+               }
+           })
+           .catch(error => {
+               console.error('Error:', error);
+               showAlert('danger', 'Terjadi kesalahan saat memindahkan materi');
+               // Restore button
+               downButton.disabled = false;
+               downButton.innerHTML = originalContent;
+           });
+       }
+
+       function confirmDeleteMaterial(id, title) {
+           if (confirm(`Apakah Anda yakin ingin menghapus materi "${title}"?`)) {
+               const form = document.createElement('form');
+               form.method = 'POST';
+               form.action = `/Admin/Pelatihan/Materials/Delete/${id}`;
+               document.body.appendChild(form);
+               form.submit();
+           }
+       }
+
+       // Helper function to show alerts
+       function showAlert(type, message) {
+           // Remove existing alerts
+           const existingAlerts = document.querySelectorAll('.alert-dynamic');
+           existingAlerts.forEach(alert => alert.remove());
+
+           // Create new alert
+           const alertDiv = document.createElement('div');
+           alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-dynamic`;
+           alertDiv.innerHTML = `
+               <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+               ${message}
+               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+           `;
+
+           // Insert at the top of the content
+           const container = document.querySelector('.container-fluid');
+           const firstRow = container.querySelector('.row');
+           container.insertBefore(alertDiv, firstRow.nextSibling);
+
+           // Auto-dismiss after 3 seconds
+           setTimeout(() => {
+               if (alertDiv) {
+                   alertDiv.remove();
+               }
+           }, 3000);
+       }
+
+       // Disable buttons based on position
+       document.addEventListener('DOMContentLoaded', function() {
+           const materials = Array.from(document.querySelectorAll('[data-material-id]'));
+           const totalMaterials = materials.length;
+
+           materials.forEach((card, index) => {
+               const materialId = card.getAttribute('data-material-id');
+               const upButton = card.querySelector(`button[onclick="moveUp(${materialId})"]`);
+               const downButton = card.querySelector(`button[onclick="moveDown(${materialId})"]`);
+
+               // Disable up button for first item
+               if (index === 0 && upButton) {
+                   upButton.disabled = true;
+                   upButton.classList.add('opacity-50');
+               }
+
+               // Disable down button for last item
+               if (index === totalMaterials - 1 && downButton) {
+                   downButton.disabled = true;
+                   downButton.classList.add('opacity-50');
+               }
+           });
+       });
+
+    function confirmDeleteMaterial(id, title) {
+        if (confirm(`Apakah Anda yakin ingin menghapus materi "${title}"?`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/Admin/Pelatihan/Materials/Delete/${id}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>

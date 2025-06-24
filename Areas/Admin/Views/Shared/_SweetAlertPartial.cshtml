@@ -1,0 +1,228 @@
+﻿<!-- Views/Shared/_SweetAlertPartial.cshtml -->
+@if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null || TempData["WarningMessage"] != null || TempData["InfoMessage"] != null)
+{
+    <div id="alertData"
+         data-success="@TempData["SuccessMessage"]"
+         data-error="@TempData["ErrorMessage"]"
+         data-warning="@TempData["WarningMessage"]"
+         data-info="@TempData["InfoMessage"]"
+         style="display: none;"></div>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertData = document.getElementById('alertData');
+
+        if (alertData) {
+            // Success Message
+            if (alertData.dataset.success) {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: alertData.dataset.success,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            }
+
+            // Error Message
+            else if (alertData.dataset.error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: alertData.dataset.error,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+
+            // Warning Message
+            else if (alertData.dataset.warning) {
+                Swal.fire({
+                    title: 'Peringatan!',
+                    text: alertData.dataset.warning,
+                    icon: 'warning',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ffc107'
+                });
+            }
+
+            // Info Message
+            else if (alertData.dataset.info) {
+                Swal.fire({
+                    title: 'Informasi',
+                    text: alertData.dataset.info,
+                    icon: 'info',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#17a2b8'
+                });
+            }
+        }
+    });
+
+    // Global functions
+    window.showSuccessAlert = function(title, text, redirectUrl = null) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#28a745'
+        }).then(function() {
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            }
+        });
+    };
+
+    window.showErrorAlert = function(title, text) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+
+    window.showConfirmAlert = function(title, text, confirmCallback) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Lanjutkan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d'
+        }).then(function(result) {
+            if (result.isConfirmed && confirmCallback) {
+                confirmCallback();
+            }
+        });
+    };
+
+    // Delete confirmation function
+     window.showDeleteConfirm = function(title, text, deleteCallback) {
+         Swal.fire({
+             title: title || 'Hapus Data?',
+             text: text || 'Data yang dihapus tidak dapat dikembalikan!',
+             icon: 'warning',
+             showCancelButton: true,
+             confirmButtonText: 'Ya, Hapus!',
+             cancelButtonText: 'Batal',
+             confirmButtonColor: '#dc3545',
+             cancelButtonColor: '#6c757d',
+             reverseButtons: true
+         }).then(function(result) {
+             if (result.isConfirmed) {
+                 if (deleteCallback) {
+                     deleteCallback();
+                 }
+             }
+         });
+     };
+
+     // Specific function for deleting by ID and name
+     window.confirmDelete = function(id, nama, controller = null, area = null, model=null) {
+		 const deleteUrl = model ?
+			 `/${area}/${controller}/${model}/Delete/` :
+			 `/${area}/${controller}/Delete`  
+
+         showDeleteConfirm(
+             'Hapus Data?',
+             `Apakah Anda yakin ingin menghapus "${nama}"?`,
+             function() {
+                 // Create and submit delete form
+                 const form = document.createElement('form');
+                 form.method = 'POST';
+                 form.action = deleteUrl;
+
+                 const input = document.createElement('input');
+                 input.type = 'hidden';
+                 input.name = 'id';
+                 input.value = id;
+
+                 // Add CSRF token if available
+                 const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                 if (token) {
+                     const csrfInput = document.createElement('input');
+                     csrfInput.type = 'hidden';
+                     csrfInput.name = '__RequestVerificationToken';
+                     csrfInput.value = token.value;
+                     form.appendChild(csrfInput);
+                 }
+
+                 form.appendChild(input);
+                 document.body.appendChild(form);
+                 form.submit();
+             }
+         );
+     };
+
+     // Bulk delete function
+     window.confirmBulkDelete = function(selectedIds, controller = null, area = null) {
+         if (!selectedIds || selectedIds.length === 0) {
+             showErrorAlert('Tidak Ada Data', 'Pilih minimal satu data untuk dihapus.');
+             return;
+         }
+
+         const deleteUrl = area ?
+             `/${area}/${controller}/BulkDelete` :
+             `/${controller}/BulkDelete`;
+
+         showDeleteConfirm(
+             'Hapus Data Terpilih?',
+             `Apakah Anda yakin ingin menghapus ${selectedIds.length} data yang dipilih?`,
+             function() {
+                 // Create and submit bulk delete form
+                 const form = document.createElement('form');
+                 form.method = 'POST';
+                 form.action = deleteUrl;
+
+                 // Add CSRF token if available
+                 const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                 if (token) {
+                     const csrfInput = document.createElement('input');
+                     csrfInput.type = 'hidden';
+                     csrfInput.name = '__RequestVerificationToken';
+                     csrfInput.value = token.value;
+                     form.appendChild(csrfInput);
+                 }
+
+                 selectedIds.forEach(function(id) {
+                     const input = document.createElement('input');
+                     input.type = 'hidden';
+                     input.name = 'ids';
+                     input.value = id;
+                     form.appendChild(input);
+                 });
+
+                 document.body.appendChild(form);
+                 form.submit();
+             }
+         );
+     };
+
+     window.showToast = function(message, type = 'success') {
+         const Toast = Swal.mixin({
+             toast: true,
+             position: 'top-end',
+             showConfirmButton: false,
+             timer: 3000,
+             timerProgressBar: true,
+             didOpen: (toast) => {
+                 toast.addEventListener('mouseenter', Swal.stopTimer)
+                 toast.addEventListener('mouseleave', Swal.resumeTimer)
+             }
+         });
+
+         Toast.fire({
+             icon: type,
+             title: message
+         });
+     };
+</script>

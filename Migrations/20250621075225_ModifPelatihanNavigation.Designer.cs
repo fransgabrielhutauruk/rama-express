@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RamaExpress.Areas.Admin.Data;
 
@@ -11,9 +12,11 @@ using RamaExpress.Areas.Admin.Data;
 namespace RamaExpress.Migrations
 {
     [DbContext(typeof(RamaExpressAppContext))]
-    partial class RamaExpressAppContextModelSnapshot : ModelSnapshot
+    [Migration("20250621075225_ModifPelatihanNavigation")]
+    partial class ModifPelatihanNavigation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

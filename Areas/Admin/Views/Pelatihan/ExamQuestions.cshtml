@@ -1,0 +1,284 @@
+﻿@model IEnumerable<RamaExpress.Areas.Admin.Models.PelatihanSoal>
+@{
+    ViewData["Title"] = "Kelola Soal Ujian";
+    var pelatihan = ViewBag.Pelatihan as RamaExpress.Areas.Admin.Models.Pelatihan;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Soal Ujian</h1>
+                    <p class="text-muted mb-0">
+                        <strong>@pelatihan.Kode</strong> - @pelatihan.Judul
+                    </p>
+                </div>
+                <div>
+                    <a asp-action="CreateQuestion" asp-route-pelatihanId="@pelatihan.Id"
+                       class="btn btn-primary shadow-sm">
+                        <i class="bi bi-plus-lg me-2"></i>Tambah Soal
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm ms-2">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Questions List -->
+    <div class="row">
+        <div class="col-12">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model.OrderBy(s => s.Urutan))
+                {
+                    <div class="card shadow-sm mb-3" data-question-id="@item.Id" data-order="@item.Urutan">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <span class="badge bg-primary me-2">@item.Urutan</span>
+                                Soal Nomor @item.Urutan
+                            </h5>
+                            <div class="btn-group">
+                                @{
+                                    var isFirst = item.Urutan == Model.Min(s => s.Urutan);
+                                    var isLast = item.Urutan == Model.Max(s => s.Urutan);
+                                }
+                                <button class="btn btn-sm btn-outline-secondary @(isFirst ? "opacity-50" : "")"
+                                        onclick="moveUp(@item.Id)"
+                                        title="Pindah ke atas"
+                                @(isFirst ? "disabled" : "")>
+                                    <i class="bi bi-arrow-up"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary @(isLast ? "opacity-50" : "")"
+                                        onclick="moveDown(@item.Id)"
+                                        title="Pindah ke bawah"
+                                @(isLast ? "disabled" : "")>
+                                    <i class="bi bi-arrow-down"></i>
+                                </button>
+                                <a asp-action="EditQuestion" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmDeleteQuestion(@item.Id)" title="Hapus">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="fw-semibold mb-3">@item.Pertanyaan</p>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-2 @(item.JawabanBenar == "A" ? "text-success fw-bold" : "")">
+                                        <i class="bi @(item.JawabanBenar == "A" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                        A. @item.OpsiA
+                                    </div>
+                                    <div class="mb-2 @(item.JawabanBenar == "B" ? "text-success fw-bold" : "")">
+                                        <i class="bi @(item.JawabanBenar == "B" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                        B. @item.OpsiB
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2 @(item.JawabanBenar == "C" ? "text-success fw-bold" : "")">
+                                        <i class="bi @(item.JawabanBenar == "C" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                        C. @item.OpsiC
+                                    </div>
+                                    <div class="mb-2 @(item.JawabanBenar == "D" ? "text-success fw-bold" : "")">
+                                        <i class="bi @(item.JawabanBenar == "D" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                        D. @item.OpsiD
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-key me-1"></i>Jawaban Benar: <strong class="text-success">@item.JawabanBenar</strong>
+                                    <span class="mx-2">|</span>
+                                    <i class="bi bi-calendar me-1"></i>Dibuat: @item.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="card shadow-sm border-info">
+                    <div class="card-body text-center">
+                        <p class="mb-0">
+                            <i class="bi bi-info-circle text-info me-2"></i>
+                            Total <strong>@Model.Count()</strong> soal untuk ujian ini.
+                            Skor minimal lulus: <strong>@pelatihan.SkorMinimal%</strong>
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-question-circle display-1 text-muted mb-3"></i>
+                        <h4 class="text-muted">Belum Ada Soal Ujian</h4>
+                        <p class="text-muted mb-4">Mulai tambahkan soal untuk ujian pelatihan ini</p>
+                        <a asp-action="CreateQuestion" asp-route-pelatihanId="@pelatihan.Id"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-2"></i>Tambah Soal Pertama
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function moveUp(questionId) {
+            // Show loading state
+            const upButton = document.querySelector(`button[onclick="moveUp(${questionId})"]`);
+            const originalContent = upButton.innerHTML;
+            upButton.disabled = true;
+            upButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+            fetch(`/Admin/Pelatihan/Exam/MoveUp/${questionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showAlert('success', data.message);
+                    // Reload the page to reflect new order
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showAlert('danger', data.message);
+                    // Restore button
+                    upButton.disabled = false;
+                    upButton.innerHTML = originalContent;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan saat memindahkan soal');
+                // Restore button
+                upButton.disabled = false;
+                upButton.innerHTML = originalContent;
+            });
+        }
+
+        function moveDown(questionId) {
+            // Show loading state
+            const downButton = document.querySelector(`button[onclick="moveDown(${questionId})"]`);
+            const originalContent = downButton.innerHTML;
+            downButton.disabled = true;
+            downButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+            fetch(`/Admin/Pelatihan/Exam/MoveDown/${questionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showAlert('success', data.message);
+                    // Reload the page to reflect new order
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showAlert('danger', data.message);
+                    // Restore button
+                    downButton.disabled = false;
+                    downButton.innerHTML = originalContent;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan saat memindahkan soal');
+                // Restore button
+                downButton.disabled = false;
+                downButton.innerHTML = originalContent;
+            });
+        }
+
+        function confirmDeleteQuestion(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus soal ini?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/Admin/Pelatihan/Exam/Delete/${id}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+      function showAlert(type, message) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.alert-dynamic');
+        existingAlerts.forEach(alert => alert.remove());
+
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-dynamic`;
+        alertDiv.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        // Insert at the top of the content
+        const container = document.querySelector('.container-fluid');
+        const firstRow = container.querySelector('.row');
+        container.insertBefore(alertDiv, firstRow.nextSibling);
+
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            if (alertDiv) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+
+    // Disable buttons based on position
+    document.addEventListener('DOMContentLoaded', function() {
+        const questions = Array.from(document.querySelectorAll('[data-question-id]'));
+        const totalQuestions = questions.length;
+
+        questions.forEach((card, index) => {
+            const questionId = card.getAttribute('data-question-id');
+            const upButton = card.querySelector(`button[onclick="moveUp(${questionId})"]`);
+            const downButton = card.querySelector(`button[onclick="moveDown(${questionId})"]`);
+
+            // Disable up button for first item
+            if (index === 0 && upButton) {
+                upButton.disabled = true;
+                upButton.classList.add('opacity-50');
+            }
+
+            // Disable down button for last item
+            if (index === totalQuestions - 1 && downButton) {
+                downButton.disabled = true;
+                downButton.classList.add('opacity-50');
+            }
+        });
+    });
+</script>
