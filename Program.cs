@@ -20,6 +20,7 @@ builder.Services.AddScoped<IPelatihanService, PelatihanService>();
 builder.Services.AddScoped<IPelatihanMateriService, PelatihanMateriService>();
 builder.Services.AddScoped<IPelatihanSoalService, PelatihanSoalService>();
 builder.Services.AddScoped<IPelatihanSertifikatService, PelatihanSertifikatService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 
 var app = builder.Build();

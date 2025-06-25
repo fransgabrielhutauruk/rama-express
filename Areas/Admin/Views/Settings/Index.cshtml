@@ -1,0 +1,401 @@
+﻿@model RamaExpress.Areas.Admin.Models.SettingsViewModel
+@{
+    ViewData["Title"] = "Pengaturan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Pengaturan Admin</h1>
+                    <p class="text-muted mb-0">Kelola profil dan keamanan akun administrator</p>
+                </div>
+                <div>
+                    <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali ke Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>Informasi Profil
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateProfile" method="post" id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Profile.Nama" class="form-label fw-semibold">
+                                    <i class="bi bi-person-badge text-primary me-1"></i>Nama Lengkap
+                                </label>
+                                <input asp-for="Profile.Nama" class="form-control" required />
+                                <span asp-validation-for="Profile.Nama" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Profile.Email" class="form-label fw-semibold">
+                                    <i class="bi bi-envelope text-primary me-1"></i>Email
+                                </label>
+                                <input asp-for="Profile.Email" type="email" class="form-control" required />
+                                <span asp-validation-for="Profile.Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">Role</label>
+                                <input type="text" class="form-control" value="@Model.Profile.Role" readonly />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">Status</label>
+                                <div class="form-control d-flex align-items-center" style="border: none; background: #f8f9fc;">
+                                    @if (Model.Profile.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-circle me-1"></i>Tidak Aktif
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">Terdaftar Sejak</label>
+                                <input type="text" class="form-control" value="@Model.Profile.CreatedAt.ToString("dd MMMM yyyy")" readonly />
+                            </div>
+                            @if (Model.Profile.UpdatedAt.HasValue)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Terakhir Diperbarui</label>
+                                    <input type="text" class="form-control" value="@Model.Profile.UpdatedAt.Value.ToString("dd MMMM yyyy HH:mm")" readonly />
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="submit" class="btn btn-primary" id="profileBtn">
+                                <i class="bi bi-save me-2"></i>Perbarui Profil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Section -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>Ubah Password
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ChangePassword" method="post" id="passwordForm">
+                        <div class="mb-3">
+                            <label asp-for="ChangePassword.CurrentPassword" class="form-label fw-semibold">
+                                <i class="bi bi-key text-warning me-1"></i>Password Lama
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="ChangePassword.CurrentPassword" type="password" class="form-control"
+                                       id="currentPassword" placeholder="Masukkan password lama" required />
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ChangePassword.CurrentPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ChangePassword.NewPassword" class="form-label fw-semibold">
+                                    <i class="bi bi-shield-plus text-warning me-1"></i>Password Baru
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="ChangePassword.NewPassword" type="password" class="form-control"
+                                           id="newPassword" placeholder="Minimal 6 karakter" required minlength="6" />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ChangePassword.NewPassword" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label fw-semibold">
+                                    <i class="bi bi-shield-check text-warning me-1"></i>Konfirmasi Password Baru
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="ChangePassword.ConfirmNewPassword" type="password" class="form-control"
+                                           id="confirmPassword" placeholder="Ulangi password baru" required />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword', this)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ChangePassword.ConfirmNewPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Password Strength Indicator -->
+                        <div class="mb-3">
+                            <small class="text-muted">Kekuatan Password:</small>
+                            <div class="progress mt-1" style="height: 5px;">
+                                <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small id="passwordStrengthText" class="text-muted"></small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Catatan Keamanan:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Password minimal 6 karakter</li>
+                                <li>Gunakan kombinasi huruf, angka, dan simbol untuk keamanan maksimal</li>
+                                <li>Setelah berhasil mengubah password, Anda akan logout otomatis</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearPasswordForm()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Reset Form
+                            </button>
+                            <button type="submit" class="btn btn-warning" id="passwordBtn">
+                                <i class="bi bi-shield-check me-2"></i>Ubah Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Information Sidebar -->
+        <div class="col-lg-4">
+            <!-- Account Security Status -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-check me-2"></i>Status Keamanan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Akun Terverifikasi</h6>
+                            <small class="text-muted">Administrator aktif</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-envelope-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Email Terdaftar</h6>
+                            <small class="text-muted">@Model.Profile.Email</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-key"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Password</h6>
+                            <small class="text-muted">Terenkripsi dengan aman</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tips -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Tips Keamanan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Gunakan password yang kuat dan unik</small>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Ubah password secara berkala</small>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Jangan bagikan akses akun admin</small>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Logout setelah selesai bekerja</small>
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Periksa aktivitas akun secara rutin</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Last Activity -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Aktivitas Terakhir
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <i class="bi bi-person-gear display-4 text-muted mb-3"></i>
+                        <p class="text-muted mb-1">Login Saat Ini</p>
+                        <h6 class="mb-0">@DateTime.Now.ToString("dd MMMM yyyy, HH:mm")</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+        }
+    }
+
+    // Clear password form
+    function clearPasswordForm() {
+        document.getElementById('passwordForm').reset();
+        updatePasswordStrength('');
+    }
+
+    // Password strength checker
+    function updatePasswordStrength(password) {
+        const strengthBar = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('passwordStrengthText');
+
+        let strength = 0;
+        let feedback = '';
+
+        if (password.length >= 6) strength += 20;
+        if (password.length >= 8) strength += 10;
+        if (/[a-z]/.test(password)) strength += 15;
+        if (/[A-Z]/.test(password)) strength += 15;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+
+        // Update progress bar
+        strengthBar.style.width = strength + '%';
+
+        // Update color and text based on strength
+        if (strength < 30) {
+            strengthBar.className = 'progress-bar bg-danger';
+            feedback = 'Lemah';
+        } else if (strength < 60) {
+            strengthBar.className = 'progress-bar bg-warning';
+            feedback = 'Sedang';
+        } else if (strength < 80) {
+            strengthBar.className = 'progress-bar bg-info';
+            feedback = 'Kuat';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            feedback = 'Sangat Kuat';
+        }
+
+        strengthText.textContent = feedback;
+    }
+
+    // Form submission handlers
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        const btn = document.getElementById('profileBtn');
+        const requiredFields = form.querySelectorAll('input[required]');
+        let isValid = true;
+
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                isValid = false;
+            }
+        });
+        if (isValid) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...';
+            btn.disabled = true;
+        }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        const btn = document.getElementById('passwordBtn');
+        const requiredFields = form.querySelectorAll('input[required]');
+        let isValid = true;
+
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                isValid = false;
+            }
+        });
+        if (isValid) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengubah...';
+            btn.disabled = true;
+        }
+    });
+
+    // Password strength real-time update
+    document.getElementById('newPassword').addEventListener('input', function() {
+        updatePasswordStrength(this.value);
+    });
+
+    // Password confirmation validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = this.value;
+
+        if (confirmPassword && newPassword !== confirmPassword) {
+            this.setCustomValidity('Password tidak sesuai');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Remove error styling when user types
+    document.querySelectorAll('.form-control').forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
