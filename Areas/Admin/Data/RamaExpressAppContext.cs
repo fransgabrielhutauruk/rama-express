@@ -1,5 +1,7 @@
-﻿// Areas/Admin/Data/RamaExpressAppContext.cs
+﻿// Areas/Admin/Data/RamaExpressAppContext.cs - Updated with PelatihanSertifikat
 using Microsoft.EntityFrameworkCore;
+using RamaExpress.Areas.Admin.Data.Service;
+using RamaExpress.Areas.Admin.Data;
 using RamaExpress.Areas.Admin.Models;
 
 namespace RamaExpress.Areas.Admin.Data
@@ -16,6 +18,7 @@ namespace RamaExpress.Areas.Admin.Data
         public DbSet<PelatihanSoal> PelatihanSoal { get; set; }
         public DbSet<PelatihanProgress> PelatihanProgress { get; set; }
         public DbSet<PelatihanHasil> PelatihanHasil { get; set; }
+        public DbSet<PelatihanSertifikat> PelatihanSertifikat { get; set; } // Added
         public DbSet<Sertifikat> Sertifikat { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -66,16 +69,6 @@ namespace RamaExpress.Areas.Admin.Data
                 .HasOne(ph => ph.User)
                 .WithMany()
                 .HasForeignKey(ph => ph.UserId);
-
-            modelBuilder.Entity<Sertifikat>()
-                .HasOne(s => s.Pelatihan)
-                .WithMany(p => p.Sertifikats)
-                .HasForeignKey(s => s.PelatihanId);
-
-            modelBuilder.Entity<Sertifikat>()
-                .HasOne(s => s.User)
-                .WithMany()
-                .HasForeignKey(s => s.UserId);
         }
     }
 }

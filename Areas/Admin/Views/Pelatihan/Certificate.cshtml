@@ -1,0 +1,201 @@
+﻿<!-- Areas/Admin/Views/Pelatihan/Certificate.cshtml - FIXED -->
+@model RamaExpress.Areas.Admin.Models.PelatihanSertifikat
+@{
+    ViewData["Title"] = "Kelola Sertifikat";
+    var pelatihan = ViewBag.Pelatihan as RamaExpress.Areas.Admin.Models.Pelatihan;
+    var hasCertificate = ViewBag.HasCertificate as bool? ?? false;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Pengaturan Sertifikat</h1>
+                    <p class="text-muted mb-0">
+                        <strong>@pelatihan.Kode</strong> - @pelatihan.Judul
+                    </p>
+                </div>
+                <div>
+                    @if (!hasCertificate)
+                    {
+                        <a asp-action="CreateCertificate" asp-route-pelatihanId="@pelatihan.Id"
+                           class="btn btn-primary shadow-sm">
+                            <i class="bi bi-plus-lg me-2"></i>Buat Sertifikat
+                        </a>
+                    }
+                    <a asp-action="Index" class="btn btn-secondary shadow-sm ms-2">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (hasCertificate && Model != null)
+    {
+        <!-- Certificate Configuration Card -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-award me-2"></i>Konfigurasi Sertifikat
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-muted">Nama Template</label>
+                                    <p class="fs-5 mb-0">@Model.TemplateName</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-muted">Deskripsi</label>
+                                    <p class="mb-0">@(Model.TemplateDescription ?? "Tidak ada deskripsi")</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-muted">Format Nomor Sertifikat</label>
+                                    <p class="mb-0 font-monospace">@Model.CertificateNumberFormat</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-muted">Status</label>
+                                    <p class="fs-5 mb-0">
+                                        @if (Model.IsSertifikatActive)
+                                        {
+                                            <span class="badge bg-success fs-6">
+                                                <i class="bi bi-check-circle me-1"></i>Aktif
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger fs-6">
+                                                <i class="bi bi-x-circle me-1"></i>Tidak Aktif
+                                            </span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-muted">Kadaluarsa</label>
+                                    <p class="fs-5 mb-0">
+                                        @if (Model.ExpirationType == "never")
+                                        {
+                                            <span class="badge bg-info fs-6">Tidak Ada Kadaluarsa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning fs-6">@Model.GetExpirationDisplayText()</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-muted">Dibuat</label>
+                                    <p class="mb-0">@Model.CreatedAt.ToString("dd MMMM yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <div></div>
+                            <div>
+                                <a asp-action="EditCertificate" asp-route-id="@Model.Id"
+                                   class="btn btn-warning">
+                                    <i class="bi bi-pencil me-2"></i>Edit Pengaturan
+                                </a>
+                                <button type="button" class="btn btn-outline-danger ms-2"
+                                        onclick="confirmDelete(@Model.Id, '@Model.TemplateName', 'Pelatihan', 'Admin', 'Certificate')">
+                                    <i class="bi bi-trash me-2"></i>Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificate Preview Card -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-eye me-2"></i>Preview Sertifikat
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="border rounded p-4 bg-light">
+                            <i class="bi bi-award-fill text-warning display-1 mb-3"></i>
+                            <h6 class="fw-bold">@Model.TemplateName</h6>
+                            <p class="text-muted small mb-3">Diberikan kepada karyawan yang telah menyelesaikan pelatihan</p>
+
+                            <div class="mb-3">
+                                <strong>@pelatihan.Judul</strong>
+                            </div>
+
+                            <small class="text-muted">
+                                Contoh Nomor: CERT-2025-01-0001
+                            </small>
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                @if (Model.ExpirationType == "never")
+                                {
+                                    <i class="bi bi-infinity me-1"></i> <span>Berlaku Selamanya </span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-calendar-check me-1"></i> <span>Berlaku @Model.GetExpirationDisplayText()</span>
+                                }
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Card -->
+                <div class="card shadow-sm border-0 mt-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Statistik
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="row">
+                            <div class="col-6">
+                                <h4 class="text-primary mb-1">0</h4>
+                                <small class="text-muted">Sertifikat Terbit</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success mb-1">0</h4>
+                                <small class="text-muted">Masih Berlaku</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- No Certificate Configuration -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-award display-1 text-muted mb-3"></i>
+                        <h4 class="text-muted">Belum Ada Pengaturan Sertifikat</h4>
+                        <p class="text-muted mb-4">
+                            Buat pengaturan sertifikat untuk pelatihan ini agar karyawan dapat menerima sertifikat
+                            setelah menyelesaikan pelatihan.
+                        </p>
+                        <a asp-action="CreateCertificate" asp-route-pelatihanId="@pelatihan.Id"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-2"></i>Buat Pengaturan Sertifikat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

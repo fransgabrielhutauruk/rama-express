@@ -122,24 +122,29 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
-                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Materials" 
-                                                       asp-route-pelatihanId="@item.Id" class="btn btn-outline-primary btn-sm" 
+                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Materials"
+                                                       asp-route-pelatihanId="@item.Id" class="btn btn-outline-primary btn-sm"
                                                        title="Kelola Materi">
-                                                        <i class="bi bi-journal-text"></i> Materi
+                                                        <i class="bi bi-journal-text"></i>
                                                     </a>
-                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="ExamQuestions" 
-                                                       asp-route-pelatihanId="@item.Id" class="btn btn-outline-success btn-sm" 
+                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="ExamQuestions"
+                                                       asp-route-pelatihanId="@item.Id" class="btn btn-outline-success btn-sm"
                                                        title="Kelola Soal">
-                                                        <i class="bi bi-question-circle"></i> Soal
+                                                        <i class="bi bi-question-circle"></i>
                                                     </a>
-                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Edit" 
-                                                       asp-route-id="@item.Id" class="btn btn-outline-warning btn-sm" 
+                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Certificate"
+                                                       asp-route-pelatihanId="@item.Id" class="btn btn-outline-warning btn-sm"
+                                                       title="Kelola Sertifikat">
+                                                        <i class="bi bi-award"></i>
+                                                    </a>
+                                                    <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Edit"
+                                                       asp-route-id="@item.Id" class="btn btn-outline-info btn-sm"
                                                        title="Edit">
-                                                        <i class="bi bi-pencil"></i>Edit
+                                                        <i class="bi bi-pencil"></i>
                                                     </a>
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
                                                             onclick="confirmDelete(@item.Id, '@item.Judul', 'Pelatihan', 'Admin')" title="Hapus">
-                                                        <i class="bi bi-trash"></i>Hapus
+                                                        <i class="bi bi-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>

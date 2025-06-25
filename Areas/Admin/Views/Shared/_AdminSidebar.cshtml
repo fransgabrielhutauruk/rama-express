@@ -245,13 +245,6 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Sertifikat" ? "active" : "")"
-               asp-area="Admin" asp-controller="Home" asp-action="Sertifikat" data-title="Sertifikat">
-                <i class="bi bi-award"></i>
-                <span class="nav-text">Sertifikat</span>
-            </a>
-        </li>
-        <li class="nav-item">
             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Karyawan" ? "active" : "")"
                asp-area="Admin" asp-controller="Karyawan" asp-action="Index" data-title="Karyawan">
                 <i class="bi bi-people"></i>
