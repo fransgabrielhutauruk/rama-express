@@ -1,156 +1,640 @@
-﻿<!-- Index.cshtml (Dashboard Content) -->
+﻿@model RamaExpress.Areas.Admin.Models.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">Welcome to RamaExpress Admin Dashboard</h4>
+<!-- Dashboard Content -->
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Dashboard Admin</h1>
+                    <p class="text-muted mb-0">Selamat datang di sistem manajemen pelatihan PT Rama Express</p>
+                </div>
+                <div>
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-calendar me-1"></i>@DateTime.Now.ToString("dd MMMM yyyy")
+                    </span>
+                </div>
             </div>
-            <div class="card-body">
-                <p>Selamat datang di dashboard admin pelatihan PT Rama Express. Gunakan navigasi sidebar untuk mengakses berbagai fitur sistem pelatihan.</p>
+        </div>
+    </div>
 
-                <div style="height: 1000px">tes</div>
-                <!-- Training Dashboard Cards -->
-                <div class="row mt-4">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Total Karyawan
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">247</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="bi bi-people fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Karyawan
                             </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalEmployees">
+                                @Model.TotalEmployees
+                            </div>
+                            <small class="text-muted">
+                                Aktif: <span id="activeEmployees">@Model.ActiveEmployees</span> |
+                                Non-Aktif: <span id="inactiveEmployees">@Model.InactiveEmployees</span>
+                            </small>
                         </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Pelatihan Aktif
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="bi bi-book fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            Sertifikat Terbit
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">189</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="bi bi-award fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Pending Review
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">23</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="bi bi-clock fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Recent Activity -->
-                <div class="row mt-4">
-                    <div class="col-lg-8">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Aktivitas Terbaru</h6>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Pelatihan Aktif
                             </div>
-                            <div class="card-body">
-                                <div class="list-group list-group-flush">
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1">Training "Safety Driving" selesai</h6>
-                                            <p class="mb-1">25 karyawan telah menyelesaikan pelatihan</p>
-                                            <small>2 jam yang lalu</small>
-                                        </div>
-                                        <span class="badge bg-success rounded-pill">Selesai</span>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1">Karyawan baru terdaftar</h6>
-                                            <p class="mb-1">Ahmad Rizki bergabung sebagai Driver</p>
-                                            <small>4 jam yang lalu</small>
-                                        </div>
-                                        <span class="badge bg-primary rounded-pill">Baru</span>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1">Sertifikat diterbitkan</h6>
-                                            <p class="mb-1">15 sertifikat untuk training "Customer Service"</p>
-                                            <small>1 hari yang lalu</small>
-                                        </div>
-                                        <span class="badge bg-info rounded-pill">Sertifikat</span>
-                                    </div>
-                                </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeTrainings">
+                                @Model.ActiveTrainings
                             </div>
+                            <small class="text-muted">Total: <span id="totalTrainings">@Model.TotalTrainings</span> program</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-book fa-2x text-gray-300"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="col-lg-4">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Sertifikat Terbit
                             </div>
-                            <div class="card-body">
-                                <div class="d-grid gap-2">
-                                    <a asp-area="Admin" asp-controller="Home" asp-action="CreatePelatihan" class="btn btn-primary">
-                                        <i class="bi bi-plus-circle me-2"></i>Buat Pelatihan Baru
-                                    </a>
-                                    <a asp-area="Admin" asp-controller="Home" asp-action="Pengguna" class="btn btn-success">
-                                        <i class="bi bi-person-plus me-2"></i>Tambah Karyawan
-                                    </a>
-                                    <a asp-area="Admin" asp-controller="Home" asp-action="LaporanPelatihan" class="btn btn-info">
-                                        <i class="bi bi-graph-up me-2"></i>Lihat Progress
-                                    </a>
-                                    <a asp-area="Admin" asp-controller="Home" asp-action="Sertifikat" class="btn btn-warning">
-                                        <i class="bi bi-award me-2"></i>Kelola Sertifikat
-                                    </a>
-                                </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalCertificates">
+                                @Model.TotalCertificates
                             </div>
+                            <small class="text-muted">Bulan ini: <span id="monthlyIssuedCertificates">@Model.MonthlyIssuedCertificates</span></small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-award fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Tingkat Kelulusan
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="completionRate">
+                                @Model.CompletionRate%
+                            </div>
+                            <small class="text-muted">Pelatihan selesai: <span id="completedTrainings">@Model.CompletedTrainings</span></small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-graph-up fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Training Progress Chart -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-graph-up me-2"></i>Progress Pelatihan (6 Bulan Terakhir)
+                    </h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu shadow">
+                            <a class="dropdown-item" href="#" onclick="exportChart()">
+                                <i class="bi bi-download me-2"></i>Export Chart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="trainingProgressChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position Distribution -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-pie-chart me-2"></i>Distribusi Posisi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="positionChart" width="300" height="300"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small" id="positionLegend">
+                        <!-- Position legend will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-lg-6">
+            <!-- Recent Summary -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-graph-up-arrow me-2"></i>Ringkasan Cepat
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Karyawan Aktif</h6>
+                                <small class="text-muted">Dari total @Model.TotalEmployees karyawan</small>
+                            </div>
+                        </div>
+                        <h5 class="mb-0 text-primary">@Model.ActiveEmployees</h5>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Progress Rate</h6>
+                                <small class="text-muted">Tingkat penyelesaian</small>
+                            </div>
+                        </div>
+                        <h5 class="mb-0 text-success">@Model.CompletionRate%</h5>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="bi bi-award"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Sertifikat Bulan Ini</h6>
+                                <small class="text-muted">@DateTime.Now.ToString("MMMM yyyy")</small>
+                            </div>
+                        </div>
+                        <h5 class="mb-0 text-info">@Model.MonthlyIssuedCertificates</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Quick Actions & System Status -->
+        <div class="col-lg-6">
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-lightning me-2"></i>Aksi Cepat
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Create"
+                               class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-plus-circle me-2"></i>Buat Pelatihan
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Karyawan" asp-action="Create"
+                               class="btn btn-success w-100 mb-2">
+                                <i class="bi bi-person-plus me-2"></i>Tambah Karyawan
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Laporan" asp-action="Index"
+                               class="btn btn-info w-100 mb-2">
+                                <i class="bi bi-graph-up me-2"></i>Lihat Laporan
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a asp-area="Admin" asp-controller="Posisi" asp-action="Create"
+                               class="btn btn-warning w-100 mb-2">
+                                <i class="bi bi-briefcase me-2"></i>Tambah Posisi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dashboard data and charts
+        let trainingChart, positionChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecentActivities();
+            loadChartData();
+
+            // Refresh data every 5 minutes
+            setInterval(function() {
+                refreshDashboardData();
+                loadRecentActivities();
+            }, 5 * 60 * 1000);
+        });
+
+        async function refreshDashboardData() {
+            try {
+                const response = await fetch('/Admin/Api/Dashboard/Stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateStatisticsCards(stats);
+                } else {
+                    console.error('Failed to refresh dashboard data');
+                }
+            } catch (error) {
+                console.error('Error refreshing dashboard data:', error);
+            }
+        }
+
+        function updateStatisticsCards(stats) {
+            if (stats.error) {
+                console.error('Dashboard stats error:', stats.error);
+                return;
+            }
+
+            document.getElementById('totalEmployees').textContent = stats.totalEmployees;
+            document.getElementById('activeEmployees').textContent = stats.activeEmployees;
+            document.getElementById('inactiveEmployees').textContent = stats.inactiveEmployees;
+            document.getElementById('activeTrainings').textContent = stats.activeTrainings;
+            document.getElementById('totalTrainings').textContent = stats.totalTrainings;
+            document.getElementById('totalCertificates').textContent = stats.totalCertificates;
+            document.getElementById('monthlyIssuedCertificates').textContent = stats.monthlyIssuedCertificates;
+            document.getElementById('completionRate').textContent = stats.completionRate + '%';
+            document.getElementById('completedTrainings').textContent = stats.completedTrainings;
+        }
+
+        async function loadChartData() {
+            try {
+                const response = await fetch('/Admin/Api/Dashboard/Charts');
+                if (response.ok) {
+                    const chartData = await response.json();
+                    if (chartData.error) {
+                        console.error('Chart data error:', chartData.error);
+                        initializeChartsWithMockData();
+                    } else {
+                        initializeCharts(chartData);
+                    }
+                } else {
+                    console.error('Failed to load chart data');
+                    initializeChartsWithMockData();
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+                initializeChartsWithMockData();
+            }
+        }
+
+        function initializeCharts(chartData) {
+            // Training Progress Chart
+            const trainingCtx = document.getElementById('trainingProgressChart').getContext('2d');
+
+            const months = chartData.monthlyProgress.map(item => item.month);
+            const completedData = chartData.monthlyProgress.map(item => item.completedTrainings);
+            const certificateData = chartData.monthlyProgress.map(item => item.issuedCertificates);
+
+            trainingChart = new Chart(trainingCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Pelatihan Selesai',
+                        data: completedData,
+                        borderColor: 'rgb(78, 115, 223)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: 'Sertifikat Terbit',
+                        data: certificateData,
+                        borderColor: 'rgb(28, 200, 138)',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Position Distribution Chart
+            const positionCtx = document.getElementById('positionChart').getContext('2d');
+
+            if (chartData.positionDistribution && chartData.positionDistribution.length > 0) {
+                const labels = chartData.positionDistribution.map(item => item.position);
+                const data = chartData.positionDistribution.map(item => item.count);
+                const colors = generateColors(labels.length);
+
+                const positionData = {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors
+                    }]
+                };
+
+                positionChart = new Chart(positionCtx, {
+                    type: 'doughnut',
+                    data: positionData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                updatePositionLegend(positionData);
+            } else {
+                // Show no data message
+                const canvas = document.getElementById('positionChart');
+                const ctx = canvas.getContext('2d');
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#666';
+                ctx.fillText('Tidak ada data posisi', canvas.width/2, canvas.height/2);
+            }
+        }
+
+        function initializeChartsWithMockData() {
+            // Fallback to mock data if API fails
+            const mockData = {
+                monthlyProgress: [
+                    { month: 'Juli', completedTrainings: 5, issuedCertificates: 3 },
+                    { month: 'Agustus', completedTrainings: 8, issuedCertificates: 6 },
+                    { month: 'September', completedTrainings: 6, issuedCertificates: 4 },
+                    { month: 'Oktober', completedTrainings: 10, issuedCertificates: 8 },
+                    { month: 'November', completedTrainings: 7, issuedCertificates: 5 },
+                    { month: 'Desember', completedTrainings: 12, issuedCertificates: 9 }
+                ],
+                positionDistribution: [
+                    { position: 'Driver', count: 50 },
+                    { position: 'Admin', count: 20 },
+                    { position: 'Supervisor', count: 15 },
+                    { position: 'Manager', count: 8 }
+                ]
+            };
+
+            initializeCharts(mockData);
+        }
+
+        function generateColors(count) {
+            const baseColors = [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                '#858796', '#5a5c69', '#fd7e14', '#20c997', '#6f42c1'
+            ];
+
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            return colors;
+        }
+
+        function updatePositionLegend(data) {
+            const legendContainer = document.getElementById('positionLegend');
+            let legendHtml = '';
+
+            data.labels.forEach((label, index) => {
+                const color = data.datasets[0].backgroundColor[index];
+                const value = data.datasets[0].data[index];
+                legendHtml += `
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle me-2" style="width: 12px; height: 12px; background-color: ${color};"></div>
+                            <span>${label}</span>
+                        </div>
+                        <strong>${value}</strong>
+                    </div>
+                `;
+            });
+
+            legendContainer.innerHTML = legendHtml;
+        }
+
+        async function loadRecentActivities() {
+            try {
+                const response = await fetch('/Admin/Api/Dashboard/RecentActivities');
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayRecentActivities(activities);
+                } else {
+                    console.error('Failed to load recent activities');
+                    showActivitiesError();
+                }
+            } catch (error) {
+                console.error('Error loading recent activities:', error);
+                showActivitiesError();
+            }
+        }
+
+        function displayRecentActivities(activities) {
+            const activitiesContainer = document.getElementById('recentActivities');
+
+            if (!activities || activities.length === 0) {
+                activitiesContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox text-muted fs-2"></i>
+                        <p class="text-muted mt-2">Belum ada aktivitas terbaru</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let activitiesHtml = '';
+            activities.forEach(activity => {
+                activitiesHtml += `
+                    <div class="list-group-item d-flex justify-content-between align-items-start border-0 px-0">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <div class="bg-${activity.status} text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi ${activity.icon}"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">${activity.title}</h6>
+                                <p class="mb-1 text-muted small">${activity.description}</p>
+                                <small class="text-muted">${activity.time}</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-${activity.status}">
+                            ${getActivityStatusText(activity.status)}
+                        </span>
+                    </div>
+                `;
+            });
+
+            activitiesContainer.innerHTML = activitiesHtml;
+        }
+
+        function getActivityStatusText(status) {
+            const statusMap = {
+                'success': 'Selesai',
+                'primary': 'Baru',
+                'info': 'Sertifikat',
+                'warning': 'Dibuat',
+                'secondary': 'Pending'
+            };
+            return statusMap[status] || 'Unknown';
+        }
+
+        function exportChart() {
+            if (trainingChart) {
+                const link = document.createElement('a');
+                link.download = 'training-progress-chart.png';
+                link.href = trainingChart.toBase64Image();
+                link.click();
+            }
+        }
+
+        // Error handling for network issues
+        window.addEventListener('online', function() {
+            refreshDashboardData();
+            loadRecentActivities();
+        });
+
+        window.addEventListener('offline', function() {
+            console.log('Offline mode: Using cached data');
+        });
+    </script>
+
+    <style>
+        .chart-area {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-pie {
+            position: relative;
+            height: 200px;
+        }
+
+        .border-left-primary {
+            border-left: 0.25rem solid #4e73df !important;
+        }
+
+        .border-left-success {
+            border-left: 0.25rem solid #1cc88a !important;
+        }
+
+        .border-left-info {
+            border-left: 0.25rem solid #36b9cc !important;
+        }
+
+        .border-left-warning {
+            border-left: 0.25rem solid #f6c23e !important;
+        }
+
+        .text-xs {
+            font-size: 0.7rem;
+        }
+
+        .text-gray-300 {
+            color: #dddfeb !important;
+        }
+
+        .text-gray-800 {
+            color: #5a5c69 !important;
+        }
+
+        .font-weight-bold {
+            font-weight: 700 !important;
+        }
+
+        .fa-2x {
+            font-size: 2em;
+        }
+
+        .no-arrow .dropdown-toggle::after {
+            display: none;
+        }
+
+        /* Loading animation */
+        @@keyframes pulse {
+            0%
+
+        {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
+
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .chart-area
+
+        {
+            height: 250px;
+        }
+
+        .chart-pie {
+            height: 180px;
+        }
+
+        }
+    </style>
+}
