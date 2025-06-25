@@ -195,6 +195,59 @@ namespace RamaExpress.Migrations
                     b.ToTable("PelatihanProgress");
                 });
 
+            modelBuilder.Entity("RamaExpress.Areas.Admin.Models.PelatihanSertifikat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CertificateNumberFormat")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ExpirationDuration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExpirationType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExpirationUnit")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsSertifikatActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PelatihanId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TemplateDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PelatihanId")
+                        .IsUnique();
+
+                    b.ToTable("PelatihanSertifikat");
+                });
+
             modelBuilder.Entity("RamaExpress.Areas.Admin.Models.PelatihanSoal", b =>
                 {
                     b.Property<int>("Id")
@@ -420,6 +473,17 @@ namespace RamaExpress.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RamaExpress.Areas.Admin.Models.PelatihanSertifikat", b =>
+                {
+                    b.HasOne("RamaExpress.Areas.Admin.Models.Pelatihan", "Pelatihan")
+                        .WithOne("PelatihanSertifikat")
+                        .HasForeignKey("RamaExpress.Areas.Admin.Models.PelatihanSertifikat", "PelatihanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pelatihan");
+                });
+
             modelBuilder.Entity("RamaExpress.Areas.Admin.Models.PelatihanSoal", b =>
                 {
                     b.HasOne("RamaExpress.Areas.Admin.Models.Pelatihan", "Pelatihan")
@@ -459,6 +523,8 @@ namespace RamaExpress.Migrations
                     b.Navigation("PelatihanPosisis");
 
                     b.Navigation("PelatihanProgresses");
+
+                    b.Navigation("PelatihanSertifikat");
 
                     b.Navigation("PelatihanSoals");
 

@@ -14,17 +14,20 @@ namespace RamaExpress.Areas.Admin.Controllers
         private readonly IPelatihanService _pelatihanService;
         private readonly IPelatihanMateriService _materiService;
         private readonly IPelatihanSoalService _soalService;
+        private readonly IPelatihanSertifikatService _sertifikatService;
         private readonly RamaExpressAppContext _context;
 
         public PelatihanController(
             IPelatihanService pelatihanService,
             IPelatihanMateriService materiService,
             IPelatihanSoalService soalService,
+            IPelatihanSertifikatService sertifikatService,
             RamaExpressAppContext context)
         {
             _pelatihanService = pelatihanService;
             _materiService = materiService;
             _soalService = soalService;
+            _sertifikatService = sertifikatService;
             _context = context;
         }
 
@@ -514,6 +517,158 @@ namespace RamaExpress.Areas.Admin.Controllers
             {
                 return new SelectList(new List<SelectListItem>(), "Value", "Text");
             }
+        }
+
+        // CERTIFICATE MANAGEMENT
+        [Route("Admin/Pelatihan/Certificate/{pelatihanId}")]
+        public async Task<IActionResult> Certificate(int pelatihanId)
+        {
+            var pelatihan = await _pelatihanService.GetById(pelatihanId);
+            if (pelatihan == null)
+            {
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var certificate = await _sertifikatService.GetByPelatihanId(pelatihanId);
+
+            ViewBag.Pelatihan = pelatihan;
+            ViewBag.HasCertificate = certificate != null;
+
+            return View(certificate);
+        }
+
+        [Route("Admin/Pelatihan/Certificate/Create/{pelatihanId}")]
+        [HttpGet]
+        public async Task<IActionResult> CreateCertificate(int pelatihanId)
+        {
+            var pelatihan = await _pelatihanService.GetById(pelatihanId);
+            if (pelatihan == null)
+            {
+                TempData["ErrorMessage"] = "Pelatihan tidak ditemukan";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Check if certificate already exists
+            var existingCertificate = await _sertifikatService.GetByPelatihanId(pelatihanId);
+            if (existingCertificate != null)
+            {
+                TempData["ErrorMessage"] = "Pengaturan sertifikat untuk pelatihan ini sudah ada";
+                return RedirectToAction(nameof(Certificate), new { pelatihanId = pelatihanId });
+            }
+
+            var model = new PelatihanSertifikat
+            {
+                PelatihanId = pelatihanId,
+                TemplateName = $"Sertifikat {pelatihan.Judul}",
+                ExpirationType = "never",
+                IsSertifikatActive = true
+            };
+
+            ViewBag.Pelatihan = pelatihan;
+            return View(model);
+        }
+
+        [Route("Admin/Pelatihan/Certificate/Create/{pelatihanId}")]
+        [HttpPost]
+        public async Task<IActionResult> CreateCertificate(PelatihanSertifikat model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
+            }
+
+            var result = await _sertifikatService.Add(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction(nameof(Certificate), new { pelatihanId = model.PelatihanId });
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
+            }
+        }
+
+        [Route("Admin/Pelatihan/Certificate/Edit/{id}")]
+        [HttpGet]
+        public async Task<IActionResult> EditCertificate(int id)
+        {
+            var certificate = await _sertifikatService.GetById(id);
+            if (certificate == null)
+            {
+                TempData["ErrorMessage"] = "Pengaturan sertifikat tidak ditemukan";
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.Pelatihan = certificate.Pelatihan;
+            return View(certificate);
+        }
+
+        [Route("Admin/Pelatihan/Certificate/Edit/{id}")]
+        [HttpPost]
+        public async Task<IActionResult> EditCertificate(int id, PelatihanSertifikat model)
+        {
+            if (id != model.Id)
+            {
+                TempData["ErrorMessage"] = "Data tidak valid";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
+            }
+
+            var result = await _sertifikatService.Update(model);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction(nameof(Certificate), new { pelatihanId = model.PelatihanId });
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+                var pelatihan = await _pelatihanService.GetById(model.PelatihanId);
+                ViewBag.Pelatihan = pelatihan;
+                return View(model);
+            }
+        }
+
+        [Route("Admin/Pelatihan/Certificate/Delete")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCertificate(int id)
+        {
+            var certificate = await _sertifikatService.GetById(id);
+            if (certificate == null)
+            {
+                TempData["ErrorMessage"] = "Pengaturan sertifikat tidak ditemukan";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var pelatihanId = certificate.PelatihanId;
+            var result = await _sertifikatService.Delete(id);
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(Certificate), new { pelatihanId = pelatihanId });
         }
     }
 }

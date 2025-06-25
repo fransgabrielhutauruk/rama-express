@@ -19,6 +19,8 @@ builder.Services.AddScoped<IPosisiService, PosisiService>();
 builder.Services.AddScoped<IPelatihanService, PelatihanService>();
 builder.Services.AddScoped<IPelatihanMateriService, PelatihanMateriService>();
 builder.Services.AddScoped<IPelatihanSoalService, PelatihanSoalService>();
+builder.Services.AddScoped<IPelatihanSertifikatService, PelatihanSertifikatService>();
+
 
 var app = builder.Build();
 

@@ -52,5 +52,6 @@ namespace RamaExpress.Areas.Admin.Models
         public virtual ICollection<PelatihanProgress>? PelatihanProgresses { get; set; }
         public virtual ICollection<PelatihanHasil>? PelatihanHasils { get; set; }
         public virtual ICollection<Sertifikat>? Sertifikats { get; set; }
+        public virtual PelatihanSertifikat? PelatihanSertifikat { get; set; }
     }
 }
