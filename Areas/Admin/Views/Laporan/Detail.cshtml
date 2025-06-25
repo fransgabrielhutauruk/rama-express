@@ -1,0 +1,440 @@
+﻿@model RamaExpress.Areas.Admin.Models.LaporanDetailViewModel
+@{
+    ViewData["Title"] = "Detail Laporan Pelatihan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Detail Laporan Pelatihan</h1>
+                    <p class="text-muted mb-0">
+                        Detail progress pelatihan <strong>@Model.Progress.User.Nama</strong>
+                    </p>
+                </div>
+                <div>
+                    <a asp-area="Admin" asp-controller="Laporan" asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Informasi Karyawan -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>Informasi Karyawan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Nama Lengkap</label>
+                                <p class="fs-5 mb-0">@Model.Progress.User.Nama</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Email</label>
+                                <p class="fs-5 mb-0">
+                                    <a href="mailto:@Model.Progress.User.Email" class="text-decoration-none">
+                                        @Model.Progress.User.Email
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Posisi</label>
+                                <p class="fs-5 mb-0">
+                                    <span class="badge bg-info fs-6">@Model.Progress.User.Posisi</span>
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Status Akun</label>
+                                <p class="fs-5 mb-0">
+                                    @if (Model.Progress.User.IsActive)
+                                    {
+                                        <span class="badge bg-success fs-6">
+                                            <i class="bi bi-check-circle me-1"></i>Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger fs-6">
+                                            <i class="bi bi-x-circle me-1"></i>Non-Aktif
+                                        </span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Pelatihan -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-book me-2"></i>Informasi Pelatihan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Kode Pelatihan</label>
+                                <p class="fs-5 mb-0 fw-bold text-primary">@Model.Progress.Pelatihan.Kode</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Judul Pelatihan</label>
+                                <p class="fs-5 mb-0">@Model.Progress.Pelatihan.Judul</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Deskripsi</label>
+                                <p class="mb-0">@Model.Progress.Pelatihan.Deskripsi</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Durasi</label>
+                                <p class="fs-5 mb-0">@Model.Progress.Pelatihan.DurasiMenit menit</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Skor Minimal</label>
+                                <p class="fs-5 mb-0">@Model.Progress.Pelatihan.SkorMinimal%</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Status Pelatihan</label>
+                                <p class="fs-5 mb-0">
+                                    @if (Model.Progress.Pelatihan.IsActive)
+                                    {
+                                        <span class="badge bg-success fs-6">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger fs-6">Non-Aktif</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Materi -->
+            @if (Model.Materials.Any())
+            {
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text me-2"></i>Progress Materi (@Model.Materials.Count() Materi)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: @Model.PersentaseProgress%"
+                                 aria-valuenow="@Model.PersentaseProgress" aria-valuemin="0" aria-valuemax="100">
+                                @Model.PersentaseProgress%
+                            </div>
+                        </div>
+
+                        <div class="list-group">
+                            @foreach (var material in Model.Materials.OrderBy(m => m.Urutan))
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-primary me-2">@material.Urutan</span>
+                                        <strong>@material.Judul</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            <span class="badge bg-secondary">@material.TipeKonten</span>
+                                        </small>
+                                    </div>
+                                    @if (material.Urutan <= Model.MaterialProgress)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Selesai
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock me-1"></i>Pending
+                                        </span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Soal Ujian -->
+            @if (Model.Questions.Any())
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-question-circle me-2"></i>Soal Ujian (@Model.Questions.Count() Soal)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Hasil != null)
+                        {
+                            <div class="alert alert-info mb-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Karyawan telah menyelesaikan ujian dengan skor <strong>@Model.Hasil.Skor%</strong>
+                            </div>
+                        }
+
+                        <div class="accordion" id="soalAccordion">
+                            @foreach (var soal in Model.Questions.OrderBy(s => s.Urutan).Take(5))
+                            {
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading@soal.Id">
+                                        <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapse@soal.Id">
+                                            <span class="badge bg-primary me-2">@soal.Urutan</span>
+                                            @(soal.Pertanyaan.Length > 100 ? soal.Pertanyaan.Substring(0, 100) + "..." : soal.Pertanyaan)
+                                        </button>
+                                    </h2>
+                                    <div id="collapse@soal.Id" class="accordion-collapse collapse"
+                                         data-bs-parent="#soalAccordion">
+                                        <div class="accordion-body">
+                                            <p class="fw-semibold">@soal.Pertanyaan</p>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-2 @(soal.JawabanBenar == "A" ? "text-success fw-bold" : "")">
+                                                        <i class="bi @(soal.JawabanBenar == "A" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                                        A. @soal.OpsiA
+                                                    </div>
+                                                    <div class="mb-2 @(soal.JawabanBenar == "B" ? "text-success fw-bold" : "")">
+                                                        <i class="bi @(soal.JawabanBenar == "B" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                                        B. @soal.OpsiB
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-2 @(soal.JawabanBenar == "C" ? "text-success fw-bold" : "")">
+                                                        <i class="bi @(soal.JawabanBenar == "C" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                                        C. @soal.OpsiC
+                                                    </div>
+                                                    <div class="mb-2 @(soal.JawabanBenar == "D" ? "text-success fw-bold" : "")">
+                                                        <i class="bi @(soal.JawabanBenar == "D" ? "bi-check-circle-fill" : "bi-circle") me-2"></i>
+                                                        D. @soal.OpsiD
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-key me-1"></i>Jawaban Benar: <strong class="text-success">@soal.JawabanBenar</strong>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (Model.Questions.Count() > 5)
+                        {
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    Menampilkan 5 dari @Model.Questions.Count() soal
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Status Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>Status Progress
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        @if (Model.Progress.IsCompleted)
+                        {
+                            <div class="text-success">
+                                <i class="bi bi-check-circle-fill display-1"></i>
+                                <h4 class="mt-2">Selesai</h4>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-warning">
+                                <i class="bi bi-clock-fill display-1"></i>
+                                <h4 class="mt-2">Sedang Berjalan</h4>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row text-center">
+                        <div class="col">
+                            <h5 class="text-primary">@Model.Progress.StartedAt.ToString("dd/MM/yyyy")</h5>
+                            <small class="text-muted">Tanggal Mulai</small>
+                        </div>
+                        @if (Model.Progress.CompletedAt.HasValue)
+                        {
+                            <div class="col">
+                                <h5 class="text-success">@Model.Progress.CompletedAt.Value.ToString("dd/MM/yyyy")</h5>
+                                <small class="text-muted">Tanggal Selesai</small>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.DurasiPelatihan.HasValue)
+                    {
+                        <div class="mt-3">
+                            <h6 class="text-info">
+                                @Math.Ceiling(Model.DurasiPelatihan.Value.TotalDays) Hari
+                            </h6>
+                            <small class="text-muted">Durasi Pelatihan</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Hasil Ujian -->
+            @if (Model.Hasil != null)
+            {
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header @(Model.Hasil.IsLulus ? "bg-success" : "bg-danger") text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check me-2"></i>Hasil Ujian
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <h1 class="display-4 @(Model.Hasil.IsLulus ? "text-success" : "text-danger")">
+                                @Model.Hasil.Skor%
+                            </h1>
+                            <p class="text-muted">dari @Model.Progress.Pelatihan.SkorMinimal% minimal</p>
+                        </div>
+
+                        <div class="mb-3">
+                            @if (Model.Hasil.IsLulus)
+                            {
+                                <span class="badge bg-success fs-6">
+                                    <i class="bi bi-check-circle me-1"></i>LULUS
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger fs-6">
+                                    <i class="bi bi-x-circle me-1"></i>TIDAK LULUS
+                                </span>
+                            }
+                        </div>
+
+                        <small class="text-muted">
+                            Ujian diselesaikan pada<br>
+                            @Model.Hasil.TanggalSelesai.ToString("dd MMMM yyyy, HH:mm")
+                        </small>
+                    </div>
+                </div>
+            }
+
+            <!-- Sertifikat -->
+            @if (Model.Sertifikat != null)
+            {
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-award me-2"></i>Sertifikat
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-award-fill text-warning display-1"></i>
+                        </div>
+
+                        <h6 class="fw-bold">@Model.Sertifikat.NomorSertifikat</h6>
+                        <p class="text-muted mb-3">Nomor Sertifikat</p>
+
+                        <div class="row text-center">
+                            <div class="col">
+                                <small class="text-muted">Diterbitkan</small>
+                                <br>
+                                <strong>@Model.Sertifikat.TanggalTerbit.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Berlaku Hingga</small>
+                                <br>
+                                <strong>@Model.Sertifikat.TanggalKadaluarsa.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-warning btn-sm">
+                                <i class="bi bi-download me-1"></i>Unduh Sertifikat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Actions -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Aksi Cepat
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-area="Admin" asp-controller="Karyawan" asp-action="Details"
+                           asp-route-id="@Model.Progress.UserId"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-person me-2"></i>Lihat Profile Karyawan
+                        </a>
+
+                        <a asp-area="Admin" asp-controller="Pelatihan" asp-action="Materials"
+                           asp-route-pelatihanId="@Model.Progress.PelatihanId"
+                           class="btn btn-outline-success">
+                            <i class="bi bi-journal-text me-2"></i>Lihat Materi Pelatihan
+                        </a>
+
+                        <a asp-area="Admin" asp-controller="Pelatihan" asp-action="ExamQuestions"
+                           asp-route-pelatihanId="@Model.Progress.PelatihanId"
+                           class="btn btn-outline-warning">
+                            <i class="bi bi-question-circle me-2"></i>Lihat Soal Ujian
+                        </a>
+
+                        @if (Model.Hasil != null && Model.Hasil.IsLulus && Model.Sertifikat == null)
+                        {
+                            <button type="button" class="btn btn-outline-info" onclick="generateCertificate()">
+                                <i class="bi bi-award me-2"></i>Generate Sertifikat
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function generateCertificate() {
+            // Placeholder function for certificate generation
+            alert('Fitur generate sertifikat akan dikembangkan selanjutnya');
+        }
+    </script>
+}

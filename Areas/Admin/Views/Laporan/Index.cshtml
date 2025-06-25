@@ -1,0 +1,406 @@
+﻿@model RamaExpress.Areas.Admin.Models.LaporanPelatihanListViewModel
+@{
+    ViewData["Title"] = "Laporan Pelatihan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Laporan Pelatihan</h1>
+                    <p class="text-muted mb-0">Laporan progress dan hasil pelatihan karyawan</p>
+                </div>
+                <div>
+                    <a asp-area="Admin" asp-controller="Laporan" asp-action="Export"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-pelatihanFilter="@Model.PelatihanFilter"
+                       asp-route-statusFilter="@Model.StatusFilter"
+                       asp-route-posisiFilter="@Model.PosisiFilter"
+                       asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                       asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                       asp-route-format="csv"
+                       class="btn btn-success shadow-sm">
+                        <i class="bi bi-download me-2"></i>Export CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Total Karyawan</h5>
+                            <h2 class="mb-0">@Model.TotalKaryawan</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Pelatihan Aktif</h5>
+                            <h2 class="mb-0">@Model.TotalPelatihanAktif</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-book fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Sertifikat Terbit</h5>
+                            <h2 class="mb-0">@Model.TotalSertifikatTerbit</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-award fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Tingkat Kelulusan</h5>
+                            <h2 class="mb-0">@Model.PersentaseKelulusan%</h2>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel me-2"></i>Filter Laporan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filterForm">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Pencarian</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="searchTerm" 
+                                           value="@Model.SearchTerm" placeholder="Nama atau email...">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Pelatihan</label>
+                                <select class="form-select" name="pelatihanFilter">
+                                    <option value="">Semua Pelatihan</option>
+                                    @foreach (var pelatihan in Model.AvailablePelatihans)
+                                    {
+                                        <!option value="@pelatihan.Id" @(Model.PelatihanFilter == pelatihan.Id.ToString() ? "selected" : "")>
+                                            @pelatihan.Kode - @pelatihan.Judul
+                                        </!option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select class="form-select" name="statusFilter">
+                                    <option value="">Semua Status</option>
+                                    <!option value="selesai" @(Model.StatusFilter == "selesai" ? "selected" : "")>Selesai</!option>
+                                    <!option value="belum_selesai" @(Model.StatusFilter == "belum_selesai" ? "selected" : "")>Belum Selesai</!option>
+                                    <!option value="lulus" @(Model.StatusFilter == "lulus" ? "selected" : "")>Lulus</!option>
+                                    <!option value="tidak_lulus" @(Model.StatusFilter == "tidak_lulus" ? "selected" : "")>Tidak Lulus</!option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Posisi</label>
+                                <select class="form-select" name="posisiFilter">
+                                    <option value="">Semua Posisi</option>
+                                    @foreach (var posisi in Model.AvailablePosisis)
+                                    {
+                                        <!option value="@posisi" @(Model.PosisiFilter == posisi ? "selected" : "")>
+                                            @posisi
+                                        </!option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Tanggal Mulai</label>
+                                <input type="date" class="form-control" name="startDate" 
+                                       value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Tanggal Akhir</label>
+                                <input type="date" class="form-control" name="endDate" 
+                                       value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Per Halaman</label>
+                                <select class="form-select" name="pageSize">
+                                    <!option value="10" @(Model.PageSize == 10 ? "selected" : "")>10</!option>
+                                    <!option value="25" @(Model.PageSize == 25 ? "selected" : "")>25</!option>
+                                    <!option value="50" @(Model.PageSize == 50 ? "selected" : "")>50</!option>
+                                    <!option value="100" @(Model.PageSize == 100 ? "selected" : "")>100</!option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="btn-group w-100">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-1"></i>Filter
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Info -->
+    @if (Model.TotalCount > 0)
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="text-muted mb-0">
+                        Menampilkan @Model.StartRecord - @Model.EndRecord dari @Model.TotalCount data
+                    </p>
+                    <div class="d-flex align-items-center gap-3">
+                        <small class="text-muted">
+                            <span class="badge bg-success">@Model.TotalSelesai Selesai</span>
+                            <span class="badge bg-primary">@Model.TotalLulus Lulus</span>
+                            <span class="badge bg-warning">@Model.TotalBelumSelesai Belum Selesai</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Data Table Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded">
+                <div class="card-body p-0">
+                    @if (Model.Results != null && Model.Results.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">
+                                            <i class="bi bi-person me-2"></i>Karyawan
+                                        </th>
+                                        <th scope="col">
+                                            <i class="bi bi-book me-2"></i>Pelatihan
+                                        </th>
+                                        <th scope="col" class="text-center">
+                                            <i class="bi bi-calendar me-2"></i>Tanggal
+                                        </th>
+                                        <th scope="col" class="text-center">
+                                            <i class="bi bi-award me-2"></i>Skor
+                                        </th>
+                                        <th scope="col" class="text-center">
+                                            <i class="bi bi-check-circle me-2"></i>Status
+                                        </th>
+                                        <th scope="col" class="text-center">
+                                            <i class="bi bi-gear me-2"></i>Aksi
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Results)
+                                    {
+                                        <tr class="align-middle">
+                                            <td>
+                                                <div>
+                                                    <div class="fw-semibold">@item.NamaKaryawan</div>
+                                                    <small class="text-muted">@item.Email</small>
+                                                    <br>
+                                                    <span class="badge bg-info badge-sm">@item.Posisi</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-semibold">@item.KodePelatihan</div>
+                                                    <small class="text-muted">@item.JudulPelatihan</small>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-clock me-1"></i>@item.DurasiMenit menit
+                                                        <span class="mx-1">|</span>
+                                                        <i class="bi bi-target me-1"></i>Min: @item.SkorMinimal%
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div>
+                                                    <small class="fw-semibold">Mulai:</small><br>
+                                                    <small class="text-muted">@item.TanggalMulai.ToString("dd/MM/yyyy")</small>
+                                                </div>
+                                                @if (item.TanggalSelesai.HasValue)
+                                                {
+                                                    <div class="mt-1">
+                                                        <small class="fw-semibold">Selesai:</small><br>
+                                                        <small class="text-muted">@item.TanggalSelesai.Value.ToString("dd/MM/yyyy")</small>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.Skor.HasValue)
+                                                {
+                                                    <div class="fw-bold fs-5 @(item.IsLulus ? "text-success" : "text-danger")">
+                                                        @item.Skor%
+                                                    </div>
+                                                    <small class="text-muted">dari @item.SkorMinimal%</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge @item.GetStatusBadgeClass() fs-6">
+                                                    <i class="@item.GetStatusIcon() me-1"></i>@item.StatusText
+                                                </span>
+                                                @if (item.IsSelesai)
+                                                {
+                                                    <br>
+                                                    <small class="badge @(item.IsLulus ? "bg-success" : "bg-danger") mt-1">
+                                                        @item.HasilText
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <a asp-area="Admin" asp-controller="Laporan" asp-action="Detail" 
+                                                   asp-route-userId="@item.UserId" asp-route-pelatihanId="@item.PelatihanId"
+                                                   class="btn btn-outline-info btn-sm" title="Lihat Detail">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                                <div class="pagination-info">
+                                    <small class="text-muted">Total @Model.TotalCount data</small>
+                                </div>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <!-- Previous Page -->
+                                        <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                                            <a class="page-link" href="@GetPageUrl(Model.CurrentPage - 1)">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- Page Numbers -->
+                                        @{
+                                            int startPage = Math.Max(1, Model.CurrentPage - 2);
+                                            int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                                        }
+                                        @for (int i = startPage; i <= endPage; i++)
+                                        {
+                                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                                <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                                            </li>
+                                        }
+                                        
+                                        <!-- Next Page -->
+                                        <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                                            <a class="page-link" href="@GetPageUrl(Model.CurrentPage + 1)">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-graph-up display-1 text-muted"></i>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.PelatihanFilter) || 
+                                 !string.IsNullOrEmpty(Model.StatusFilter) || !string.IsNullOrEmpty(Model.PosisiFilter) ||
+                                 Model.StartDate.HasValue || Model.EndDate.HasValue)
+                            {
+                                <h4 class="text-muted">Tidak Ada Data yang Sesuai</h4>
+                                <p class="text-muted mb-4">Coba ubah filter untuk melihat data lainnya</p>
+                                <a asp-action="Index" class="btn btn-outline-primary">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Reset Filter
+                                </a>
+                            }
+                            else
+                            {
+                                <h4 class="text-muted">Belum Ada Data Laporan</h4>
+                                <p class="text-muted mb-4">Data akan muncul setelah karyawan mulai mengikuti pelatihan</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetPageUrl(int page)
+    {
+        return Url.Action("Index", new { 
+            page = page, 
+            searchTerm = Model.SearchTerm, 
+            pelatihanFilter = Model.PelatihanFilter,
+            statusFilter = Model.StatusFilter,
+            posisiFilter = Model.PosisiFilter,
+            startDate = Model.StartDate?.ToString("yyyy-MM-dd"),
+            endDate = Model.EndDate?.ToString("yyyy-MM-dd"),
+            pageSize = Model.PageSize
+        });
+    }
+}
