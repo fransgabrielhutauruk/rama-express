@@ -6,9 +6,6 @@
     // Define breadcrumb items based on current route
     var breadcrumbItems = new List<(string Text, string Url, bool IsActive)>();
 
-    // Always add Home/Dashboard as first item
-    // breadcrumbItems.Add(("Dashboard", Url.Action("Index", "Home", new { area = "Admin" }), false));
-
     // Add specific breadcrumb based on current action
     switch (action?.ToLower())
     {
@@ -47,6 +44,11 @@
                 breadcrumbItems.Add(("Karyawan", Url.Action("Index", "Karyawan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Tambah Akun Karyawan", null, true));
             }
+            else if (controller?.ToLower() == "posisi")
+            {
+                breadcrumbItems.Add(("Posisi", Url.Action("Index", "Posisi", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Tambah Posisi", null, true));
+            }
             else
             {
                 breadcrumbItems.Add(("Tambah Data", null, true));
@@ -63,6 +65,16 @@
             {
                 breadcrumbItems.Add(("Pengguna", Url.Action("Index", "Pengguna", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Edit Pengguna", null, true));
+            }
+            else if (controller?.ToLower() == "karyawan")
+            {
+                breadcrumbItems.Add(("Karyawan", Url.Action("Index", "Karyawan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Edit Karyawan", null, true));
+            }
+            else if (controller?.ToLower() == "posisi")
+            {
+                breadcrumbItems.Add(("Posisi", Url.Action("Index", "Posisi", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Edit Posisi", null, true));
             }
             else
             {
@@ -81,17 +93,94 @@
                 breadcrumbItems.Add(("Pengguna", Url.Action("Index", "Pengguna", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Detail Pengguna", null, true));
             }
+            else if (controller?.ToLower() == "karyawan")
+            {
+                breadcrumbItems.Add(("Karyawan", Url.Action("Index", "Karyawan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Detail Karyawan", null, true));
+            }
             else
             {
                 breadcrumbItems.Add(("Detail", null, true));
             }
             break;
+        case "materials":
+            if (controller?.ToLower() == "pelatihan")
+            {
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Kelola Materi", null, true));
+            }
+            break;
+        case "examquestions":
+            if (controller?.ToLower() == "pelatihan")
+            {
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Kelola Soal Ujian", null, true));
+            }
+            break;
+        case "certificate":
+            if (controller?.ToLower() == "pelatihan")
+            {
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Kelola Sertifikat", null, true));
+            }
+            break;
+        case "creatematerial":
+        case "editmaterial":
+            if (controller?.ToLower() == "pelatihan")
+            {
+                var pelatihanId = ViewContext.RouteData.Values["pelatihanId"]?.ToString();
+                var materialsUrl = !string.IsNullOrEmpty(pelatihanId)
+                    ? Url.Action("Materials", "Pelatihan", new { area = "Admin", pelatihanId = pelatihanId })
+                    : "#";
+
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Materi", materialsUrl, false));
+                breadcrumbItems.Add((action?.ToLower() == "creatematerial" ? "Tambah Materi" : "Edit Materi", null, true));
+            }
+            break;
+        case "createquestion":
+        case "editquestion":
+            if (controller?.ToLower() == "pelatihan")
+            {
+                var pelatihanId = ViewContext.RouteData.Values["pelatihanId"]?.ToString();
+                var questionsUrl = !string.IsNullOrEmpty(pelatihanId)
+                    ? Url.Action("ExamQuestions", "Pelatihan", new { area = "Admin", pelatihanId = pelatihanId })
+                    : "#";
+
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Soal Ujian", questionsUrl, false));
+                breadcrumbItems.Add((action?.ToLower() == "createquestion" ? "Tambah Soal" : "Edit Soal", null, true));
+            }
+            break;
+        case "createcertificate":
+        case "editcertificate":
+            if (controller?.ToLower() == "pelatihan")
+            {
+                var pelatihanId = ViewContext.RouteData.Values["pelatihanId"]?.ToString();
+                var certificateUrl = !string.IsNullOrEmpty(pelatihanId)
+                    ? Url.Action("Certificate", "Pelatihan", new { area = "Admin", pelatihanId = pelatihanId })
+                    : "#";
+
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Sertifikat", certificateUrl, false));
+                breadcrumbItems.Add((action?.ToLower() == "createcertificate" ? "Buat Sertifikat" : "Edit Sertifikat", null, true));
+            }
+            break;
         case "index":
         default:
-            // Remove the last item if it's just Dashboard -> Dashboard
-            if (action?.ToLower() == "index")
+            // Add controller name for index pages
+            if (action?.ToLower() == "index" && !string.IsNullOrEmpty(controller))
             {
-                breadcrumbItems.Add((controller, null, true));
+                var controllerDisplayName = controller?.ToLower() switch
+                {
+                    "home" => "Dashboard",
+                    "pelatihan" => "Pelatihan",
+                    "karyawan" => "Karyawan",
+                    "posisi" => "Posisi",
+                    "laporan" => "Laporan",
+                    _ => controller
+                };
+                breadcrumbItems.Add((controllerDisplayName, null, true));
             }
             break;
     }
@@ -176,79 +265,6 @@
         gap: 0.75rem;
     }
 
-    .page-title {
-        font-size: 1.75rem;
-        font-weight: 400;
-        color: #5a5c69;
-        margin: 0;
-    }
-
-    .page-subtitle {
-        color: #858796;
-        font-size: 0.875rem;
-        margin: 0;
-    }
-
-    .user-profile {
-        padding: 0;
-        border: none;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        height: 100%;
-    }
-
-    .user-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: #5a5c69;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        padding: 0.5rem;
-        border-radius: 8px;
-        height: auto;
-    }
-
-        .user-info:hover {
-            background-color: #f8f9fc;
-            color: #2c3e50;
-        }
-
-    .user-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: #3498db;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-
-    .user-details {
-        line-height: 1.2;
-        min-width: 0;
-    }
-
-        .user-details .fw-semibold {
-            font-size: 0.875rem;
-            margin-bottom: 1px;
-        }
-
-        .user-details small {
-            font-size: 0.75rem;
-        }
-
-    .dropdown-menu {
-        background: #fff;
-        border: 1px solid #e3e6f0;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-    }
-
     @@media (max-width: 768px) {
         .breadcrumb-container
 
@@ -260,20 +276,6 @@
 
     .breadcrumb {
         font-size: 0.8rem;
-    }
-
-    .user-avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 0.8rem;
-    }
-
-    .user-details .fw-semibold {
-        font-size: 0.8rem;
-    }
-
-    .user-details small {
-        font-size: 0.7rem;
     }
 
     }
@@ -304,25 +306,7 @@
         </nav>
     </div>
     <div class="page-header">
-        <!-- User Profile Section -->
-        <div class="user-profile">
-            <div class="dropdown">
-                <a href="#" class="user-info" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="user-avatar">
-                        A
-                    </div>
-                    <div class="user-details">
-                        <div class="fw-semibold">Admin User</div>
-                        <small class="text-muted">Administrator</small>
-                    </div>
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item text-dark" href="/admin/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item text-dark" href="/admin/preferences"><i class="bi bi-gear me-2"></i>Preferences</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-dark" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                </ul>
-            </div>
-        </div>
+        <!-- User Profile Section - Now using Partial -->
+        @await Html.PartialAsync("_UserProfilePartial")
     </div>
 </div>
