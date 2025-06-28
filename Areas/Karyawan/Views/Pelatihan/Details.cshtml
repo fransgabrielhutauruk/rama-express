@@ -1,0 +1,456 @@
+﻿@model RamaExpress.Areas.Karyawan.Models.PelatihanDetailViewModel
+@{
+    ViewData["Title"] = "Detail Pelatihan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">@Model.Pelatihan.Judul</h1>
+                    <p class="text-muted mb-0">
+                        <span class="badge bg-primary me-2">@Model.Pelatihan.Kode</span>
+                        <i class="bi bi-clock me-1"></i>@Model.Pelatihan.DurasiMenit menit
+                        <span class="mx-2">|</span>
+                        <i class="bi bi-target me-1"></i>Minimal @Model.Pelatihan.SkorMinimal% untuk lulus
+                    </p>
+                </div>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-@Model.StatusClass">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-@Model.StatusClass text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="bi bi-@(Model.IsCompleted ? (Model.Hasil.IsLulus ? "trophy" : "x-circle") : Model.CanTakeExam ? "clipboard-check" : Model.Progress != null ? "play-circle" : "plus-circle") fs-4"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Status: <span class="text-@Model.StatusClass">@Model.StatusText</span></h5>
+                                    @if (Model.Progress != null)
+                                    {
+                                        <p class="mb-0 text-muted">
+                                            Dimulai: @Model.Progress.StartedAt.ToString("dd MMMM yyyy HH:mm")
+                                            @if (Model.Progress.CompletedAt.HasValue)
+                                            {
+                                                <span class="mx-2">|</span>
+                                                <span>Selesai: @Model.Progress.CompletedAt.Value.ToString("dd MMMM yyyy HH:mm")</span>
+                                            }
+                                        </p>
+                                    }
+                                    @if (Model.Hasil != null)
+                                    {
+                                        <p class="mb-0">
+                                            <strong>Skor Ujian: @Model.Hasil.Skor%</strong>
+                                            <span class="text-@(Model.Hasil.IsLulus ? "success" : "danger") ms-2">
+                                                (@(Model.Hasil.IsLulus ? "LULUS" : "TIDAK LULUS"))
+                                            </span>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            @if (Model.CanStart)
+                            {
+                                <a asp-action="Mulai" asp-route-id="@Model.Pelatihan.Id" 
+                                   class="btn btn-primary btn-lg">
+                                    <i class="bi bi-play-fill me-2"></i>Mulai Pelatihan
+                                </a>
+                            }
+                            else if (Model.CanContinue)
+                            {
+                                <a asp-action="Materi" asp-route-id="@Model.Pelatihan.Id" asp-route-materiId="@(Model.Progress.MateriTerakhirId)" 
+                                   class="btn btn-info btn-lg">
+                                    <i class="bi bi-play-fill me-2"></i>Lanjutkan
+                                </a>
+                            }
+                            else if (Model.CanTakeExam)
+                            {
+                                <a asp-action="Ujian" asp-route-id="@Model.Pelatihan.Id" 
+                                   class="btn btn-warning btn-lg">
+                                    <i class="bi bi-clipboard-check me-2"></i>Mulai Ujian
+                                </a>
+                            }
+                            else if (Model.IsCompleted)
+                            {
+                                @if (Model.Hasil.IsLulus && Model.Sertifikat != null)
+                                {
+                                    <a href="#" class="btn btn-success btn-lg">
+                                        <i class="bi bi-download me-2"></i>Unduh Sertifikat
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-action="HasilUjian" asp-route-id="@Model.Pelatihan.Id" 
+                                       class="btn btn-outline-primary">
+                                        <i class="bi bi-eye me-2"></i>Lihat Hasil
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (Model.Progress != null && !Model.IsCompleted)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted fw-semibold">Progress Materi</small>
+                                    <small class="text-muted">@Model.MaterialProgress dari @Model.TotalMaterials materi (@Model.ProgressPercentage%)</small>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-@Model.StatusClass" style="width: @Model.ProgressPercentage%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Training Description -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Deskripsi Pelatihan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Pelatihan.Deskripsi))
+                    {
+                        <p class="mb-0">@Model.Pelatihan.Deskripsi</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted fst-italic mb-0">Tidak ada deskripsi untuk pelatihan ini.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Training Materials -->
+            @if (Model.Pelatihan.PelatihanMateris != null && Model.Pelatihan.PelatihanMateris.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text me-2"></i>Materi Pelatihan (@Model.Pelatihan.PelatihanMateris.Count() Materi)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            @foreach (var materi in Model.Pelatihan.PelatihanMateris.OrderBy(m => m.Urutan))
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-3">@materi.Urutan</span>
+                                        <div>
+                                            <h6 class="mb-1">@materi.Judul</h6>
+                                            <small class="text-muted">
+                                                <span class="badge bg-secondary">@GetTypeDisplayName(materi.TipeKonten)</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        @if (Model.Progress != null && Model.Progress.MateriTerakhirId >= materi.Urutan)
+                                        {
+                                            @if (Model.Progress.MateriTerakhirId == materi.Urutan && !Model.Progress.IsCompleted)
+                                            {
+                                                <span class="badge bg-warning">Sedang Dipelajari</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-lg me-1"></i>Selesai
+                                                </span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark">Belum Dimulai</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Certificate Info -->
+            @if (Model.Sertifikat != null)
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-award me-2"></i>Sertifikat
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <i class="bi bi-award-fill text-warning display-1 mb-3"></i>
+                        <h6 class="fw-bold">@Model.Sertifikat.NomorSertifikat</h6>
+                        <p class="text-muted mb-3">Nomor Sertifikat</p>
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Diterbitkan</small>
+                                <br>
+                                <strong>@Model.Sertifikat.TanggalTerbit.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Berlaku Hingga</small>
+                                <br>
+                                <strong>
+                                    @if (Model.Sertifikat.TanggalKadaluarsa == DateTime.MaxValue)
+                                    {
+                                        <span>Selamanya</span>
+                                    }
+                                    else
+                                    {
+                                        @Model.Sertifikat.TanggalKadaluarsa.ToString("dd/MM/yyyy")
+                                    }
+                                </strong>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-success">
+                            <i class="bi bi-download me-1"></i>Unduh Sertifikat
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <!-- Quick Actions -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Aksi Cepat
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.CanStart)
+                        {
+                            <a asp-action="Mulai" asp-route-id="@Model.Pelatihan.Id" 
+                               class="btn btn-primary">
+                                <i class="bi bi-play-fill me-2"></i>Mulai Pelatihan
+                            </a>
+                        }
+                        else if (Model.CanContinue)
+                        {
+                            <a asp-action="Materi" asp-route-id="@Model.Pelatihan.Id" asp-route-materiId="@(Model.Progress.MateriTerakhirId)" 
+                               class="btn btn-info">
+                                <i class="bi bi-play-fill me-2"></i>Lanjutkan Materi
+                            </a>
+                        }
+                        else if (Model.CanTakeExam)
+                        {
+                            <a asp-action="Ujian" asp-route-id="@Model.Pelatihan.Id" 
+                               class="btn btn-warning">
+                                <i class="bi bi-clipboard-check me-2"></i>Mulai Ujian
+                            </a>
+                        }
+                        
+                        @if (Model.IsCompleted)
+                        {
+                            <a asp-action="HasilUjian" asp-route-id="@Model.Pelatihan.Id" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-eye me-2"></i>Lihat Hasil Ujian
+                            </a>
+                        }
+                        
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Kembali ke Daftar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetTypeDisplayName(string type)
+    {
+        return type switch
+        {
+            "text" => "Teks",
+            "video" => "Video",
+            "image" => "Gambar",
+            _ => "Lainnya"
+        };
+    }
+}
+
+<style>
+    .border-primary {
+        border-color: #0d6efd !important;
+    }
+    
+    .border-success {
+        border-color: #198754 !important;
+    }
+    
+    .border-info {
+        border-color: #0dcaf0 !important;
+    }
+    
+    .border-warning {
+        border-color: #ffc107 !important;
+    }
+    
+    .border-danger {
+        border-color: #dc3545 !important;
+    }
+    
+    .border-secondary {
+        border-color: #6c757d !important;
+    }
+    
+    .progress {
+        background-color: rgba(0,0,0,0.1);
+    }
+    
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .list-group-item:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.375em 0.75em;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate progress bar if exists
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                const width = progressBar.style.width;
+                progressBar.style.width = '0%';
+                setTimeout(() => {
+                    progressBar.style.transition = 'width 1s ease-in-out';
+                    progressBar.style.width = width;
+                }, 300);
+            }
+            
+            // Add confirmation for starting training
+            const startButton = document.querySelector('a[href*="Mulai"]');
+            if (startButton) {
+                startButton.addEventListener('click', function(e) {
+                    if (!confirm('Apakah Anda yakin ingin memulai pelatihan ini?')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+            
+            // Add confirmation for starting exam
+            const examButton = document.querySelector('a[href*="Ujian"]');
+            if (examButton) {
+                examButton.addEventListener('click', function(e) {
+                    if (!confirm('Apakah Anda yakin ingin memulai ujian? Pastikan Anda sudah siap.')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+}
+            }
+
+            <!-- Exam Info -->
+            @if (Model.Pelatihan.PelatihanSoals != null && Model.Pelatihan.PelatihanSoals.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check me-2"></i>Informasi Ujian
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <h4 class="text-primary mb-1">@Model.Pelatihan.PelatihanSoals.Count()</h4>
+                                    <small class="text-muted">Total Soal</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <h4 class="text-warning mb-1">@Model.Pelatihan.DurasiMenit</h4>
+                                    <small class="text-muted">Menit</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <h4 class="text-success mb-1">@Model.Pelatihan.SkorMinimal%</h4>
+                                    <small class="text-muted">Skor Minimal</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if (!Model.IsCompleted)
+                        {
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Catatan:</strong> Anda harus menyelesaikan semua materi sebelum dapat mengikuti ujian.
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Training Stats -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Statistik
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4 class="text-primary mb-1">@(Model.Pelatihan.PelatihanMateris?.Count() ?? 0)</h4>
+                            <small class="text-muted">Total Materi</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-warning mb-1">@Model.Pelatihan.DurasiMenit</h4>
+                            <small class="text-muted">Menit</small>
+                        </div>
+                        @if (Model.Progress != null)
+                        {
+                            <div class="col-6">
+                                <h4 class="text-success mb-1">@Model.MaterialProgress</h4>
+                                <small class="text-muted">Materi Selesai</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-info mb-1">@Model.ProgressPercentage%</h4>
+                                <small class="text-muted">Progress</small>
+                            </div>
+                        }
+                    </div>
+                </div

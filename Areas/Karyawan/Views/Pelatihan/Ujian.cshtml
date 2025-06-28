@@ -1,0 +1,85 @@
+﻿@model RamaExpress.Areas.Karyawan.Models.UjianViewModel
+@{
+    ViewData["Title"] = "Ujian Pelatihan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-warning">Ujian: @Model.Pelatihan.Judul</h1>
+                    <p class="text-muted mb-0">
+                        <span class="badge bg-warning text-dark me-2">@Model.Pelatihan.Kode</span>
+                        @Model.TotalQuestions soal | Waktu: @Model.TimeLimitFormatted | Min. Skor: @Model.MinScore%
+                    </p>
+                </div>
+                <div>
+                    <div class="card bg-danger text-white">
+                        <div class="card-body py-2 px-3">
+                            <h4 class="mb-0" id="timer">@Model.TimeLimitFormatted</h4>
+                            <small>Waktu Tersisa</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Instructions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <h5 class="alert-heading">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Petunjuk Ujian
+                </h5>
+                <ul class="mb-0">
+                    <li>Ujian terdiri dari <strong>@Model.TotalQuestions soal</strong> pilihan ganda</li>
+                    <li>Waktu ujian: <strong>@Model.TimeLimitFormatted</strong></li>
+                    <li>Skor minimal untuk lulus: <strong>@Model.MinScore%</strong></li>
+                    <li>Pilih satu jawaban yang paling tepat untuk setiap soal</li>
+                    <li>Ujian akan otomatis berakhir jika waktu habis</li>
+                    <li><strong>Pastikan koneksi internet stabil selama ujian</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Form -->
+    <form id="examForm">
+        <div class="row">
+            <!-- Questions -->
+            <div class="col-lg-9">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check me-2"></i>Soal Ujian
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @for (int i = 0; i < Model.Questions.Count; i++)
+                        {
+                            var question = Model.Questions[i];
+                            <div class="question-item mb-4 p-3 border rounded" data-question="@(i + 1)">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="fw-bold text-primary">
+                                        Soal @(i + 1) dari @Model.TotalQuestions
+                                    </h6>
+                                    <span class="badge bg-primary">@question.Urutan</span>
+                                </div>
+                                
+                                <div class="question-text mb-3">
+                                    <p class="fs-6 fw-semibold">@question.Pertanyaan</p>
+                                </div>
+                                
+                                <div class="options">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" 
+                                               name="answer_@question.Id" value="A" id="q@(question.Id)_a">
+                                        <label class="form-check-label" for="q@(question.Id)_a">
+                                            <strong>A.</strong> @question.OpsiA
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input

@@ -1,0 +1,438 @@
+﻿@model RamaExpress.Areas.Karyawan.Models.MateriViewModel
+@{
+    ViewData["Title"] = "Materi Pelatihan";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">@Model.Pelatihan.Judul</h1>
+                    <p class="text-muted mb-0">
+                        <span class="badge bg-primary me-2">@Model.Pelatihan.Kode</span>
+                        Materi @Model.CurrentMateri.Urutan dari @Model.AllMaterials.Count
+                    </p>
+                </div>
+                <div>
+                    <a asp-action="Detail" asp-route-id="@Model.Pelatihan.Id" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali ke Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-semibold">Progress Pelatihan</h6>
+                        <span class="text-muted">@Model.ProgressPercentage%</span>
+                    </div>
+                    <div class="progress" style="height: 12px;">
+                        <div class="progress-bar bg-primary" style="width: @Model.ProgressPercentage%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">@Model.CurrentMateri.Urutan dari @Model.AllMaterials.Count materi</small>
+                        @if (Model.IsLastMaterial)
+                        {
+                            <small class="text-success fw-semibold">Materi Terakhir!</small>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Material Content -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">
+                                <span class="badge bg-primary me-2">@Model.CurrentMateri.Urutan</span>
+                                @Model.CurrentMateri.Judul
+                            </h5>
+                            <small class="text-muted">
+                                <span class="badge bg-secondary">@GetTypeDisplayName(Model.CurrentMateri.TipeKonten)</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @switch (Model.CurrentMateri.TipeKonten.ToLower())
+                    {
+                        case "text":
+                            <div class="material-content">
+                                @Html.Raw(Model.CurrentMateri.Konten)
+                            </div>
+                            break;
+                            
+                        case "video":
+                            <div class="text-center mb-4">
+                                @if (Model.CurrentMateri.Konten.Contains("youtube.com") || Model.CurrentMateri.Konten.Contains("youtu.be"))
+                                {
+                                    @{
+                                        var videoId = GetYouTubeVideoId(Model.CurrentMateri.Konten);
+                                    }
+                                    @if (!string.IsNullOrEmpty(videoId))
+                                    {
+                                        <div class="ratio ratio-16x9">
+                                            <iframe src="https://www.youtube.com/embed/@videoId" 
+                                                    title="@Model.CurrentMateri.Judul"
+                                                    allowfullscreen></iframe>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            Video tidak dapat ditampilkan. 
+                                            <a href="@Model.CurrentMateri.Konten" target="_blank" class="alert-link">
+                                                Klik di sini untuk membuka video
+                                            </a>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-play-circle me-2"></i>
+                                        <a href="@Model.CurrentMateri.Konten" target="_blank" class="alert-link">
+                                            Klik untuk membuka video
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                            break;
+                            
+                        case "image":
+                            <div class="text-center mb-4">
+                                <img src="@Model.CurrentMateri.Konten" 
+                                     alt="@Model.CurrentMateri.Judul" 
+                                     class="img-fluid rounded shadow-sm"
+                                     style="max-height: 500px;">
+                            </div>
+                            break;
+                            
+                        default:
+                            <div class="alert alert-info">
+                                <i class="bi bi-file-earmark me-2"></i>
+                                <a href="@Model.CurrentMateri.Konten" target="_blank" class="alert-link">
+                                    Klik untuk membuka konten
+                                </a>
+                            </div>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Navigation -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-list-ol me-2"></i>Daftar Materi
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var materi in Model.AllMaterials)
+                        {
+                            <div class="list-group-item @(materi.Id == Model.CurrentMateri.Id ? "active" : "") border-0">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge @(materi.Id == Model.CurrentMateri.Id ? "bg-white text-primary" : "bg-primary") me-2">
+                                        @materi.Urutan
+                                    </span>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 @(materi.Id == Model.CurrentMateri.Id ? "text-white" : "")">
+                                            @materi.Judul
+                                        </h6>
+                                        <small class="@(materi.Id == Model.CurrentMateri.Id ? "text-white-50" : "text-muted")">
+                                            @GetTypeDisplayName(materi.TipeKonten)
+                                        </small>
+                                    </div>
+                                    @if (Model.Progress.MateriTerakhirId >= materi.Urutan)
+                                    {
+                                        <i class="bi bi-check-circle @(materi.Id == Model.CurrentMateri.Id ? "text-white" : "text-success")"></i>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Info -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Informasi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted fw-semibold">Tipe Konten</small>
+                        <p class="mb-0">@GetTypeDisplayName(Model.CurrentMateri.TipeKonten)</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted fw-semibold">Progress</small>
+                        <p class="mb-0">@Model.CurrentMateri.Urutan dari @Model.AllMaterials.Count materi</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted fw-semibold">Tanggal Dibuat</small>
+                        <p class="mb-0">@Model.CurrentMateri.CreatedAt.ToString("dd MMMM yyyy")</p>
+                    </div>
+
+                    @if (Model.IsLastMaterial)
+                    {
+                        <div class="alert alert-success small mb-0">
+                            <i class="bi bi-check-circle me-1"></i>
+                            <strong>Selamat!</strong> Ini adalah materi terakhir. Setelah ini Anda dapat mengikuti ujian.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            @if (Model.HasPrevious)
+                            {
+                                <a asp-action="Materi" 
+                                   asp-route-id="@Model.Pelatihan.Id" 
+                                   asp-route-materiId="@Model.PreviousMaterial.Id" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-chevron-left me-2"></i>Sebelumnya: @Model.PreviousMaterial.Judul
+                                </a>
+                            }
+                        </div>
+                        
+                        <div class="text-center">
+                            <small class="text-muted">
+                                Materi @Model.CurrentMateri.Urutan dari @Model.AllMaterials.Count
+                            </small>
+                        </div>
+                        
+                        <div>
+                            @if (Model.HasNext)
+                            {
+                                <a asp-action="Materi" 
+                                   asp-route-id="@Model.Pelatihan.Id" 
+                                   asp-route-materiId="@Model.NextMaterial.Id" 
+                                   class="btn btn-primary">
+                                    Selanjutnya: @Model.NextMaterial.Judul<i class="bi bi-chevron-right ms-2"></i>
+                                </a>
+                            }
+                            else if (Model.IsLastMaterial)
+                            {
+                                <a asp-action="Detail" asp-route-id="@Model.Pelatihan.Id" 
+                                   class="btn btn-success">
+                                    <i class="bi bi-check-circle me-2"></i>Selesai! Lanjut ke Ujian
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetTypeDisplayName(string type)
+    {
+        return type switch
+        {
+            "text" => "Teks",
+            "video" => "Video",
+            "image" => "Gambar",
+            _ => "Lainnya"
+        };
+    }
+    
+    string GetYouTubeVideoId(string url)
+    {
+        try
+        {
+            var uri = new Uri(url);
+            
+            if (uri.Host.Contains("youtube.com"))
+            {
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                return query["v"];
+            }
+            else if (uri.Host.Contains("youtu.be"))
+            {
+                return uri.AbsolutePath.Substring(1);
+            }
+            
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
+
+<style>
+    .material-content {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    .material-content h1,
+    .material-content h2,
+    .material-content h3,
+    .material-content h4,
+    .material-content h5,
+    .material-content h6 {
+        color: #2c3e50;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .material-content p {
+        margin-bottom: 1rem;
+        text-align: justify;
+    }
+    
+    .material-content ul,
+    .material-content ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+    }
+    
+    .material-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .material-content blockquote {
+        border-left: 4px solid #0d6efd;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        font-style: italic;
+        color: #6c757d;
+    }
+    
+    .material-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+        margin: 1rem 0;
+    }
+    
+    .material-content code {
+        background-color: #f8f9fa;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+    }
+    
+    .material-content pre {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+        margin: 1rem 0;
+    }
+    
+    .progress {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    .list-group-item.active {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .ratio iframe {
+        border-radius: 0.375rem;
+    }
+    
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .btn {
+        transition: all 0.15s ease-in-out;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                const width = progressBar.style.width;
+                progressBar.style.width = '0%';
+                setTimeout(() => {
+                    progressBar.style.transition = 'width 1s ease-in-out';
+                    progressBar.style.width = width;
+                }, 300);
+            }
+            
+            // Auto-scroll to current material in sidebar
+            const activeItem = document.querySelector('.list-group-item.active');
+            if (activeItem) {
+                activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'ArrowLeft') {
+                        // Previous material
+                        const prevButton = document.querySelector('a[href*="materiId"]:has(.bi-chevron-left)');
+                        if (prevButton) {
+                            e.preventDefault();
+                            prevButton.click();
+                        }
+                    } else if (e.key === 'ArrowRight') {
+                        // Next material
+                        const nextButton = document.querySelector('a[href*="materiId"]:has(.bi-chevron-right)');
+                        if (nextButton) {
+                            e.preventDefault();
+                            nextButton.click();
+                        }
+                    }
+                }
+            });
+            
+            // Show keyboard shortcuts hint
+            const shortcutHint = document.createElement('div');
+            shortcutHint.innerHTML = `
+                <small class="text-muted">
+                    <i class="bi bi-keyboard me-1"></i>
+                    Gunakan Ctrl+← / Ctrl+→ untuk navigasi cepat
+                </small>
+            `;
+            shortcutHint.className = 'text-center mt-2';
+            
+            const cardBody = document.querySelector('.card:last-child .card-body');
+            if (cardBody) {
+                cardBody.appendChild(shortcutHint);
+            }
+        });
+    </script>
+}
