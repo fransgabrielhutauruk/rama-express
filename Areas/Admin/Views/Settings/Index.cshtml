@@ -33,11 +33,20 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="UpdateProfile" method="post" id="profileForm">
+                    <form asp-area="Admin" asp-controller="Settings" asp-action="Index" method="post" id="profileForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="action" value="updateProfile" />
+                        <input type="hidden" asp-for="Profile.Id" />
+                        <input type="hidden" asp-for="Profile.Role" />
+                        <input type="hidden" asp-for="Profile.CreatedAt" />
+                        <input type="hidden" asp-for="Profile.UpdatedAt" />
+                        <input type="hidden" asp-for="Profile.IsActive" />
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Profile.Nama" class="form-label fw-semibold">
                                     <i class="bi bi-person-badge text-primary me-1"></i>Nama Lengkap
+                                    <span class="text-danger">*</span>
                                 </label>
                                 <input asp-for="Profile.Nama" class="form-control" required />
                                 <span asp-validation-for="Profile.Nama" class="text-danger small"></span>
@@ -45,6 +54,7 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Profile.Email" class="form-label fw-semibold">
                                     <i class="bi bi-envelope text-primary me-1"></i>Email
+                                    <span class="text-danger">*</span>
                                 </label>
                                 <input asp-for="Profile.Email" type="email" class="form-control" required />
                                 <span asp-validation-for="Profile.Email" class="text-danger small"></span>
@@ -106,10 +116,14 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="ChangePassword" method="post" id="passwordForm">
+                    <form asp-area="Admin" asp-controller="Settings" asp-action="Index" method="post" id="passwordForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="action" value="changePassword" />
+
                         <div class="mb-3">
                             <label asp-for="ChangePassword.CurrentPassword" class="form-label fw-semibold">
                                 <i class="bi bi-key text-warning me-1"></i>Password Lama
+                                <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
                                 <input asp-for="ChangePassword.CurrentPassword" type="password" class="form-control"
@@ -125,6 +139,7 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="ChangePassword.NewPassword" class="form-label fw-semibold">
                                     <i class="bi bi-shield-plus text-warning me-1"></i>Password Baru
+                                    <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <input asp-for="ChangePassword.NewPassword" type="password" class="form-control"
@@ -138,6 +153,7 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="ChangePassword.ConfirmNewPassword" class="form-label fw-semibold">
                                     <i class="bi bi-shield-check text-warning me-1"></i>Konfirmasi Password Baru
+                                    <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <input asp-for="ChangePassword.ConfirmNewPassword" type="password" class="form-control"
@@ -339,6 +355,7 @@
     // Form submission handlers
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         const btn = document.getElementById('profileBtn');
+        const form = this;
         const requiredFields = form.querySelectorAll('input[required]');
         let isValid = true;
 
@@ -347,6 +364,7 @@
                 isValid = false;
             }
         });
+
         if (isValid) {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...';
             btn.disabled = true;
@@ -355,6 +373,7 @@
 
     document.getElementById('passwordForm').addEventListener('submit', function(e) {
         const btn = document.getElementById('passwordBtn');
+        const form = this;
         const requiredFields = form.querySelectorAll('input[required]');
         let isValid = true;
 
@@ -363,6 +382,21 @@
                 isValid = false;
             }
         });
+
+        // Additional password validation
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword !== confirmPassword) {
+            isValid = false;
+            alert('Konfirmasi password tidak sesuai!');
+        }
+
+        if (newPassword.length < 6) {
+            isValid = false;
+            alert('Password baru minimal 6 karakter!');
+        }
+
         if (isValid) {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengubah...';
             btn.disabled = true;
@@ -381,8 +415,10 @@
 
         if (confirmPassword && newPassword !== confirmPassword) {
             this.setCustomValidity('Password tidak sesuai');
+            this.classList.add('is-invalid');
         } else {
             this.setCustomValidity('');
+            this.classList.remove('is-invalid');
         }
     });
 
@@ -394,8 +430,96 @@
             }
         });
     });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Focus on first input when page loads
+        const firstInput = document.querySelector('#profileForm input[type="text"]');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    });
 </script>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+    .card {
+        border: none;
+        border-radius: 0.75rem;
+    }
+
+    .card-header {
+        border-radius: 0.75rem 0.75rem 0 0 !important;
+        font-weight: 600;
+    }
+
+    .form-control:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+
+        .btn-primary:hover {
+            background-color: #375a7f;
+            border-color: #375a7f;
+        }
+
+    .btn-warning {
+        background-color: #f6c23e;
+        border-color: #f6c23e;
+        color: #3a3b45;
+    }
+
+        .btn-warning:hover {
+            background-color: #f4b619;
+            border-color: #f4b619;
+            color: #3a3b45;
+        }
+
+    .progress {
+        background-color: #e9ecef;
+    }
+
+    .input-group .btn {
+        border-left: none;
+    }
+
+    .input-group .form-control:focus + .btn {
+        border-color: #4e73df;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+
+    .text-danger {
+        font-size: 0.875rem;
+    }
+
+    .required-asterisk {
+        color: #dc3545;
+    }
+
+    @@media (max-width: 768px) {
+        .container-fluid
+
+    {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    }
+</style>

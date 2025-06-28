@@ -1,4 +1,4 @@
-﻿// Areas/Admin/Models/SettingsViewModel.cs
+﻿// Areas/Admin/Models/SettingsViewModel.cs - FIXED
 using System.ComponentModel.DataAnnotations;
 
 namespace RamaExpress.Areas.Admin.Models
@@ -26,8 +26,18 @@ namespace RamaExpress.Areas.Admin.Models
     public class AdminProfileViewModel
     {
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "Nama wajib diisi")]
+        [StringLength(100, ErrorMessage = "Nama maksimal 100 karakter")]
+        [Display(Name = "Nama Lengkap")]
         public string Nama { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email wajib diisi")]
+        [EmailAddress(ErrorMessage = "Format email tidak valid")]
+        [StringLength(100, ErrorMessage = "Email maksimal 100 karakter")]
+        [Display(Name = "Email")]
         public string Email { get; set; } = string.Empty;
+
         public string Role { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

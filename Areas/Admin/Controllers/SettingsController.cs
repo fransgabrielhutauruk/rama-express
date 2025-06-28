@@ -1,4 +1,4 @@
-﻿// Areas/Admin/Controllers/SettingsController.cs
+﻿// Areas/Admin/Controllers/SettingsController.cs - FIXED
 using Microsoft.AspNetCore.Mvc;
 using RamaExpress.Areas.Admin.Data.Service;
 using RamaExpress.Areas.Admin.Models;
@@ -50,10 +50,10 @@ namespace RamaExpress.Areas.Admin.Controllers
             }
         }
 
-        [Route("Admin/Settings/ChangePassword")]
+        [Route("Admin/Settings")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        public async Task<IActionResult> Index(SettingsViewModel model, string action)
         {
             try
             {
@@ -65,90 +65,42 @@ namespace RamaExpress.Areas.Admin.Controllers
                     return RedirectToAction("Login", "User", new { area = "" });
                 }
 
-                if (!ModelState.IsValid)
+                if (action == "updateProfile")
                 {
-                    // Reload the settings page with validation errors
-                    var profile = await _settingsService.GetAdminProfile(userId.Value);
-                    if (profile != null)
-                    {
-                        var viewModel = new SettingsViewModel
-                        {
-                            Profile = profile,
-                            ChangePassword = model
-                        };
-                        return View("Index", viewModel);
-                    }
-                    return RedirectToAction("Index");
+                    return await UpdateProfileInternal(userId.Value, model.Profile);
                 }
-
-                // Change password using service
-                var result = await _settingsService.ChangePassword(userId.Value, model);
-
-                if (result.Success)
+                else if (action == "changePassword")
                 {
-                    TempData["SuccessMessage"] = "Password berhasil diubah. Silakan login ulang dengan password baru.";
-
-                    // Force logout for security
-                    HttpContext.Session.Clear();
-                    return RedirectToAction("Login", "User", new { area = "" });
-                }
-                else
-                {
-                    // Add specific error to model state if it's about current password
-                    if (result.Message.Contains("Password lama"))
-                    {
-                        ModelState.AddModelError("CurrentPassword", result.Message);
-                    }
-                    else
-                    {
-                        TempData["ErrorMessage"] = result.Message;
-                    }
-
-                    // Reload the settings page with error
-                    var profile = await _settingsService.GetAdminProfile(userId.Value);
-                    if (profile != null)
-                    {
-                        var viewModel = new SettingsViewModel
-                        {
-                            Profile = profile,
-                            ChangePassword = model
-                        };
-                        return View("Index", viewModel);
-                    }
+                    return await ChangePasswordInternal(userId.Value, model.ChangePassword);
                 }
 
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Terjadi kesalahan saat mengubah password. Silakan coba lagi.";
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat memproses permintaan.";
                 return RedirectToAction("Index");
             }
         }
 
-        [Route("Admin/Settings/Profile")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(AdminProfileViewModel model)
+        private async Task<IActionResult> UpdateProfileInternal(int userId, AdminProfileViewModel model)
         {
             try
             {
-                // Get current user ID from session
-                var userId = HttpContext.Session.GetInt32("UserId");
-                if (userId == null)
+                // Validate model
+                if (string.IsNullOrWhiteSpace(model.Nama) || string.IsNullOrWhiteSpace(model.Email))
                 {
-                    TempData["ErrorMessage"] = "Sesi telah berakhir. Silakan login kembali.";
-                    return RedirectToAction("Login", "User", new { area = "" });
+                    TempData["ErrorMessage"] = "Nama dan email wajib diisi.";
+                    return RedirectToAction("Index");
                 }
 
                 // Update profile using service
-                var result = await _settingsService.UpdateAdminProfile(userId.Value, model);
+                var result = await _settingsService.UpdateAdminProfile(userId, model);
 
                 if (result.Success)
                 {
                     // Update session data with new name
                     HttpContext.Session.SetString("Username", model.Nama);
-
                     TempData["SuccessMessage"] = result.Message;
                 }
                 else
@@ -160,7 +112,57 @@ namespace RamaExpress.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Terjadi kesalahan saat memperbarui profil. Silakan coba lagi.";
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat memperbarui profil.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        private async Task<IActionResult> ChangePasswordInternal(int userId, ChangePasswordViewModel model)
+        {
+            try
+            {
+                // Validate model
+                if (string.IsNullOrWhiteSpace(model.CurrentPassword) ||
+                    string.IsNullOrWhiteSpace(model.NewPassword) ||
+                    string.IsNullOrWhiteSpace(model.ConfirmNewPassword))
+                {
+                    TempData["ErrorMessage"] = "Semua field password wajib diisi.";
+                    return RedirectToAction("Index");
+                }
+
+                if (model.NewPassword != model.ConfirmNewPassword)
+                {
+                    TempData["ErrorMessage"] = "Konfirmasi password tidak sesuai.";
+                    return RedirectToAction("Index");
+                }
+
+                if (model.NewPassword.Length < 6)
+                {
+                    TempData["ErrorMessage"] = "Password baru minimal 6 karakter.";
+                    return RedirectToAction("Index");
+                }
+
+                // Change password using service
+                var result = await _settingsService.ChangePassword(userId, model);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = "Password berhasil diubah. Silakan login ulang dengan password baru.";
+
+                    // Force logout for security
+                    HttpContext.Session.Clear();
+                    return RedirectToAction("Login", "User", new { area = "" });
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.Message;
+                }
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat mengubah password.";
                 return RedirectToAction("Index");
             }
         }
