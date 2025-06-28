@@ -3,32 +3,195 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RamaExpress</title>
+    <title>@ViewData["Title"] Karyawan - RamaExpress</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RamaExpress.styles.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        .main-content {
+            margin-left: 250px;
+            transition: margin-left 0.3s ease-in-out;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .main-content.expanded {
+                margin-left: 70px;
+            }
+
+        .content-wrapper {
+            flex: 1;
+            padding: 0rem 1.2rem;
+        }
+
+        /* Karyawan specific card styles */
+        .card-success {
+            border-left: 0.25rem solid #1cc88a !important;
+        }
+
+        .card-info {
+            border-left: 0.25rem solid #36b9cc !important;
+        }
+
+        .card-warning {
+            border-left: 0.25rem solid #f6c23e !important;
+        }
+
+        .card-primary {
+            border-left: 0.25rem solid #4e73df !important;
+        }
+
+        .text-success-custom {
+            color: #1cc88a !important;
+        }
+
+        .text-info-custom {
+            color: #36b9cc !important;
+        }
+
+        .text-warning-custom {
+            color: #f6c23e !important;
+        }
+
+        .text-primary-custom {
+            color: #4e73df !important;
+        }
+
+        .bg-success-light {
+            background-color: rgba(28, 200, 138, 0.1) !important;
+        }
+
+        .bg-info-light {
+            background-color: rgba(54, 185, 204, 0.1) !important;
+        }
+
+        .bg-warning-light {
+            background-color: rgba(246, 194, 62, 0.1) !important;
+        }
+
+        .bg-primary-light {
+            background-color: rgba(78, 115, 223, 0.1) !important;
+        }
+
+        .btn-primary-custom {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+
+            .btn-primary-custom:hover {
+                background-color: #2e59d9;
+                border-color: #2653d4;
+            }
+
+        .shadow {
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+        }
+
+        .progress-bar-custom {
+            background-color: #4e73df;
+        }
+
+        .badge-success-custom {
+            background-color: #1cc88a;
+        }
+
+        .badge-warning-custom {
+            background-color: #f6c23e;
+        }
+
+        .badge-info-custom {
+            background-color: #36b9cc;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
-    @* @await Html.PartialAsync("_AdminSidebar") *@
-    <div class="flex-grow-1">
-        <main role="main" class="">
+    @await Html.PartialAsync("_KaryawanSidebar")
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        @await Html.PartialAsync("_KaryawanBreadcrumb")
+        <main role="main" class="content-wrapper">
             @RenderBody()
         </main>
-    </div>
 
-    <!-- Footer Bottom -->
-    <div class="py-3 bg-secondary text-center">
-        <div class="container">
-            <p class="mb-0 text-light">
-                Copyright © 2025 PT Rama Express
-            </p>
-        </div>
+        <!-- Footer -->
+        <footer class="py-3 bg-secondary text-center mt-auto">
+            <div class="container">
+                <p class="mb-0 text-light">
+                    Copyright © 2025 PT Rama Express - Portal Karyawan
+                </p>
+            </div>
+        </footer>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (sidebarToggle && sidebar && mainContent) {
+                const toggleIcon = sidebarToggle.querySelector('i');
+
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+
+                    // Change toggle icon
+                    if (sidebar.classList.contains('collapsed')) {
+                        toggleIcon.className = 'bi bi-layout-sidebar';
+                    } else {
+                        toggleIcon.className = 'bi bi-layout-sidebar-inset';
+                    }
+                });
+
+                // Auto-collapse sidebar on mobile
+                function checkScreenSize() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.add('collapsed');
+                        mainContent.classList.add('expanded');
+                        if (toggleIcon) {
+                            toggleIcon.className = 'bi bi-layout-sidebar';
+                        }
+                    }
+                }
+
+                window.addEventListener('resize', checkScreenSize);
+                checkScreenSize(); // Check on initial load
+            }
+
+            // Add smooth scrolling for page transitions
+            const links = document.querySelectorAll('a[href^="/karyawan"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Add a small loading indicator or smooth transition here if needed
+                });
+            });
+
+            // Auto-hide alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    if (alert && alert.parentNode) {
+                        alert.style.transition = 'opacity 0.5s ease-out';
+                        alert.style.opacity = '0';
+                        setTimeout(() => {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 500);
+                    }
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>
