@@ -47,24 +47,34 @@ namespace RamaExpress.Areas.Karyawan.Models
             if (Progress == null || Pelatihan?.PelatihanMateris == null) return 0;
 
             var materials = Pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
+
+            // 🔧 CRITICAL FIX: If marked as completed, return total count
+            if (Progress.IsCompleted)
+                return materials.Count;
+
+            // Find the current material position
             var currentMaterialIndex = materials.FindIndex(m => m.Id == Progress.MateriTerakhirId);
 
-            if (Progress.IsCompleted) return materials.Count;
-            return Math.Max(0, currentMaterialIndex);
+            // 🔧 FIXED: Return completed count (current index + 1, or 0 if not found)
+            return currentMaterialIndex >= 0 ? currentMaterialIndex + 1 : 0;
         }
 
         // Status text
         public string StatusText => GetStatusText();
         public string StatusClass => GetStatusClass();
 
+        // 🔧 FIXED: Status text logic
         private string GetStatusText()
         {
             if (Hasil != null)
                 return Hasil.IsLulus ? "Lulus" : "Tidak Lulus";
+
             if (Progress?.IsCompleted == true)
                 return "Siap Ujian";
+
             if (Progress != null)
                 return "Sedang Berjalan";
+
             return "Belum Dimulai";
         }
 

@@ -220,7 +220,12 @@
                                     <button type="button" class="btn btn-outline-secondary" id="btnBackToQuestions">
                                         <i class="bi bi-arrow-left me-1"></i>Kembali ke Soal
                                     </button>
-                                    <button type="button" class="btn btn-success" id="btnSubmitExam">
+                                    <button type="button"
+                                            class="btn btn-success"
+                                            id="btnSubmitExam"
+                                            onclick="showSubmitModal()"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#submitModal">
                                         <i class="bi bi-send me-1"></i>Submit Ujian
                                     </button>
                                 </div>
@@ -533,71 +538,59 @@
             modal.show();
         }
 
-        function submitExam() {
-            // Disable submit button
-            const submitBtn = document.getElementById('confirmSubmit');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+            function submitExam() {
+        // Disable submit button
+        const submitBtn = document.getElementById('confirmSubmit');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
-            // Stop timer
-            clearInterval(timerInterval);
+        // Stop timer
+        clearInterval(timerInterval);
 
-            // Collect answers
-            const answers = [];
+        // Collect answers in the correct order
+        const answers = [];
+        const formData = new FormData();
 
-            // Get all radio buttons and collect selected answers
-            const radioGroups = {};
-            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-                const questionId = radio.name.replace('answer_', '');
-                radioGroups[questionId] = radio.value;
-            });
+        // Add anti-forgery token
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        formData.append('__RequestVerificationToken', token);
 
-            // Convert to array in question order
-    @foreach (var question in Model.Questions)
+        // Get all questions in order and collect their answers
+    @foreach (var question in Model.Questions.Select((q, index) => new { Question = q, Index = index }))
     {
         <text>
-                    if (radioGroups['@question.Id']) {
-                        answers.push(radioGroups['@question.Id']);
-                    } else {
-                        answers.push(''); // Empty answer for unanswered questions
-                    }
+                const radio@(question.Index) = document.querySelector('input[name="answer_@(question.Question.Id)"]:checked');
+                const answer@(question.Index) = radio@(question.Index) ? radio@(question.Index).value : '';
+                answers.push(answer@(question.Index));
+                formData.append('answers[' + @question.Index + ']', answer@(question.Index));
         </text>
     }
 
-            // Submit to server
-            fetch('@Url.Action("SubmitUjian", new { id = Model.Pelatihan.Id })', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify(answers)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message and redirect
-                    showAlert('success', `Ujian berhasil dikumpulkan! Skor Anda: ${data.score}% (${data.isLulus ? 'LULUS' : 'TIDAK LULUS'})`);
+        console.log('Submitting answers:', answers);
 
-                    setTimeout(() => {
-                        window.location.href = data.redirectUrl || '@Url.Action("HasilUjian", new { id = Model.Pelatihan.Id })';
-                    }, 2000);
-                } else {
-                    showAlert('danger', data.message || 'Terjadi kesalahan saat menyimpan hasil ujian');
+        // Submit to server using FormData
+        fetch('@Url.Action("SubmitUjian", new { id = Model.Pelatihan.Id })', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Server response:', data);
+            if (data.success) {
+                // Show success message and redirect
+                showAlert('success', `Ujian berhasil dikumpulkan! Skor Anda: ${data.score}% (${data.isLulus ? 'LULUS' : 'TIDAK LULUS'})`);
 
-                    // Re-enable submit button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Ya, Kumpulkan';
-
-                    // Restart timer if there's time left
-                    if (timeRemaining > 0) {
-                        startTimer();
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('danger', 'Terjadi kesalahan sistem');
+                setTimeout(() => {
+                    window.location.href = data.redirectUrl || '@Url.Action("HasilUjian", new { id = Model.Pelatihan.Id })';
+                }, 2000);
+            } else {
+                showAlert('danger', data.message || 'Terjadi kesalahan saat menyimpan hasil ujian');
 
                 // Re-enable submit button
                 submitBtn.disabled = false;
@@ -607,12 +600,26 @@
                 if (timeRemaining > 0) {
                     startTimer();
                 }
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('danger', 'Terjadi kesalahan sistem: ' + error.message);
 
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('submitModal'));
-            modal.hide();
-        }
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Ya, Kumpulkan';
+
+            // Restart timer if there's time left
+            if (timeRemaining > 0) {
+                startTimer();
+            }
+        });
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('submitModal'));
+        modal.hide();
+    }
 
         function autoSubmitExam() {
             showAlert('warning', 'Waktu habis! Ujian akan otomatis dikumpulkan.');

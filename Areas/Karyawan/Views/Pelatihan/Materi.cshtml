@@ -208,52 +208,169 @@
     </div>
 
     <!-- Navigation Buttons -->
+    <!-- Add this section at the bottom of the material content -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <!-- Previous Button -->
+                        <div class="mb-2 mb-md-0">
                             @if (Model.HasPrevious)
                             {
-                                <a asp-action="Materi" 
-                                   asp-route-id="@Model.Pelatihan.Id" 
-                                   asp-route-materiId="@Model.PreviousMaterial.Id" 
+                                <a asp-action="Materi"
+                                   asp-route-id="@Model.Pelatihan.Id"
+                                   asp-route-materiId="@Model.PreviousMaterial.Id"
                                    class="btn btn-outline-secondary">
-                                    <i class="bi bi-chevron-left me-2"></i>Sebelumnya: @Model.PreviousMaterial.Judul
+                                    <i class="bi bi-chevron-left me-2"></i>Sebelumnya
                                 </a>
                             }
                         </div>
-                        
-                        <div class="text-center">
+
+                        <!-- Progress Info -->
+                        <div class="text-center mb-2 mb-md-0">
                             <small class="text-muted">
                                 Materi @Model.CurrentMateri.Urutan dari @Model.AllMaterials.Count
                             </small>
                         </div>
-                        
-                        <div>
+
+                        <!-- Complete/Next Button -->
+                        <div class="mb-2 mb-md-0">
                             @if (Model.HasNext)
                             {
-                                <a asp-action="Materi" 
-                                   asp-route-id="@Model.Pelatihan.Id" 
-                                   asp-route-materiId="@Model.NextMaterial.Id" 
-                                   class="btn btn-primary">
-                                    Selanjutnya: @Model.NextMaterial.Judul<i class="bi bi-chevron-right ms-2"></i>
+                                <!-- Complete Material Button -->
+                                <button type="button"
+                                        id="completeButton"
+                                        class="btn btn-success me-2"
+                                        onclick="completeCurrentMaterial()">
+                                    <i class="bi bi-check-circle me-2"></i>Selesaikan Materi
+                                </button>
+
+                                <!-- Direct Next Button (if material already completed) -->
+                                <a asp-action="Materi"
+                                   asp-route-id="@Model.Pelatihan.Id"
+                                   asp-route-materiId="@Model.NextMaterial.Id"
+                                   class="btn btn-outline-primary">
+                                    Selanjutnya<i class="bi bi-chevron-right ms-2"></i>
                                 </a>
                             }
                             else if (Model.IsLastMaterial)
                             {
-                                <a asp-action="Ujian" asp-route-id="@Model.Pelatihan.Id" 
-                                   class="btn btn-success">
-                                    <i class="bi bi-check-circle me-2"></i>Selesai! Lanjut ke Ujian
-                                </a>
+                                <!-- Complete Final Material Button -->
+                                <button type="button"
+                                        id="completeButton"
+                                        class="btn btn-success me-2"
+                                        onclick="completeCurrentMaterial()">
+                                    <i class="bi bi-check-circle me-2"></i>Selesaikan Materi Terakhir
+                                </button>
+
+                                <!-- Go to Exam Button (if completed) -->
+                                @if (Model.Progress.IsCompleted)
+                                {
+                                    <a asp-action="Ujian"
+                                       asp-route-id="@Model.Pelatihan.Id"
+                                       class="btn btn-primary">
+                                        <i class="bi bi-pencil-square me-2"></i>Ikuti Ujian
+                                    </a>
+                                }
                             }
                         </div>
+                    </div>
+
+                    <!-- Complete Suggestion (hidden by default) -->
+                    <div id="completeSuggestion"
+                         class="alert alert-info mt-3"
+                         style="display: none;">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Tip:</strong> Anda telah membaca hingga akhir materi.
+                        Klik "Selesaikan Materi" untuk melanjutkan ke materi berikutnya.
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Anti-forgery token for AJAX requests -->
+    @Html.AntiForgeryToken()
+
+    <!-- JavaScript for material completion -->
+    <script>
+        // Include the JavaScript code from the previous artifact here
+        function completeCurrentMaterial() {
+            const materiId = @Model.CurrentMateri.Id;
+            const pelatihanId = @Model.Pelatihan.Id;
+
+            // Show loading state
+            const completeBtn = document.getElementById('completeButton');
+            if (completeBtn) {
+                completeBtn.disabled = true;
+                completeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+            }
+
+            fetch(`/Karyawan/Pelatihan/CompleteMateri/${pelatihanId}/${materiId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showAlert('success', data.message);
+
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        if (data.redirectUrl) {
+                            window.location.href = data.redirectUrl;
+                        }
+                    }, 1500);
+                } else {
+                    showAlert('danger', data.message || 'Terjadi kesalahan');
+                    // Restore button
+                    if (completeBtn) {
+                        completeBtn.disabled = false;
+                        completeBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Selesaikan Materi';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan sistem');
+                // Restore button
+                if (completeBtn) {
+                    completeBtn.disabled = false;
+                    completeBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Selesaikan Materi';
+                }
+            });
+        }
+
+        function showAlert(type, message) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert-dynamic');
+            existingAlerts.forEach(alert => alert.remove());
+
+            // Create new alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-dynamic position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(alertDiv);
+
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                if (alertDiv) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+    </script>
 </div>
 
 @functions {

@@ -1,0 +1,511 @@
+﻿@model RamaExpress.Areas.Karyawan.Models.HasilUjianViewModel
+@{
+    ViewData["Title"] = "Hasil Ujian";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-1">
+                        <i class="bi bi-clipboard-check me-2"></i>Hasil Ujian
+                    </h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a asp-action="Index">Pelatihan</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a asp-action="Detail" asp-route-id="@Model.Hasil.PelatihanId">@Model.Hasil.Pelatihan.Judul</a>
+                            </li>
+                            <li class="breadcrumb-item active">Hasil Ujian</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a asp-action="Detail" asp-route-id="@Model.Hasil.PelatihanId"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali ke Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Result Card -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-@Model.ResultClass text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi @Model.ResultIcon me-2"></i>
+                        @Model.ResultText
+                    </h4>
+                </div>
+                <div class="card-body text-center p-5">
+                    <!-- Score Display -->
+                    <div class="mb-4">
+                        <div class="position-relative d-inline-block">
+                            <!-- Circular Progress -->
+                            <svg width="200" height="200" class="mb-3">
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#e9ecef" stroke-width="10" />
+                                <circle cx="100" cy="100" r="80" fill="none"
+                                        stroke="@(Model.Hasil.IsLulus ? "#28a745" : "#dc3545")"
+                                        stroke-width="10"
+                                        stroke-dasharray="@(2 * Math.PI * 80)"
+                                        stroke-dashoffset="@(2 * Math.PI * 80 * (1 - Model.Hasil.Skor / 100.0))"
+                                        transform="rotate(-90 100 100)"
+                                        class="progress-circle" />
+                            </svg>
+
+                            <!-- Score Text Overlay -->
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <h1 class="display-1 fw-bold text-@Model.ResultClass mb-0">
+                                    @Model.Hasil.Skor
+                                </h1>
+                                <p class="h4 text-muted">%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-target display-6 text-primary mb-2"></i>
+                                <h6 class="text-muted mb-1">Nilai Minimal</h6>
+                                <h4 class="mb-0">@Model.Hasil.Pelatihan.SkorMinimal%</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-calendar-check display-6 text-info mb-2"></i>
+                                <h6 class="text-muted mb-1">Tanggal Ujian</h6>
+                                <h6 class="mb-0">@Model.Hasil.TanggalSelesai.ToString("dd MMM yyyy")</h6>
+                                <small class="text-muted">@Model.Hasil.TanggalSelesai.ToString("HH:mm")</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-@(Model.Hasil.IsLulus ? "check-circle" : "x-circle") display-6 text-@Model.ResultClass mb-2"></i>
+                                <h6 class="text-muted mb-1">Status</h6>
+                                <h5 class="mb-0">
+                                    <span class="badge bg-@Model.ResultClass fs-6">
+                                        @Model.ResultText
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Congratulations or Encouragement Message -->
+                    @if (Model.Hasil.IsLulus)
+                    {
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">
+                                <i class="bi bi-trophy me-2"></i>Selamat!
+                            </h5>
+                            <p class="mb-0">
+                                Anda telah berhasil menyelesaikan ujian pelatihan
+                                <strong>@Model.Hasil.Pelatihan.Judul</strong> dengan nilai
+                                <strong>@Model.Hasil.Skor%</strong>.
+                                @if (Model.HasCertificate)
+                                {
+                                    <br>
+
+                                    <strong>Sertifikat telah digenerate untuk Anda!</strong>
+                                }
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading">
+                                <i class="bi bi-info-circle me-2"></i>Belum Lulus
+                            </h5>
+                            <p class="mb-0">
+                                Nilai Anda <strong>@Model.Hasil.Skor%</strong> belum mencapai
+                                nilai minimal <strong>@Model.Hasil.Pelatihan.SkorMinimal%</strong>.
+                                Silakan pelajari kembali materi dan coba lagi.
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Information -->
+        <div class="col-lg-4">
+            <!-- Training Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-book me-2"></i>Informasi Pelatihan
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-2">@Model.Hasil.Pelatihan.Judul</h6>
+
+                    @if (!string.IsNullOrEmpty(Model.Hasil.Pelatihan.Deskripsi))
+                    {
+                        <p class="text-muted small mb-3">@Model.Hasil.Pelatihan.Deskripsi</p>
+                    }
+
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Durasi Ujian:</span>
+                            <span>@Model.Hasil.Pelatihan.DurasiMenit menit</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Nilai Minimal:</span>
+                            <span>@Model.Hasil.Pelatihan.SkorMinimal%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Status:</span>
+                            <span class="badge bg-@(Model.Hasil.Pelatihan.IsActive ? "success" : "secondary")">
+                                @(Model.Hasil.Pelatihan.IsActive ? "Aktif" : "Tidak Aktif")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificate Section -->
+            @if (Model.HasCertificate)
+            {
+                <div class="card shadow-sm mb-4 border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="bi bi-award me-2"></i>Sertifikat
+                        </h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <i class="bi bi-award display-1 text-warning mb-3"></i>
+                        <h6 class="mb-2">Sertifikat Kelulusan</h6>
+                        <p class="small text-muted mb-3">
+                            No. @Model.Sertifikat.NomorSertifikat
+                        </p>
+
+                        <div class="small mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Tanggal Terbit:</span>
+                                <span>@Model.Sertifikat.TanggalTerbit.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Berlaku Hingga:</span>
+                                <span>
+                                    @if (Model.Sertifikat.TanggalKadaluarsa == DateTime.MaxValue)
+                                    {
+                                        <span class="text-success">Selamanya</span>
+                                    }
+                                    else
+                                    {
+                                        @Model.Sertifikat.TanggalKadaluarsa.ToString("dd MMM yyyy")
+                                    }
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a asp-area="Karyawan" asp-controller="Sertifikat" asp-action="Detail"
+                               asp-route-id="@Model.Sertifikat.Id"
+                               class="btn btn-warning">
+                                <i class="bi bi-eye me-2"></i>Lihat Sertifikat
+                            </a>
+                            <a asp-area="Karyawan" asp-controller="Sertifikat" asp-action="Download"
+                               asp-route-id="@Model.Sertifikat.Id"
+                               class="btn btn-outline-warning">
+                                <i class="bi bi-download me-2"></i>Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (Model.Hasil.IsLulus)
+            {
+                <div class="card shadow-sm mb-4 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Sertifikat
+                        </h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <i class="bi bi-hourglass-split display-1 text-info mb-3"></i>
+                        <h6 class="mb-2">Sertifikat Sedang Diproses</h6>
+                        <p class="small text-muted mb-0">
+                            Sertifikat Anda sedang dalam proses pembuatan.
+                            Silakan cek kembali dalam beberapa menit.
+                        </p>
+                    </div>
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-gear me-2"></i>Aksi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <!-- Back to Training Detail -->
+                        <a asp-action="Detail" asp-route-id="@Model.Hasil.PelatihanId"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-2"></i>Kembali ke Pelatihan
+                        </a>
+
+                        <!-- View Materials -->
+                        <a asp-action="Detail" asp-route-id="@Model.Hasil.PelatihanId"
+                           class="btn btn-outline-info">
+                            <i class="bi bi-book me-2"></i>Lihat Materi
+                        </a>
+
+                        <!-- All Trainings -->
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-list me-2"></i>Semua Pelatihan
+                        </a>
+
+                        @if (!Model.Hasil.IsLulus)
+                        {
+                            <!-- Retake Exam (if failed) -->
+                            <button type="button" class="btn btn-warning"
+                                    onclick="showRetakeModal()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Ulangi Ujian
+                            </button>
+                        }
+
+                        @if (Model.HasCertificate)
+                        {
+                            <!-- Share Certificate -->
+                            <button type="button" class="btn btn-success"
+                                    onclick="shareCertificate()">
+                                <i class="bi bi-share me-2"></i>Bagikan Sertifikat
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Retake Modal -->
+@if (!Model.Hasil.IsLulus)
+{
+    <div class="modal fade" id="retakeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Ulangi Ujian
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-question-circle display-1 text-warning"></i>
+                    </div>
+                    <h6 class="text-center mb-3">Apakah Anda ingin mengulang ujian?</h6>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Catatan:</strong> Nilai sebelumnya akan terhapus dan diganti dengan hasil ujian yang baru.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x me-1"></i>Batal
+                    </button>
+                    <a asp-action="Ujian" asp-route-id="@Model.Hasil.PelatihanId"
+                       class="btn btn-warning">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Ya, Ulangi
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Share Modal -->
+@if (Model.HasCertificate)
+{
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-share me-2"></i>Bagikan Sertifikat
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-award display-1 text-success"></i>
+                        <h6 class="mt-2">Sertifikat @Model.Hasil.Pelatihan.Judul</h6>
+                        <small class="text-muted">No. @Model.Sertifikat.NomorSertifikat</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Link Sertifikat:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                   id="certificateLink"
+                                   value=""
+                                   readonly>
+                            <button class="btn btn-outline-secondary" onclick="copyCertificateLink()">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="shareToLinkedIn()">
+                            <i class="bi bi-linkedin me-2"></i>Bagikan ke LinkedIn
+                        </button>
+                        <button class="btn btn-info" onclick="shareToTwitter()">
+                            <i class="bi bi-twitter me-2"></i>Bagikan ke Twitter
+                        </button>
+                        <button class="btn btn-success" onclick="shareToWhatsApp()">
+                            <i class="bi bi-whatsapp me-2"></i>Bagikan ke WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    // Show retake modal
+    function showRetakeModal() {
+        const modal = new bootstrap.Modal(document.getElementById('retakeModal'));
+        modal.show();
+    }
+
+    // Share certificate
+    function shareCertificate() {
+        const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+        modal.show();
+    }
+
+    // Copy certificate link
+    function copyCertificateLink() {
+        const linkInput = document.getElementById('certificateLink');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999);
+
+        navigator.clipboard.writeText(linkInput.value).then(() => {
+            showToast('success', 'Link sertifikat berhasil disalin!');
+        }).catch(() => {
+            // Fallback for older browsers
+            document.execCommand('copy');
+            showToast('success', 'Link sertifikat berhasil disalin!');
+        });
+    }
+
+    // Social media sharing
+    function shareToLinkedIn() {
+        const url = document.getElementById('certificateLink').value;
+        const text = `Saya telah menyelesaikan pelatihan @Model.Hasil.Pelatihan.Judul dengan nilai @Model.Hasil.Skor%!`;
+        const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`;
+        window.open(linkedinUrl, '_blank');
+    }
+
+    function shareToTwitter() {
+        const url = document.getElementById('certificateLink').value;
+        const text = `Saya telah menyelesaikan pelatihan @Model.Hasil.Pelatihan.Judul dengan nilai @Model.Hasil.Skor%! 🎉`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        window.open(twitterUrl, '_blank');
+    }
+
+    function shareToWhatsApp() {
+        const url = document.getElementById('certificateLink').value;
+        const text = `Halo! Saya telah menyelesaikan pelatihan @Model.Hasil.Pelatihan.Judul dengan nilai @Model.Hasil.Skor%! Lihat sertifikat saya: ${url}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+
+    // Toast notification
+    function showToast(type, message) {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0 position-fixed top-0 end-0 m-3"
+                 style="z-index: 1055;" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        const toastElement = document.body.lastElementChild;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+
+        // Remove from DOM after hiding
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+
+    // Animate score circle on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set certificate link dynamically
+    @if (Model.HasCertificate)
+    {
+        <text>
+                const certificateLink = document.getElementById('certificateLink');
+                if (certificateLink) {
+                    const baseUrl = window.location.origin;
+                    const verifyUrl = '@Url.Action("Verify", "Sertifikat", new { area = "", number = Model.Sertifikat.NomorSertifikat })';
+                    certificateLink.value = baseUrl + verifyUrl;
+                }
+        </text>
+    }
+
+        const circle = document.querySelector('.progress-circle');
+        if (circle) {
+            // Reset to 0 first
+            circle.style.strokeDashoffset = 2 * Math.PI * 80;
+
+            // Animate to final position
+            setTimeout(() => {
+                circle.style.transition = 'stroke-dashoffset 2s ease-in-out';
+                circle.style.strokeDashoffset = @(2 * Math.PI * 80 * (1 - Model.Hasil.Skor / 100.0));
+            }, 500);
+        }
+    });
+</script>
+
+<style>
+    .progress-circle {
+        transition: stroke-dashoffset 2s ease-in-out;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+    @@media (max-width: 768px) {
+        .display-1
+
+    {
+        font-size: 3rem;
+    }
+
+    .row > .col-md-4 {
+        margin-bottom: 1rem;
+    }
+
+    }
+</style>

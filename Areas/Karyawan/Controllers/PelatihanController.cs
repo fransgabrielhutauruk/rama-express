@@ -254,18 +254,42 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // Get all materials for navigation
+                // 🔧 NEW: SEQUENTIAL ACCESS CONTROL
+                // Check if user is trying to access materials out of order
                 var allMaterials = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
-                var currentIndex = allMaterials.FindIndex(m => m.Id == materiId);
+                var requestedMaterialIndex = allMaterials.FindIndex(m => m.Id == materiId);
+                var currentProgressIndex = allMaterials.FindIndex(m => m.Id == progress.MateriTerakhirId);
 
+                // 🔧 CRITICAL: Prevent jumping ahead to future materials
+                if (requestedMaterialIndex > currentProgressIndex + 1)
+                {
+                    var currentMaterial = allMaterials.FirstOrDefault(m => m.Id == progress.MateriTerakhirId);
+                    TempData["ErrorMessage"] = $"Anda harus menyelesaikan materi secara berurutan. " +
+                        $"Silakan lanjutkan dari materi: {currentMaterial?.Judul}";
+                    return RedirectToAction("Materi", new { id = id, materiId = progress.MateriTerakhirId });
+                }
+
+                // 🔧 NEW: AUTO-UPDATE PROGRESS when accessing new material
+                if (requestedMaterialIndex == currentProgressIndex + 1)
+                {
+                    // User is accessing the next material in sequence
+                    progress.MateriTerakhirId = materiId;
+                    progress.UpdatedAt = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                }
+
+                // Prepare view model
+                var currentIndex = allMaterials.FindIndex(m => m.Id == materiId);
                 var viewModel = new MateriViewModel
                 {
                     Pelatihan = pelatihan,
                     CurrentMateri = currentMateri,
                     Progress = progress,
                     AllMaterials = allMaterials,
-                    NextMaterial = currentIndex < allMaterials.Count - 1 ? allMaterials[currentIndex + 1] : null,
-                    PreviousMaterial = currentIndex > 0 ? allMaterials[currentIndex - 1] : null,
+                    NextMaterial = currentIndex < allMaterials.Count - 1 ?
+                        allMaterials[currentIndex + 1] : null,
+                    PreviousMaterial = currentIndex > 0 ?
+                        allMaterials[currentIndex - 1] : null,
                     IsLastMaterial = currentIndex == allMaterials.Count - 1
                 };
 
@@ -319,26 +343,26 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 var currentIndex = allMaterials.FindIndex(m => m.Id == materiId);
 
-                // 🔧 FIXED: Update progress logic
+                // 🔧 CRITICAL FIX: Proper completion logic
                 if (currentIndex < allMaterials.Count - 1)
                 {
                     // Not the last material, move to next
                     var nextMaterial = allMaterials[currentIndex + 1];
                     progress.MateriTerakhirId = nextMaterial.Id;
-                    progress.IsCompleted = false; // Make sure it's not completed yet
+                    progress.IsCompleted = false; // Ensure it's not marked completed yet
                 }
                 else
                 {
-                    // 🔧 CRITICAL FIX: This is the last material, mark as completed
+                    // 🔧 CRITICAL FIX: This is the last material - mark as completed
                     progress.IsCompleted = true;
                     progress.CompletedAt = DateTime.Now;
-                    // Keep MateriTerakhirId as the last material
+                    progress.MateriTerakhirId = currentMaterial.Id; // Keep current material ID
                 }
 
                 progress.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
 
-                // 🔧 FIXED: Return proper response
+                // 🔧 FIXED: Return proper response based on completion status
                 if (progress.IsCompleted)
                 {
                     return Json(new
@@ -368,7 +392,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
-        // ===== 2. FIX UJIAN ACCESS CHECK =====
         [Route("Karyawan/Pelatihan/Ujian/{id}")]
         public async Task<IActionResult> Ujian(int id)
         {
@@ -382,7 +405,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 var pelatihan = await _context.Pelatihan
                     .Include(p => p.PelatihanSoals.OrderBy(s => s.Urutan))
-                    .Include(p => p.PelatihanMateris) // Include materials for checking
+                    .Include(p => p.PelatihanMateris.OrderBy(m => m.Urutan)) // Include materials for checking
                     .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted && p.IsActive);
 
                 if (pelatihan == null)
@@ -395,27 +418,53 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 var progress = await _context.PelatihanProgress
                     .FirstOrDefaultAsync(p => p.UserId == userId.Value && p.PelatihanId == id);
 
-                // 🔧 FIXED: Better completion check logic
                 if (progress == null)
                 {
                     TempData["ErrorMessage"] = "Anda belum memulai pelatihan ini.";
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // 🔧 CRITICAL FIX: Check IsCompleted flag
+                // 🔧 CRITICAL FIX: Primary check using IsCompleted flag
                 if (!progress.IsCompleted)
                 {
-                    // Additional check: verify if all materials are actually completed
+                    // 🔧 ADDED: Secondary verification for completeness
                     var totalMaterials = pelatihan.PelatihanMateris?.Count() ?? 0;
-                    var currentMaterialIndex = pelatihan.PelatihanMateris?
-                        .OrderBy(m => m.Urutan)
-                        .ToList()
-                        .FindIndex(m => m.Id == progress.MateriTerakhirId) ?? -1;
 
-                    // Debug info
-                    TempData["ErrorMessage"] = $"Anda harus menyelesaikan semua materi terlebih dahulu. " +
-                        $"Progress: {currentMaterialIndex + 1}/{totalMaterials}, IsCompleted: {progress.IsCompleted}";
-                    return RedirectToAction("Detail", new { id = id });
+                    // If there are no materials, automatically mark as completed
+                    if (totalMaterials == 0)
+                    {
+                        progress.IsCompleted = true;
+                        progress.CompletedAt = DateTime.Now;
+                        progress.UpdatedAt = DateTime.Now;
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        // Check if user is actually on the last material
+                        var materialsOrdered = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
+                        var lastMaterial = materialsOrdered.LastOrDefault();
+                        var currentMaterialIndex = materialsOrdered.FindIndex(m => m.Id == progress.MateriTerakhirId);
+
+                        // If user is on the last material but not marked completed, allow access
+                        if (lastMaterial != null && progress.MateriTerakhirId == lastMaterial.Id)
+                        {
+                            // Auto-complete if they're on the last material
+                            progress.IsCompleted = true;
+                            progress.CompletedAt = DateTime.Now;
+                            progress.UpdatedAt = DateTime.Now;
+                            await _context.SaveChangesAsync();
+
+                            TempData["SuccessMessage"] = "Progress Anda telah diperbarui. Sekarang Anda dapat mengikuti ujian.";
+                        }
+                        else
+                        {
+                            // User hasn't completed all materials
+                            var completedCount = Math.Max(0, currentMaterialIndex + 1);
+                            TempData["ErrorMessage"] = $"Anda harus menyelesaikan semua materi terlebih dahulu. " +
+                                $"Progress: {completedCount}/{totalMaterials} materi selesai.";
+                            return RedirectToAction("Detail", new { id = id });
+                        }
+                    }
                 }
 
                 // Check if already taken exam
@@ -484,6 +533,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 // Calculate score
                 var questions = pelatihan.PelatihanSoals.OrderBy(s => s.Urutan).ToList();
+
                 var correctAnswers = 0;
 
                 for (int i = 0; i < Math.Min(questions.Count, answers.Count); i++)
