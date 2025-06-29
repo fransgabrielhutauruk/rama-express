@@ -9,7 +9,9 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-primary">Pelatihan Saya</h1>
+                    <h1 class="h3 mb-1 text-primary">
+                        <i class="bi bi-mortarboard me-2"></i>Pelatihan Saya
+                    </h1>
                     <p class="text-muted mb-0">Kelola dan pantau progress pelatihan Anda</p>
                 </div>
                 <div>
@@ -21,6 +23,23 @@
         </div>
     </div>
 
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
@@ -28,46 +47,63 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h5 class="card-title mb-1">Tersedia</h5>
+                            <h6 class="card-title mb-1">Tersedia</h6>
                             <h2 class="mb-0">@Model.TotalAvailable</h2>
                             <small class="opacity-75">Pelatihan yang bisa diikuti</small>
                         </div>
                         <div class="ms-3">
-                            <i class="bi bi-clock fs-1"></i>
+                            <i class="bi bi-clock fs-1 opacity-75"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Sedang Berjalan</h6>
+                            <h2 class="mb-0">@Model.TotalOngoing</h2>
+                            <small class="opacity-75">Pelatihan dalam progress</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-play-circle fs-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-3 mb-3">
             <div class="card bg-success text-white shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h5 class="card-title mb-1">Selesai</h5>
+                            <h6 class="card-title mb-1">Selesai</h6>
                             <h2 class="mb-0">@Model.TotalCompleted</h2>
                             <small class="opacity-75">Pelatihan yang telah selesai</small>
                         </div>
                         <div class="ms-3">
-                            <i class="bi bi-check-circle fs-1"></i>
+                            <i class="bi bi-check-circle fs-1 opacity-75"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-dark shadow-sm h-100">
+            <div class="card bg-warning text-white shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <h5 class="card-title mb-1">Rata-rata Skor</h5>
-                            <h2 class="mb-0">@Model.AverageScore<small class="fs-6">%</small></h2>
-                            <small class="opacity-75">Dari @Model.TotalCompleted pelatihan</small>
+                            <h6 class="card-title mb-1">Lulus</h6>
+                            <h2 class="mb-0">@Model.PassedTrainings</h2>
+                            <small class="opacity-75">Pelatihan dengan nilai lulus</small>
                         </div>
                         <div class="ms-3">
-                            <i class="bi bi-trophy fs-1"></i>
+                            <i class="bi bi-award fs-1 opacity-75"></i>
                         </div>
                     </div>
                 </div>
@@ -75,249 +111,194 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="row">
-        <!-- Ongoing Trainings -->
-        @if (Model.OngoingTrainings.Any())
-        {
-            <div class="col-12 mb-4">
+    <!-- Overall Progress -->
+    @if (Model.TotalAvailable > 0)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-play-circle me-2"></i>Pelatihan Sedang Berjalan
-                        </h5>
-                    </div>
                     <div class="card-body">
-                        <div class="row">
-                            @foreach (var training in Model.OngoingTrainings)
-                            {
-                                <div class="col-md-6 col-lg-4 mb-3">
-                                    <div class="card border-info h-100">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <span class="badge bg-info">Sedang Berjalan</span>
-                                                <small class="text-muted">@training.StartedAt.ToString("dd MMM")</small>
-                                            </div>
-                                            <h6 class="card-title">@training.Pelatihan.Judul</h6>
-                                            <p class="card-text text-muted small mb-3">
-                                                @training.Pelatihan.Deskripsi?.Substring(0, Math.Min(80, training.Pelatihan.Deskripsi.Length))...
-                                            </p>
-                                            
-                                            <!-- Progress Bar -->
-                                            <div class="mb-3">
-                                                @{
-                                                    var progressPercentage = training.Pelatihan.PelatihanMateris?.Count() > 0 ? 
-                                                        Math.Round((double)training.MateriTerakhirId / training.Pelatihan.PelatihanMateris.Count() * 100, 1) : 0;
-                                                }
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <small class="text-muted">Progress</small>
-                                                    <small class="text-muted">@progressPercentage%</small>
-                                                </div>
-                                                <div class="progress" style="height: 6px;">
-                                                    <div class="progress-bar bg-info" style="width: @progressPercentage%"></div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted">
-                                                    <i class="bi bi-clock me-1"></i>@training.Pelatihan.DurasiMenit menit
-                                                </small>
-                                                <a asp-action="Detail" asp-route-id="@training.PelatihanId" 
-                                                   class="btn btn-info btn-sm">
-                                                    <i class="bi bi-play-fill me-1"></i>Lanjutkan
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="bi bi-graph-up me-2"></i>Progress Keseluruhan
+                            </h5>
+                            <span class="badge bg-primary fs-6">@Model.CompletionPercentage%</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 15px;">
+                            <div class="progress-bar bg-primary" style="width: @Model.CompletionPercentage%"></div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <small class="text-muted">Rata-rata Skor: <strong>@Model.AverageScore</strong></small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">Lulus: <strong>@Model.PassedTrainings</strong></small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">Tidak Lulus: <strong>@Model.FailedTrainings</strong></small>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        }
+        </div>
+    }
 
+    <!-- Training Sections -->
+    <div class="row">
         <!-- Available Trainings -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-book me-2"></i>Pelatihan Tersedia
+                        <i class="bi bi-clock me-2"></i>Pelatihan Tersedia
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     @if (Model.AvailableTrainings.Any())
                     {
-                        <div class="row">
-                            @foreach (var training in Model.AvailableTrainings)
+                        <div class="list-group list-group-flush">
+                            @foreach (var training in Model.AvailableTrainings.Take(5))
                             {
-                                    var isStarted = Model.OngoingTrainings.Any(o => o.PelatihanId == training.Id) ||
-                                                   Model.CompletedTrainings.Any(c => c.PelatihanId == training.Id);
-                                    var isCompleted = Model.CompletedTrainings.Any(c => c.PelatihanId == training.Id);
-                                
-                                <div class="col-md-6 mb-4">
-                                    <div class="card border-0 bg-light h-100">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                @if (isCompleted)
-                                                {
-                                                    <span class="badge bg-success">Selesai</span>
-                                                }
-                                                else if (isStarted)
-                                                {
-                                                    <span class="badge bg-info">Sedang Berjalan</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-primary">Tersedia</span>
-                                                }
-                                                <small class="text-muted">
-                                                    <i class="bi bi-hash me-1"></i>@training.Kode
-                                                </small>
-                                            </div>
-                                            
-                                            <h6 class="card-title fw-semibold">@training.Judul</h6>
-                                            <p class="card-text text-muted small mb-3">
-                                                @if (!string.IsNullOrEmpty(training.Deskripsi))
-                                                {
-                                                    @(training.Deskripsi.Length > 100 ? training.Deskripsi.Substring(0, 100) + "..." : training.Deskripsi)
-                                                }
-                                                else
-                                                {
-                                                    <span class="fst-italic">Tidak ada deskripsi</span>
-                                                }
-                                            </p>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <small class="text-muted">
-                                                    <i class="bi bi-clock me-1"></i>@training.DurasiMenit menit
-                                                </small>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-target me-1"></i>Min: @training.SkorMinimal%
-                                                </small>
-                                            </div>
-                                            
-                                            @if (isCompleted)
-                                            {
-                                                var result = Model.CompletedTrainings.First(c => c.PelatihanId == training.Id);
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="badge bg-@(result.IsLulus ? "success" : "danger")">
-                                                        Skor: @result.Skor%
-                                                    </span>
-                                                    <a asp-action="Detail" asp-route-id="@training.Id" 
-                                                       class="btn btn-outline-primary btn-sm">
-                                                        <i class="bi bi-eye me-1"></i>Lihat
-                                                    </a>
-                                                </div>
-                                            }
-                                            else
-                                            {
-                                                <div class="d-flex justify-content-end">
-                                                    <a asp-action="Detail" asp-route-id="@training.Id" 
-                                                       class="btn btn-primary btn-sm">
-                                                        <i class="bi bi-@(isStarted ? "play" : "plus")-circle me-1"></i>
-                                                        @(isStarted ? "Lanjutkan" : "Mulai")
-                                                    </a>
-                                                </div>
-                                            }
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@training.Judul</h6>
+                                            <p class="mb-1 text-muted small">@training.Deskripsi</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>@training.DurasiMenit menit
+                                                <span class="ms-2">
+                                                    <i class="bi bi-award me-1"></i>Min. @training.SkorMinimal%
+                                                </span>
+                                            </small>
+                                        </div>
+                                        <div class="ms-2">
+                                            <a href="@Url.Action("Detail", new { id = training.Id })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>Detail
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             }
                         </div>
+                        @if (Model.AvailableTrainings.Count() > 5)
+                        {
+                            <div class="card-footer text-center">
+                                <small class="text-muted">Dan @(Model.AvailableTrainings.Count() - 5) pelatihan lainnya</small>
+                            </div>
+                        }
                     }
                     else
                     {
-                        <div class="text-center py-5">
-                            <i class="bi bi-book display-1 text-muted mb-3"></i>
-                            <h5 class="text-muted">Tidak Ada Pelatihan Tersedia</h5>
-                            <p class="text-muted">Belum ada pelatihan yang tersedia untuk posisi Anda saat ini.</p>
+                        <div class="text-center p-4">
+                            <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                            <p class="text-muted">Tidak ada pelatihan yang tersedia untuk posisi Anda saat ini.</p>
                         </div>
                     }
                 </div>
             </div>
         </div>
 
-        <!-- Completed Trainings & Quick Stats -->
-        <div class="col-lg-4">
-            <!-- Recent Achievements -->
-            @if (Model.CompletedTrainings.Any())
-            {
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-trophy me-2"></i>Pencapaian Terbaru
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @foreach (var completed in Model.CompletedTrainings.Take(5))
-                        {
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="bg-@(completed.IsLulus ? "success" : "danger") text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                         style="width: 40px; height: 40px;">
-                                        <i class="bi bi-@(completed.IsLulus ? "trophy" : "x-circle")"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 small fw-semibold">@completed.Pelatihan.Judul</h6>
-                                    <p class="mb-0 text-muted small">
-                                        Skor: @completed.Skor% - 
-                                        <span class="text-@(completed.IsLulus ? "success" : "danger")">
-                                            @(completed.IsLulus ? "Lulus" : "Tidak Lulus")
-                                        </span>
-                                    </p>
-                                    <small class="text-muted">@completed.TanggalSelesai.ToString("dd MMM yyyy")</small>
-                                </div>
-                            </div>
-                        }
-                        
-                        @if (Model.CompletedTrainings.Count() > 5)
-                        {
-                            <div class="text-center">
-                                <small class="text-muted">Dan @(Model.CompletedTrainings.Count() - 5) pencapaian lainnya</small>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-
-            <!-- Quick Stats -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
+        <!-- Ongoing Trainings -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-graph-up me-2"></i>Statistik Cepat
+                        <i class="bi bi-play-circle me-2"></i>Sedang Berjalan
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6 mb-3">
-                            <h4 class="text-primary mb-1">@Model.CompletionPercentage%</h4>
-                            <small class="text-muted">Tingkat Penyelesaian</small>
+                <div class="card-body p-0">
+                    @if (Model.OngoingTrainings.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var progress in Model.OngoingTrainings)
+                            {
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@progress.Pelatihan.Judul</h6>
+                                            <small class="text-muted">
+                                                Dimulai: @progress.StartedAt.ToString("dd MMM yyyy")
+                                            </small>
+                                        </div>
+                                        <div class="ms-2">
+                                            <a href="@Url.Action("Detail", new { id = progress.PelatihanId })"
+                                               class="btn btn-sm btn-info">
+                                                <i class="bi bi-arrow-right me-1"></i>Lanjut
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="progress mb-1" style="height: 8px;">
+                                        @{
+                                            var progressPercentage = progress.Pelatihan.PelatihanMateris?.Count() > 0 ?
+                                            Math.Round((double)(progress.MateriTerakhirId) / progress.Pelatihan.PelatihanMateris.Count() * 100, 1) : 0;
+                                        }
+                                        <div class="progress-bar bg-info" style="width: @progressPercentage%"></div>
+                                    </div>
+                                    <small class="text-muted">Progress: @progressPercentage%</small>
+                                </div>
+                            }
                         </div>
-                        <div class="col-6 mb-3">
-                            <h4 class="text-success mb-1">@Model.CompletedTrainings.Count(c => c.IsLulus)</h4>
-                            <small class="text-muted">Pelatihan Lulus</small>
+                    }
+                    else
+                    {
+                        <div class="text-center p-4">
+                            <i class="bi bi-pause-circle fs-1 text-muted mb-3"></i>
+                            <p class="text-muted">Belum ada pelatihan yang sedang berjalan.</p>
                         </div>
-                        <div class="col-6">
-                            <h4 class="text-info mb-1">@Model.TotalOngoing</h4>
-                            <small class="text-muted">Sedang Berjalan</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-warning mb-1">@(Model.TotalAvailable - Model.TotalOngoing - Model.TotalCompleted)</h4>
-                            <small class="text-muted">Belum Dimulai</small>
-                        </div>
-                    </div>
-                    
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Trainings -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>Selesai
+                    </h5>
+                </div>
+                <div class="card-body p-0">
                     @if (Model.CompletedTrainings.Any())
                     {
-                        <hr>
-                        <div class="text-center">
-                            <h6 class="text-muted mb-2">Rata-rata Skor</h6>
-                            <div class="progress mb-2" style="height: 8px;">
-                                <div class="progress-bar bg-warning" style="width: @Model.AverageScore%"></div>
+                        <div class="list-group list-group-flush">
+                            @foreach (var result in Model.CompletedTrainings.Take(5))
+                            {
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@result.Pelatihan.Judul</h6>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span class="badge bg-@(result.IsLulus ? "success" : "danger") me-2">
+                                                    @(result.IsLulus ? "Lulus" : "Tidak Lulus")
+                                                </span>
+                                                <small class="text-muted">Skor: @result.Skor%</small>
+                                            </div>
+                                        </div>
+                                        <div class="ms-2">
+                                            <a href="@Url.Action("HasilUjian", new { id = result.PelatihanId })"
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-file-text me-1"></i>Hasil
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @if (Model.CompletedTrainings.Count() > 5)
+                        {
+                            <div class="card-footer text-center">
+                                <small class="text-muted">Dan @(Model.CompletedTrainings.Count() - 5) pelatihan lainnya</small>
                             </div>
-                            <small class="text-muted">@Model.AverageScore% dari @Model.TotalCompleted pelatihan</small>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center p-4">
+                            <i class="bi bi-trophy fs-1 text-muted mb-3"></i>
+                            <p class="text-muted">Belum ada pelatihan yang diselesaikan.</p>
                         </div>
                     }
                 </div>
@@ -330,68 +311,24 @@
     .card {
         transition: transform 0.2s ease-in-out;
     }
-    
-    .card:hover {
-        transform: translateY(-2px);
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+    .list-group-item-action:hover {
+        background-color: rgba(0, 123, 255, 0.05);
     }
-    
+
     .progress {
-        background-color: rgba(0,0,0,0.1);
+        border-radius: 10px;
     }
-    
+
+    .progress-bar {
+        border-radius: 10px;
+    }
+
     .badge {
-        font-size: 0.75em;
-        padding: 0.375em 0.75em;
-    }
-    
-    .bg-light {
-        background-color: #f8f9fa !important;
-    }
-    
-    .border-info {
-        border-color: #17a2b8 !important;
-    }
-    
-    .text-decoration-none:hover {
-        text-decoration: none !important;
+        font-size: 0.75rem;
     }
 </style>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animate progress bars
-            const progressBars = document.querySelectorAll('.progress-bar');
-            progressBars.forEach(bar => {
-                const width = bar.style.width;
-                bar.style.width = '0%';
-                setTimeout(() => {
-                    bar.style.transition = 'width 1s ease-in-out';
-                    bar.style.width = width;
-                }, 300);
-            });
-            
-            // Add tooltips if available
-            const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-            tooltipElements.forEach(element => {
-                new bootstrap.Tooltip(element);
-            });
-        });
-    </script>
-}<i class="bi bi-book fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h5 class="card-title mb-1">Sedang Berjalan</h5>
-                            <h2 class="mb-0">@Model.TotalOngoing</h2>
-                            <small class="opacity-75">Pelatihan yang sedang diikuti</small>
-                        </div>
-                        <div class="ms-3">

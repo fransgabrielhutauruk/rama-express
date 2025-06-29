@@ -1,25 +1,66 @@
 ﻿@model RamaExpress.Areas.Karyawan.Models.UjianViewModel
 @{
-    ViewData["Title"] = "Ujian Pelatihan";
+    ViewData["Title"] = $"Ujian - {Model.Pelatihan.Judul}";
 }
 
 <div class="container-fluid py-4">
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-1 text-warning">Ujian: @Model.Pelatihan.Judul</h1>
-                    <p class="text-muted mb-0">
-                        <span class="badge bg-warning text-dark me-2">@Model.Pelatihan.Kode</span>
-                        @Model.TotalQuestions soal | Waktu: @Model.TimeLimitFormatted | Min. Skor: @Model.MinScore%
-                    </p>
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-1">
+                                <i class="bi bi-pencil-square me-2"></i>Ujian: @Model.Pelatihan.Judul
+                            </h5>
+                            <small>Bacalah setiap soal dengan teliti sebelum menjawab</small>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="timer-display">
+                                <i class="bi bi-clock me-1"></i>
+                                <span id="timer" class="fw-bold">@Model.TimeLimitFormatted</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <div class="card bg-danger text-white">
-                        <div class="card-body py-2 px-3">
-                            <h4 class="mb-0" id="timer">@Model.TimeLimitFormatted</h4>
-                            <small>Waktu Tersisa</small>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-text text-primary me-2"></i>
+                                <div>
+                                    <div class="fw-semibold">@Model.TotalQuestions</div>
+                                    <small class="text-muted">Total Soal</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock text-info me-2"></i>
+                                <div>
+                                    <div class="fw-semibold">@Model.FormattedDuration</div>
+                                    <small class="text-muted">Waktu Tersedia</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-award text-warning me-2"></i>
+                                <div>
+                                    <div class="fw-semibold">@Model.MinScore%</div>
+                                    <small class="text-muted">Skor Minimal</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <div>
+                                    <div class="fw-semibold" id="answeredCount">0</div>
+                                    <small class="text-muted">Terjawab</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -30,103 +71,179 @@
     <!-- Exam Instructions -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="alert alert-warning">
-                <h5 class="alert-heading">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Petunjuk Ujian
-                </h5>
+            <div class="alert alert-info alert-dismissible fade show">
+                <h6 class="alert-heading">
+                    <i class="bi bi-info-circle me-2"></i>Petunjuk Ujian
+                </h6>
                 <ul class="mb-0">
-                    <li>Ujian terdiri dari <strong>@Model.TotalQuestions soal</strong> pilihan ganda</li>
-                    <li>Waktu ujian: <strong>@Model.TimeLimitFormatted</strong></li>
-                    <li>Skor minimal untuk lulus: <strong>@Model.MinScore%</strong></li>
-                    <li>Pilih satu jawaban yang paling tepat untuk setiap soal</li>
-                    <li>Ujian akan otomatis berakhir jika waktu habis</li>
-                    <li><strong>Pastikan koneksi internet stabil selama ujian</strong></li>
+                    <li>Baca setiap soal dengan teliti sebelum memilih jawaban</li>
+                    <li>Anda hanya memiliki <strong>@Model.FormattedDuration</strong> untuk menyelesaikan ujian</li>
+                    <li>Pastikan semua soal telah dijawab sebelum mengumpulkan</li>
+                    <li>Ujian akan otomatis berakhir ketika waktu habis</li>
+                    <li>Skor minimal untuk lulus adalah <strong>@Model.MinScore%</strong></li>
                 </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
     </div>
 
-    <!-- Exam Form -->
     <form id="examForm">
+        @Html.AntiForgeryToken()
+
         <div class="row">
             <!-- Questions -->
             <div class="col-lg-9">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-clipboard-check me-2"></i>Soal Ujian
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @for (int i = 0; i < Model.Questions.Count; i++)
-                        {
-                            var question = Model.Questions[i];
-                            <div class="question-item mb-4 p-3 border rounded" data-question="@(i + 1)">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h6 class="fw-bold text-primary">
-                                        Soal @(i + 1) dari @Model.TotalQuestions
+                <div class="questions-container">
+                    @foreach (var question in Model.Questions.Select((q, index) => new { Question = q, Index = index }))
+                    {
+                        <div class="card shadow-sm mb-4 question-card" data-question="@question.Index">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <span class="badge bg-primary me-2">@(question.Index + 1)</span>
+                                        Soal @(question.Index + 1) dari @Model.TotalQuestions
                                     </h6>
-                                    <span class="badge bg-primary">@question.Urutan</span>
-                                </div>
-
-                                <div class="question-text mb-3">
-                                    <p class="fs-6 fw-semibold">@question.Pertanyaan</p>
-                                </div>
-
-                                <div class="options">
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio"
-                                               name="answer_@question.Id" value="A" id="q@(question.Id)_a">
-                                        <label class="form-check-label" for="q@(question.Id)_a">
-                                            <strong>A.</strong> @question.OpsiA
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio"
-                                               name="answer_@question.Id" value="B" id="q@(question.Id)_b">
-                                        <label class="form-check-label" for="q@(question.Id)_b">
-                                            <strong>B.</strong> @question.OpsiB
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio"
-                                               name="answer_@question.Id" value="C" id="q@(question.Id)_c">
-                                        <label class="form-check-label" for="q@(question.Id)_c">
-                                            <strong>C.</strong> @question.OpsiC
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio"
-                                               name="answer_@question.Id" value="D" id="q@(question.Id)_d">
-                                        <label class="form-check-label" for="q@(question.Id)_d">
-                                            <strong>D.</strong> @question.OpsiD
-                                        </label>
+                                    <div class="question-status">
+                                        <i class="bi bi-circle text-muted" id="status-@question.Index"></i>
                                     </div>
                                 </div>
                             </div>
-                        }
+                            <div class="card-body">
+                                <div class="question-text mb-4">
+                                    <p class="fs-6">@Html.Raw(question.Question.Pertanyaan)</p>
+                                </div>
+
+                                <div class="options">
+                                    <!-- CORRECTED: Use OpsiA, OpsiB, OpsiC, OpsiD instead of PilihanA, PilihanB, etc. -->
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio"
+                                               name="answer_@question.Question.Id"
+                                               id="q@(question.Question.Id)_a"
+                                               value="A"
+                                               data-question-index="@question.Index">
+                                        <label class="form-check-label" for="q@(question.Question.Id)_a">
+                                            <strong>A.</strong> @question.Question.OpsiA
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio"
+                                               name="answer_@question.Question.Id"
+                                               id="q@(question.Question.Id)_b"
+                                               value="B"
+                                               data-question-index="@question.Index">
+                                        <label class="form-check-label" for="q@(question.Question.Id)_b">
+                                            <strong>B.</strong> @question.Question.OpsiB
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio"
+                                               name="answer_@question.Question.Id"
+                                               id="q@(question.Question.Id)_c"
+                                               value="C"
+                                               data-question-index="@question.Index">
+                                        <label class="form-check-label" for="q@(question.Question.Id)_c">
+                                            <strong>C.</strong> @question.Question.OpsiC
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio"
+                                               name="answer_@question.Question.Id"
+                                               id="q@(question.Question.Id)_d"
+                                               value="D"
+                                               data-question-index="@question.Index">
+                                        <label class="form-check-label" for="q@(question.Question.Id)_d">
+                                            <strong>D.</strong> @question.Question.OpsiD
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Navigation for this question -->
+                                <div class="question-navigation d-flex justify-content-between mt-4 pt-3 border-top">
+                                    <div>
+                                        @if (question.Index > 0)
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary btn-prev"
+                                                    data-target="@(question.Index - 1)">
+                                                <i class="bi bi-arrow-left me-1"></i>Sebelumnya
+                                            </button>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (question.Index < Model.TotalQuestions - 1)
+                                        {
+                                            <button type="button" class="btn btn-primary btn-next"
+                                                    data-target="@(question.Index + 1)">
+                                                Selanjutnya<i class="bi bi-arrow-right ms-1"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-success" id="btnReviewAnswers">
+                                                <i class="bi bi-check-square me-1"></i>Review Jawaban
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Submit Section -->
+                <div class="card shadow-sm border-success" id="submitSection" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-check-square me-2"></i>Review dan Submit Ujian
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <strong>Ringkasan Jawaban:</strong>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success me-2">
+                                            <span id="totalAnswered">0</span> Terjawab
+                                        </span>
+                                        <span class="badge bg-warning">
+                                            <span id="totalUnanswered">@Model.TotalQuestions</span> Belum Dijawab
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning" id="warningUnanswered" style="display: none;">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Masih ada soal yang belum dijawab. Pastikan semua soal telah dijawab sebelum submit.
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-outline-secondary" id="btnBackToQuestions">
+                                        <i class="bi bi-arrow-left me-1"></i>Kembali ke Soal
+                                    </button>
+                                    <button type="button" class="btn btn-success" id="btnSubmitExam">
+                                        <i class="bi bi-send me-1"></i>Submit Ujian
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Sidebar -->
             <div class="col-lg-3">
-                <!-- Timer Card -->
-                <div class="card shadow-sm mb-4 border-danger">
-                    <div class="card-header bg-danger text-white">
+                <!-- Timer -->
+                <div class="card shadow-sm mb-4 border-warning">
+                    <div class="card-header bg-warning text-dark">
                         <h6 class="mb-0">
-                            <i class="bi bi-clock me-2"></i>Waktu Ujian
+                            <i class="bi bi-stopwatch me-2"></i>Waktu Tersisa
                         </h6>
                     </div>
                     <div class="card-body text-center">
-                        <div class="timer-display mb-3">
-                            <h2 class="text-danger mb-0" id="timerDisplay">@Model.TimeLimitFormatted</h2>
-                            <small class="text-muted">Waktu Tersisa</small>
+                        <div class="timer-large" id="timerLarge">@Model.TimeLimitFormatted</div>
+                        <div class="progress mt-3" style="height: 8px;">
+                            <div class="progress-bar bg-warning" id="timeProgress" style="width: 100%"></div>
                         </div>
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div class="progress-bar bg-danger" id="timeProgress" style="width: 100%"></div>
-                        </div>
-                        <small class="text-muted">Ujian akan otomatis berakhir jika waktu habis</small>
                     </div>
                 </div>
 
@@ -138,62 +255,33 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div class="question-navigator">
-                            @for (int i = 1; i <= Model.TotalQuestions; i++)
+                        <div class="question-grid">
+                            @for (int i = 0; i < Model.TotalQuestions; i++)
                             {
-                                <button type="button" class="btn btn-outline-primary btn-sm me-1 mb-1 question-nav-btn"
-                                        data-question="@i">
-                                    @i
+                                <button type="button" class="btn btn-outline-secondary btn-sm question-nav-btn"
+                                        data-question="@i" id="navBtn-@i">
+                                    @(i + 1)
                                 </button>
                             }
-                        </div>
-                        <hr>
-                        <div class="legend">
-                            <small class="d-block mb-1">
-                                <span class="badge bg-success me-1">•</span>Dijawab
-                            </small>
-                            <small class="d-block mb-1">
-                                <span class="badge bg-primary me-1">•</span>Saat ini
-                            </small>
-                            <small class="d-block">
-                                <span class="badge bg-secondary me-1">•</span>Belum dijawab
-                            </small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Exam Info -->
+                <!-- Progress -->
                 <div class="card shadow-sm">
                     <div class="card-header">
                         <h6 class="mb-0">
-                            <i class="bi bi-info-circle me-2"></i>Informasi Ujian
+                            <i class="bi bi-graph-up me-2"></i>Progress
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div class="row text-center mb-3">
-                            <div class="col-6">
-                                <h5 class="text-primary mb-1">@Model.TotalQuestions</h5>
-                                <small class="text-muted">Total Soal</small>
-                            </div>
-                            <div class="col-6">
-                                <h5 class="text-success mb-1">@Model.MinScore%</h5>
-                                <small class="text-muted">Skor Minimal</small>
-                            </div>
+                        <div class="progress mb-3" style="height: 12px;">
+                            <div class="progress-bar bg-success" id="progressBar" style="width: 0%"></div>
                         </div>
-
-                        <div class="progress-summary mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">Progress</small>
-                                <small class="text-muted"><span id="answeredCount">0</span>/@Model.TotalQuestions</small>
-                            </div>
-                            <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-success" id="answeredProgress" style="width: 0%"></div>
-                            </div>
+                        <div class="text-center">
+                            <div class="fw-semibold" id="progressText">0 / @Model.TotalQuestions</div>
+                            <small class="text-muted">Soal Terjawab</small>
                         </div>
-
-                        <button type="submit" class="btn btn-warning w-100" id="submitExam">
-                            <i class="bi bi-send me-2"></i>Selesai Ujian
-                        </button>
                     </div>
                 </div>
             </div>
@@ -201,285 +289,583 @@
     </form>
 </div>
 
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-question-circle me-2"></i>Konfirmasi Submit Ujian
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin mengumpulkan ujian?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Perhatian:</strong> Setelah dikumpulkan, Anda tidak dapat mengubah jawaban lagi.
+                </div>
+                <div class="submit-summary">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="fs-4 fw-bold text-success" id="finalAnswered">0</div>
+                                <small class="text-muted">Terjawab</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="fs-4 fw-bold text-warning" id="finalUnanswered">@Model.TotalQuestions</div>
+                                <small class="text-muted">Belum Dijawab</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i>Batal
+                </button>
+                <button type="button" class="btn btn-success" id="confirmSubmit">
+                    <i class="bi bi-send me-1"></i>Ya, Kumpulkan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Timer setup
+        let timeLimit = @Model.TimeLimit; // in seconds
+        let timeRemaining = timeLimit;
+        let timerInterval;
+
+        // Question tracking
+        let currentQuestion = 0;
+        let totalQuestions = @Model.TotalQuestions;
+        let answeredQuestions = new Set();
+
+        // Initialize
+        initializeExam();
+        startTimer();
+        showQuestion(0);
+
+        function initializeExam() {
+            // Add event listeners for radio buttons
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const questionIndex = parseInt(this.dataset.questionIndex);
+                    updateQuestionStatus(questionIndex, true);
+                    updateProgress();
+                });
+            });
+
+            // Navigation buttons
+            document.querySelectorAll('.btn-next').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const target = parseInt(this.dataset.target);
+                    showQuestion(target);
+                });
+            });
+
+            document.querySelectorAll('.btn-prev').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const target = parseInt(this.dataset.target);
+                    showQuestion(target);
+                });
+            });
+
+            // Question navigation buttons
+            document.querySelectorAll('.question-nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const questionIndex = parseInt(this.dataset.question);
+                    showQuestion(questionIndex);
+                });
+            });
+
+            // Review and submit buttons
+            document.getElementById('btnReviewAnswers').addEventListener('click', showReviewSection);
+            document.getElementById('btnBackToQuestions').addEventListener('click', hideReviewSection);
+            document.getElementById('btnSubmitExam').addEventListener('click', showSubmitModal);
+            document.getElementById('confirmSubmit').addEventListener('click', submitExam);
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmitExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(timeRemaining / 3600);
+            const minutes = Math.floor((timeRemaining % 3600) / 60);
+            const seconds = timeRemaining % 60;
+
+            const timeString = hours > 0
+                ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+                : `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            document.getElementById('timer').textContent = timeString;
+            document.getElementById('timerLarge').textContent = timeString;
+
+            // Update progress bar
+            const progress = (timeRemaining / timeLimit) * 100;
+            document.getElementById('timeProgress').style.width = progress + '%';
+
+            // Change color when time is running low
+            const timerElements = [document.getElementById('timer'), document.getElementById('timerLarge')];
+            const progressBar = document.getElementById('timeProgress');
+
+            if (timeRemaining <= 300) { // 5 minutes
+                timerElements.forEach(el => el.classList.add('text-danger'));
+                progressBar.classList.remove('bg-warning', 'bg-success');
+                progressBar.classList.add('bg-danger');
+            } else if (timeRemaining <= 600) { // 10 minutes
+                timerElements.forEach(el => el.classList.add('text-warning'));
+                progressBar.classList.remove('bg-success', 'bg-danger');
+                progressBar.classList.add('bg-warning');
+            }
+        }
+
+        function showQuestion(index) {
+            // Hide all questions
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.style.display = 'none';
+            });
+
+            // Show target question
+            const targetQuestion = document.querySelector(`[data-question="${index}"]`);
+            if (targetQuestion) {
+                targetQuestion.style.display = 'block';
+                targetQuestion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            currentQuestion = index;
+
+            // Update navigation buttons
+            updateNavigationButtons();
+
+            // Hide review section
+            hideReviewSection();
+        }
+
+        function updateNavigationButtons() {
+            document.querySelectorAll('.question-nav-btn').forEach((btn, index) => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-secondary');
+
+                if (index === currentQuestion) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary');
+                }
+            });
+        }
+
+        function updateQuestionStatus(questionIndex, isAnswered) {
+            const statusIcon = document.getElementById(`status-${questionIndex}`);
+            const navBtn = document.getElementById(`navBtn-${questionIndex}`);
+
+            if (isAnswered) {
+                answeredQuestions.add(questionIndex);
+                statusIcon.className = 'bi bi-check-circle-fill text-success';
+                navBtn.classList.remove('btn-outline-secondary');
+                navBtn.classList.add('btn-outline-success');
+            } else {
+                answeredQuestions.delete(questionIndex);
+                statusIcon.className = 'bi bi-circle text-muted';
+                navBtn.classList.remove('btn-outline-success');
+                navBtn.classList.add('btn-outline-secondary');
+            }
+        }
+
+        function updateProgress() {
+            const answered = answeredQuestions.size;
+            const unanswered = totalQuestions - answered;
+
+            // Update progress bar
+            const progress = (answered / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Update counters
+            document.getElementById('answeredCount').textContent = answered;
+            document.getElementById('progressText').textContent = `${answered} / ${totalQuestions}`;
+            document.getElementById('totalAnswered').textContent = answered;
+            document.getElementById('totalUnanswered').textContent = unanswered;
+            document.getElementById('finalAnswered').textContent = answered;
+            document.getElementById('finalUnanswered').textContent = unanswered;
+
+            // Show/hide warning
+            const warning = document.getElementById('warningUnanswered');
+            if (unanswered > 0) {
+                warning.style.display = 'block';
+            } else {
+                warning.style.display = 'none';
+            }
+        }
+
+        function showReviewSection() {
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.style.display = 'none';
+            });
+            document.getElementById('submitSection').style.display = 'block';
+            document.getElementById('submitSection').scrollIntoView({ behavior: 'smooth' });
+            updateProgress();
+        }
+
+        function hideReviewSection() {
+            document.getElementById('submitSection').style.display = 'none';
+            showQuestion(currentQuestion);
+        }
+
+        function showSubmitModal() {
+            updateProgress();
+            const modal = new bootstrap.Modal(document.getElementById('submitModal'));
+            modal.show();
+        }
+
+        function submitExam() {
+            // Disable submit button
+            const submitBtn = document.getElementById('confirmSubmit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+
+            // Stop timer
+            clearInterval(timerInterval);
+
+            // Collect answers
+            const answers = [];
+
+            // Get all radio buttons and collect selected answers
+            const radioGroups = {};
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                const questionId = radio.name.replace('answer_', '');
+                radioGroups[questionId] = radio.value;
+            });
+
+            // Convert to array in question order
+    @foreach (var question in Model.Questions)
+    {
+        <text>
+                    if (radioGroups['@question.Id']) {
+                        answers.push(radioGroups['@question.Id']);
+                    } else {
+                        answers.push(''); // Empty answer for unanswered questions
+                    }
+        </text>
+    }
+
+            // Submit to server
+            fetch('@Url.Action("SubmitUjian", new { id = Model.Pelatihan.Id })', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(answers)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message and redirect
+                    showAlert('success', `Ujian berhasil dikumpulkan! Skor Anda: ${data.score}% (${data.isLulus ? 'LULUS' : 'TIDAK LULUS'})`);
+
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl || '@Url.Action("HasilUjian", new { id = Model.Pelatihan.Id })';
+                    }, 2000);
+                } else {
+                    showAlert('danger', data.message || 'Terjadi kesalahan saat menyimpan hasil ujian');
+
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Ya, Kumpulkan';
+
+                    // Restart timer if there's time left
+                    if (timeRemaining > 0) {
+                        startTimer();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan sistem');
+
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Ya, Kumpulkan';
+
+                // Restart timer if there's time left
+                if (timeRemaining > 0) {
+                    startTimer();
+                }
+            });
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('submitModal'));
+            modal.hide();
+        }
+
+        function autoSubmitExam() {
+            showAlert('warning', 'Waktu habis! Ujian akan otomatis dikumpulkan.');
+
+            setTimeout(() => {
+                submitExam();
+            }, 2000);
+        }
+
+        function showAlert(type, message) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert-dynamic');
+            existingAlerts.forEach(alert => alert.remove());
+
+            // Create new alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-dynamic`;
+            alertDiv.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            // Insert at the top of the container
+            const container = document.querySelector('.container-fluid');
+            const firstRow = container.querySelector('.row');
+            container.insertBefore(alertDiv, firstRow);
+
+            // Auto remove after 10 seconds for success/error, 5 seconds for warning
+            const timeout = type === 'success' || type === 'danger' ? 10000 : 5000;
+            setTimeout(() => {
+                if (alertDiv && alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, timeout);
+        }
+
+        // Initialize answered questions on page load
+        document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+            const questionIndex = parseInt(radio.dataset.questionIndex);
+            updateQuestionStatus(questionIndex, true);
+        });
+        updateProgress();
+
+        // Prevent accidental page refresh/close
+        window.addEventListener('beforeunload', function(e) {
+            if (timeRemaining > 0 && answeredQuestions.size > 0) {
+                e.preventDefault();
+                e.returnValue = 'Ujian sedang berlangsung. Apakah Anda yakin ingin meninggalkan halaman?';
+            }
+        });
+
+        // Handle page visibility change (pause timer when tab is not active)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden - could pause timer here if needed
+                console.log('Tab hidden - exam continues running');
+            } else {
+                // Page is visible
+                console.log('Tab visible - exam active');
+            }
+        });
+
+        // Auto-save functionality (optional - saves answers periodically)
+        let autoSaveInterval = setInterval(() => {
+            if (answeredQuestions.size > 0) {
+                console.log('Auto-saving answers...', answeredQuestions.size, 'questions answered');
+                // You can implement auto-save to server here if needed
+            }
+        }, 60000); // Every minute
+
+        // Clean up intervals when exam is submitted
+        function cleanUp() {
+            clearInterval(timerInterval);
+            clearInterval(autoSaveInterval);
+        }
+
+        // Call cleanup when page unloads
+        window.addEventListener('unload', cleanUp);
+    });
+</script>
+
 <style>
-    .question-item {
+    .timer-display {
+        font-size: 1.1rem;
+    }
+
+    .timer-large {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffc107;
+    }
+
+    .question-card {
         transition: all 0.3s ease;
     }
 
-        .question-item.current {
-            border-color: #0d6efd !important;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-        }
-
-    .form-check-input:checked {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
+    .question-text {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #007bff;
     }
 
-    .form-check-label {
-        cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 0.375rem;
-        transition: background-color 0.15s ease-in-out;
+    .form-check:hover {
+        background-color: #f8f9fa;
     }
 
-    .form-check:has(.form-check-input:checked) .form-check-label {
-        background-color: rgba(13, 110, 253, 0.1);
+    .form-check-input:checked + .form-check-label {
+        color: #0d6efd;
+        font-weight: 500;
+    }
+
+    .question-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
     }
 
     .question-nav-btn {
-        width: 40px;
-        height: 40px;
-    }
-
-        .question-nav-btn.answered {
-            background-color: #198754;
-            border-color: #198754;
-            color: white;
-        }
-
-        .question-nav-btn.current {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-            color: white;
-        }
-
-    .timer-display h2 {
-        font-family: 'Courier New', monospace;
+        aspect-ratio: 1;
+        border-radius: 50%;
         font-weight: bold;
     }
 
+        .question-nav-btn.btn-outline-success {
+            border-color: #198754;
+            color: #198754;
+        }
+
+    .question-navigation {
+        background-color: #f8f9fa;
+        margin: 0 -1.25rem -1.25rem -1.25rem;
+        padding: 1rem 1.25rem;
+        border-radius: 0 0 0.375rem 0.375rem;
+    }
+
     .progress {
-        background-color: rgba(0,0,0,0.1);
+        border-radius: 10px;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    .alert-dynamic {
+        margin-bottom: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        z-index: 1050;
+        position: relative;
+    }
+
+    .submit-summary {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .text-danger {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%
+
+    {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+
+    }
+
+    /* Mobile responsiveness */
+    @@media (max-width: 768px) {
+        .timer-large
+
+    {
+        font-size: 2rem;
+    }
+
+    .question-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .question-text {
+        padding: 1rem;
+    }
+
+    .form-check {
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .question-navigation {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+        .question-navigation .btn {
+            width: 100%;
+        }
+
+    }
+
+    /* Print styles (hide unnecessary elements) */
+    @@media print {
+        .card-header, .question-navigation, .btn, .alert, .timer-display, #submitSection
+
+    {
+        display: none !important;
+    }
+
+    .question-card {
+        page-break-inside: avoid;
+        margin-bottom: 2rem;
+    }
+
+    }
+
+    /* High contrast mode support */
+    @@media (prefers-contrast: high) {
+        .form-check:hover
+
+    {
+        background-color: #e9ecef;
+    }
+
+    .question-text {
+        border-left-width: 6px;
+    }
+
+    }
+
+    /* Reduced motion support */
+    @@media (prefers-reduced-motion: reduce) {
+        .question-card, .form-check, .progress-bar
+
+    {
+        transition: none;
+    }
+
+    .text-danger {
+        animation: none;
+    }
+
     }
 </style>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const examForm = document.getElementById('examForm');
-            const timerDisplay = document.getElementById('timerDisplay');
-            const timeProgress = document.getElementById('timeProgress');
-            const answeredProgress = document.getElementById('answeredProgress');
-            const answeredCount = document.getElementById('answeredCount');
-            const submitBtn = document.getElementById('submitExam');
-            const questionNavBtns = document.querySelectorAll('.question-nav-btn');
-            const questionItems = document.querySelectorAll('.question-item');
-
-            let timeLimit = @Model.TimeLimit * 60; // Convert to seconds
-            let timeRemaining = timeLimit;
-            let examTimer;
-            let currentQuestion = 1;
-
-            // Initialize exam
-            initializeExam();
-
-            function initializeExam() {
-                startTimer();
-                updateQuestionNavigator();
-                showQuestion(1);
-
-                // Add event listeners
-                document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    radio.addEventListener('change', handleAnswerChange);
-                });
-
-                questionNavBtns.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const questionNum = parseInt(this.dataset.question);
-                        showQuestion(questionNum);
-                    });
-                });
-
-                examForm.addEventListener('submit', handleSubmit);
-
-                // Prevent accidental page refresh
-                window.addEventListener('beforeunload', function(e) {
-                    e.preventDefault();
-                    e.returnValue = 'Ujian sedang berlangsung. Yakin ingin meninggalkan halaman?';
-                });
-            }
-
-            function startTimer() {
-                examTimer = setInterval(function() {
-                    timeRemaining--;
-                    updateTimerDisplay();
-                    updateTimeProgress();
-
-                    if (timeRemaining <= 0) {
-                        clearInterval(examTimer);
-                        autoSubmitExam();
-                    }
-                }, 1000);
-            }
-
-            function updateTimerDisplay() {
-                const hours = Math.floor(timeRemaining / 3600);
-                const minutes = Math.floor((timeRemaining % 3600) / 60);
-                const seconds = timeRemaining % 60;
-
-                let display = '';
-                if (hours > 0) {
-                    display = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                } else {
-                    display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }
-
-                timerDisplay.textContent = display;
-
-                // Change color when time is running low
-                if (timeRemaining <= 300) { // 5 minutes
-                    timerDisplay.className = 'text-danger mb-0';
-                } else if (timeRemaining <= 600) { // 10 minutes
-                    timerDisplay.className = 'text-warning mb-0';
-                }
-            }
-
-            function updateTimeProgress() {
-                const percentage = (timeRemaining / timeLimit) * 100;
-                timeProgress.style.width = percentage + '%';
-
-                if (percentage <= 25) {
-                    timeProgress.className = 'progress-bar bg-danger';
-                } else if (percentage <= 50) {
-                    timeProgress.className = 'progress-bar bg-warning';
-                }
-            }
-
-            function handleAnswerChange() {
-                updateQuestionNavigator();
-                updateAnsweredProgress();
-            }
-
-            function updateQuestionNavigator() {
-                questionNavBtns.forEach(btn => {
-                    const questionNum = parseInt(btn.dataset.question);
-                    const hasAnswer = checkQuestionAnswered(questionNum);
-
-                    btn.classList.remove('answered', 'current');
-
-                    if (hasAnswer) {
-                        btn.classList.add('answered');
-                    }
-
-                    if (questionNum === currentQuestion) {
-                        btn.classList.add('current');
-                    }
-                });
-            }
-
-            function checkQuestionAnswered(questionNum) {
-                const questionItem = document.querySelector(`[data-question="${questionNum}"]`);
-                if (questionItem) {
-                    const radios = questionItem.querySelectorAll('input[type="radio"]');
-                    return Array.from(radios).some(radio => radio.checked);
-                }
-                return false;
-            }
-
-            function updateAnsweredProgress() {
-                const totalQuestions = @Model.TotalQuestions;
-                let answered = 0;
-
-                for (let i = 1; i <= totalQuestions; i++) {
-                    if (checkQuestionAnswered(i)) {
-                        answered++;
-                    }
-                }
-
-                answeredCount.textContent = answered;
-                const percentage = (answered / totalQuestions) * 100;
-                answeredProgress.style.width = percentage + '%';
-
-                // Enable submit button only if all questions are answered
-                submitBtn.disabled = answered < totalQuestions;
-            }
-
-            function showQuestion(questionNum) {
-                currentQuestion = questionNum;
-
-                // Hide all questions
-                questionItems.forEach(item => {
-                    item.style.display = 'none';
-                    item.classList.remove('current');
-                });
-
-                // Show current question
-                const currentQuestionItem = document.querySelector(`[data-question="${questionNum}"]`);
-                if (currentQuestionItem) {
-                    currentQuestionItem.style.display = 'block';
-                    currentQuestionItem.classList.add('current');
-                    currentQuestionItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-
-                updateQuestionNavigator();
-            }
-
-            function handleSubmit(e) {
-                e.preventDefault();
-
-                if (!confirm('Apakah Anda yakin ingin menyelesaikan ujian? Pastikan semua soal sudah dijawab.')) {
-                    return;
-                }
-
-                submitExam();
-            }
-
-            function submitExam() {
-                const formData = new FormData(examForm);
-                const answers = {};
-
-                // Collect answers
-                for (let [key, value] of formData.entries()) {
-                    if (key.startsWith('answer_')) {
-                        const questionId = key.replace('answer_', '');
-                        answers[questionId] = value;
-                    }
-                }
-
-                // Show loading
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Menyimpan...';
-                submitBtn.disabled = true;
-                clearInterval(examTimer);
-
-                // Submit to server
-                fetch('@Url.Action("SubmitUjian", "Pelatihan", new { area = "Karyawan", id = Model.Pelatihan.Id })', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                    },
-                    body: JSON.stringify(answers)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Remove beforeunload listener
-                        window.removeEventListener('beforeunload', arguments.callee);
-
-                        // Redirect to results
-                        window.location.href = data.redirectUrl || '@Url.Action("HasilUjian", "Pelatihan", new { area = "Karyawan", id = Model.Pelatihan.Id })';
-                    } else {
-                        alert('Terjadi kesalahan: ' + (data.message || 'Gagal menyimpan jawaban'));
-                        submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Selesai Ujian';
-                        submitBtn.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan jaringan. Silakan coba lagi.');
-                    submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Selesai Ujian';
-                    submitBtn.disabled = false;
-                });
-            }
-
-            function autoSubmitExam() {
-                alert('Waktu ujian telah habis. Ujian akan otomatis diselesaikan.');
-                submitExam();
-            }
-
-            // Initialize display
-            updateAnsweredProgress();
-        });
-    </script>
-}

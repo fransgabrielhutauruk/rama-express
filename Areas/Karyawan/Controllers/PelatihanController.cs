@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Areas/Karyawan/Controllers/PelatihanController.cs - CORRECTED VERSION
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RamaExpress.Areas.Admin.Data;
 using RamaExpress.Areas.Admin.Models;
@@ -131,6 +132,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
+        // ===== 3. FIX MULAI METHOD =====
         [Route("Karyawan/Pelatihan/Mulai/{id}")]
         public async Task<IActionResult> Mulai(int id)
         {
@@ -169,32 +171,42 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 if (existingProgress != null)
                 {
-                    return RedirectToAction("Materi", new { id = id, materiId = existingProgress.MateriTerakhirId });
+                    // Find current material based on MateriTerakhirId
+                    var currentMaterial = pelatihan.PelatihanMateris
+                        .FirstOrDefault(m => m.Id == existingProgress.MateriTerakhirId);
+
+                    if (currentMaterial != null)
+                    {
+                        return RedirectToAction("Materi", new { id = id, materiId = currentMaterial.Id });
+                    }
+
+                    return RedirectToAction("Detail", new { id = id });
                 }
 
-                // Create new progress record
+                // Get first material
+                var firstMaterial = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).FirstOrDefault();
+                if (firstMaterial == null)
+                {
+                    TempData["ErrorMessage"] = "Pelatihan tidak memiliki materi yang tersedia.";
+                    return RedirectToAction("Detail", new { id = id });
+                }
+
+                // 🔧 FIXED: Create progress with first material ID
                 var progress = new PelatihanProgress
                 {
                     UserId = userId.Value,
                     PelatihanId = id,
-                    MateriTerakhirId = 1,
+                    MateriTerakhirId = firstMaterial.Id, // Use actual material ID, not Urutan
                     IsCompleted = false,
-                    StartedAt = DateTime.Now
+                    StartedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
                 };
 
                 _context.PelatihanProgress.Add(progress);
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Pelatihan berhasil dimulai!";
-
-                // Redirect to first material
-                var firstMaterial = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).FirstOrDefault();
-                if (firstMaterial != null)
-                {
-                    return RedirectToAction("Materi", new { id = id, materiId = firstMaterial.Id });
-                }
-
-                return RedirectToAction("Detail", new { id = id });
+                return RedirectToAction("Materi", new { id = id, materiId = firstMaterial.Id });
             }
             catch (Exception ex)
             {
@@ -215,57 +227,46 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Login", "User", new { area = "" });
                 }
 
-                // Get training and material
                 var pelatihan = await _context.Pelatihan
                     .Include(p => p.PelatihanMateris.OrderBy(m => m.Urutan))
                     .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted && p.IsActive);
 
                 if (pelatihan == null)
                 {
-                    TempData["ErrorMessage"] = "Pelatihan tidak ditemukan.";
+                    TempData["ErrorMessage"] = "Pelatihan tidak ditemukan atau tidak aktif.";
                     return RedirectToAction("Index");
                 }
 
-                var materi = pelatihan.PelatihanMateris.FirstOrDefault(m => m.Id == materiId);
-                if (materi == null)
+                var currentMateri = pelatihan.PelatihanMateris.FirstOrDefault(m => m.Id == materiId);
+                if (currentMateri == null)
                 {
                     TempData["ErrorMessage"] = "Materi tidak ditemukan.";
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // Check progress
+                // Get user's progress
                 var progress = await _context.PelatihanProgress
                     .FirstOrDefaultAsync(p => p.UserId == userId.Value && p.PelatihanId == id);
 
                 if (progress == null)
                 {
-                    TempData["ErrorMessage"] = "Anda belum memulai pelatihan ini.";
+                    TempData["ErrorMessage"] = "Progress pelatihan tidak ditemukan. Silakan mulai pelatihan terlebih dahulu.";
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // Update progress
-                progress.MateriTerakhirId = materi.Urutan;
-                progress.UpdatedAt = DateTime.Now;
-
-                // Check if this is the last material
-                var totalMaterials = pelatihan.PelatihanMateris.Count();
-                if (materi.Urutan >= totalMaterials)
-                {
-                    progress.IsCompleted = true;
-                    progress.CompletedAt = DateTime.Now;
-                }
-
-                await _context.SaveChangesAsync();
+                // Get all materials for navigation
+                var allMaterials = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
+                var currentIndex = allMaterials.FindIndex(m => m.Id == materiId);
 
                 var viewModel = new MateriViewModel
                 {
                     Pelatihan = pelatihan,
-                    CurrentMateri = materi,
+                    CurrentMateri = currentMateri,
                     Progress = progress,
-                    AllMaterials = pelatihan.PelatihanMateris.ToList(),
-                    NextMaterial = pelatihan.PelatihanMateris.FirstOrDefault(m => m.Urutan > materi.Urutan),
-                    PreviousMaterial = pelatihan.PelatihanMateris.FirstOrDefault(m => m.Urutan < materi.Urutan),
-                    IsLastMaterial = materi.Urutan >= totalMaterials
+                    AllMaterials = allMaterials,
+                    NextMaterial = currentIndex < allMaterials.Count - 1 ? allMaterials[currentIndex + 1] : null,
+                    PreviousMaterial = currentIndex > 0 ? allMaterials[currentIndex - 1] : null,
+                    IsLastMaterial = currentIndex == allMaterials.Count - 1
                 };
 
                 return View(viewModel);
@@ -278,6 +279,96 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
+        [Route("Karyawan/Pelatihan/CompleteMateri/{id}/{materiId}")]
+        [HttpPost]
+        public async Task<IActionResult> CompleteMateri(int id, int materiId)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                {
+                    return Json(new { success = false, message = "Session expired" });
+                }
+
+                var progress = await _context.PelatihanProgress
+                    .FirstOrDefaultAsync(p => p.UserId == userId.Value && p.PelatihanId == id);
+
+                if (progress == null)
+                {
+                    return Json(new { success = false, message = "Progress tidak ditemukan" });
+                }
+
+                // 🔧 FIXED: Get pelatihan with materials ordered by Urutan
+                var pelatihan = await _context.Pelatihan
+                    .Include(p => p.PelatihanMateris.OrderBy(m => m.Urutan))
+                    .FirstOrDefaultAsync(p => p.Id == id);
+
+                if (pelatihan == null)
+                {
+                    return Json(new { success = false, message = "Pelatihan tidak ditemukan" });
+                }
+
+                var allMaterials = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
+                var currentMaterial = allMaterials.FirstOrDefault(m => m.Id == materiId);
+
+                if (currentMaterial == null)
+                {
+                    return Json(new { success = false, message = "Materi tidak ditemukan" });
+                }
+
+                var currentIndex = allMaterials.FindIndex(m => m.Id == materiId);
+
+                // 🔧 FIXED: Update progress logic
+                if (currentIndex < allMaterials.Count - 1)
+                {
+                    // Not the last material, move to next
+                    var nextMaterial = allMaterials[currentIndex + 1];
+                    progress.MateriTerakhirId = nextMaterial.Id;
+                    progress.IsCompleted = false; // Make sure it's not completed yet
+                }
+                else
+                {
+                    // 🔧 CRITICAL FIX: This is the last material, mark as completed
+                    progress.IsCompleted = true;
+                    progress.CompletedAt = DateTime.Now;
+                    // Keep MateriTerakhirId as the last material
+                }
+
+                progress.UpdatedAt = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                // 🔧 FIXED: Return proper response
+                if (progress.IsCompleted)
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        isCompleted = true,
+                        message = "🎉 Semua materi telah selesai! Anda dapat mengikuti ujian sekarang.",
+                        redirectUrl = Url.Action("Detail", new { id = id })
+                    });
+                }
+                else
+                {
+                    var nextMaterial = allMaterials[currentIndex + 1];
+                    return Json(new
+                    {
+                        success = true,
+                        isCompleted = false,
+                        message = "✅ Materi berhasil diselesaikan! Lanjut ke materi berikutnya.",
+                        redirectUrl = Url.Action("Materi", new { id = id, materiId = nextMaterial.Id })
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error completing material {MaterialId} for training {TrainingId}", materiId, id);
+                return Json(new { success = false, message = "Terjadi kesalahan sistem" });
+            }
+        }
+
+        // ===== 2. FIX UJIAN ACCESS CHECK =====
         [Route("Karyawan/Pelatihan/Ujian/{id}")]
         public async Task<IActionResult> Ujian(int id)
         {
@@ -289,14 +380,41 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Login", "User", new { area = "" });
                 }
 
-                // Check if training is completed
+                var pelatihan = await _context.Pelatihan
+                    .Include(p => p.PelatihanSoals.OrderBy(s => s.Urutan))
+                    .Include(p => p.PelatihanMateris) // Include materials for checking
+                    .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted && p.IsActive);
+
+                if (pelatihan == null)
+                {
+                    TempData["ErrorMessage"] = "Pelatihan tidak ditemukan atau tidak aktif.";
+                    return RedirectToAction("Index");
+                }
+
+                // 🔧 CRITICAL FIX: Check if user has completed all materials
                 var progress = await _context.PelatihanProgress
-                    .Include(p => p.Pelatihan)
                     .FirstOrDefaultAsync(p => p.UserId == userId.Value && p.PelatihanId == id);
 
-                if (progress == null || !progress.IsCompleted)
+                // 🔧 FIXED: Better completion check logic
+                if (progress == null)
                 {
-                    TempData["ErrorMessage"] = "Anda harus menyelesaikan semua materi terlebih dahulu.";
+                    TempData["ErrorMessage"] = "Anda belum memulai pelatihan ini.";
+                    return RedirectToAction("Detail", new { id = id });
+                }
+
+                // 🔧 CRITICAL FIX: Check IsCompleted flag
+                if (!progress.IsCompleted)
+                {
+                    // Additional check: verify if all materials are actually completed
+                    var totalMaterials = pelatihan.PelatihanMateris?.Count() ?? 0;
+                    var currentMaterialIndex = pelatihan.PelatihanMateris?
+                        .OrderBy(m => m.Urutan)
+                        .ToList()
+                        .FindIndex(m => m.Id == progress.MateriTerakhirId) ?? -1;
+
+                    // Debug info
+                    TempData["ErrorMessage"] = $"Anda harus menyelesaikan semua materi terlebih dahulu. " +
+                        $"Progress: {currentMaterialIndex + 1}/{totalMaterials}, IsCompleted: {progress.IsCompleted}";
                     return RedirectToAction("Detail", new { id = id });
                 }
 
@@ -306,28 +424,22 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 if (existingResult != null)
                 {
-                    TempData["InfoMessage"] = "Anda sudah menyelesaikan ujian untuk pelatihan ini.";
-                    return RedirectToAction("Detail", new { id = id });
+                    TempData["ErrorMessage"] = "Anda sudah mengikuti ujian untuk pelatihan ini.";
+                    return RedirectToAction("HasilUjian", new { id = id });
                 }
 
-                // Get questions
-                var questions = await _context.PelatihanSoal
-                    .Where(s => s.PelatihanId == id)
-                    .OrderBy(s => s.Urutan)
-                    .ToListAsync();
-
-                if (!questions.Any())
+                if (!pelatihan.PelatihanSoals.Any())
                 {
-                    TempData["ErrorMessage"] = "Ujian belum tersedia untuk pelatihan ini.";
+                    TempData["ErrorMessage"] = "Ujian tidak tersedia untuk pelatihan ini.";
                     return RedirectToAction("Detail", new { id = id });
                 }
 
                 var viewModel = new UjianViewModel
                 {
-                    Pelatihan = progress.Pelatihan,
-                    Questions = questions,
-                    TimeLimit = progress.Pelatihan.DurasiMenit * 60, // Convert to seconds
-                    MinScore = progress.Pelatihan.SkorMinimal
+                    Pelatihan = pelatihan,
+                    Questions = pelatihan.PelatihanSoals.OrderBy(s => s.Urutan).ToList(),
+                    TimeLimit = pelatihan.DurasiMenit * 60, // Convert to seconds
+                    MinScore = pelatihan.SkorMinimal
                 };
 
                 return View(viewModel);
@@ -342,57 +454,64 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
         [Route("Karyawan/Pelatihan/SubmitUjian/{id}")]
         [HttpPost]
-        public async Task<IActionResult> SubmitUjian(int id, Dictionary<int, string> answers)
+        public async Task<IActionResult> SubmitUjian(int id, List<string> answers)
         {
             try
             {
                 var userId = HttpContext.Session.GetInt32("UserId");
                 if (userId == null)
                 {
-                    return Json(new { success = false, message = "Sesi telah berakhir" });
+                    return Json(new { success = false, message = "Session expired" });
                 }
 
-                // Get training and questions
-                var pelatihan = await _context.Pelatihan.FindAsync(id);
-                var questions = await _context.PelatihanSoal
-                    .Where(s => s.PelatihanId == id)
-                    .ToListAsync();
+                var pelatihan = await _context.Pelatihan
+                    .Include(p => p.PelatihanSoals.OrderBy(s => s.Urutan))
+                    .FirstOrDefaultAsync(p => p.Id == id);
 
-                if (pelatihan == null || !questions.Any())
+                if (pelatihan == null)
                 {
-                    return Json(new { success = false, message = "Data tidak valid" });
+                    return Json(new { success = false, message = "Pelatihan tidak ditemukan" });
+                }
+
+                // Check if already submitted
+                var existingResult = await _context.PelatihanHasil
+                    .FirstOrDefaultAsync(h => h.UserId == userId.Value && h.PelatihanId == id);
+
+                if (existingResult != null)
+                {
+                    return Json(new { success = false, message = "Ujian sudah pernah dikerjakan" });
                 }
 
                 // Calculate score
-                int correctAnswers = 0;
-                foreach (var question in questions)
+                var questions = pelatihan.PelatihanSoals.OrderBy(s => s.Urutan).ToList();
+                var correctAnswers = 0;
+
+                for (int i = 0; i < Math.Min(questions.Count, answers.Count); i++)
                 {
-                    if (answers.TryGetValue(question.Id, out string userAnswer))
+                    if (questions[i].JawabanBenar.Equals(answers[i], StringComparison.OrdinalIgnoreCase))
                     {
-                        if (userAnswer?.ToUpper() == question.JawabanBenar.ToUpper())
-                        {
-                            correctAnswers++;
-                        }
+                        correctAnswers++;
                     }
                 }
 
-                var score = (int)Math.Round((double)correctAnswers / questions.Count * 100);
-                var isPass = score >= pelatihan.SkorMinimal;
+                var score = questions.Count > 0 ? (int)Math.Round((double)correctAnswers / questions.Count * 100) : 0;
+                var isLulus = score >= pelatihan.SkorMinimal;
 
-                // Save result
+                // Save result - CORRECTED: Use TanggalSelesai instead of TanggalUjian
                 var hasil = new PelatihanHasil
                 {
                     UserId = userId.Value,
                     PelatihanId = id,
+                    TanggalSelesai = DateTime.Now, // CORRECTED
                     Skor = score,
-                    IsLulus = isPass,
-                    TanggalSelesai = DateTime.Now
+                    IsLulus = isLulus
+                    // REMOVED: JawabanBenar and TotalSoal are not in the actual model
                 };
 
                 _context.PelatihanHasil.Add(hasil);
 
                 // Generate certificate if passed
-                if (isPass)
+                if (isLulus)
                 {
                     await GenerateCertificate(userId.Value, id);
                 }
@@ -403,15 +522,14 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 {
                     success = true,
                     score = score,
-                    isPass = isPass,
-                    minScore = pelatihan.SkorMinimal,
+                    isLulus = isLulus,
                     redirectUrl = Url.Action("HasilUjian", new { id = id })
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error submitting exam for training {TrainingId}", id);
-                return Json(new { success = false, message = "Terjadi kesalahan saat menyimpan hasil ujian" });
+                return Json(new { success = false, message = "Terjadi kesalahan sistem" });
             }
         }
 
@@ -428,7 +546,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 var hasil = await _context.PelatihanHasil
                     .Include(h => h.Pelatihan)
-                    .Include(h => h.User)
                     .FirstOrDefaultAsync(h => h.UserId == userId.Value && h.PelatihanId == id);
 
                 if (hasil == null)
@@ -457,88 +574,124 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
+        // HELPER METHODS
         private async Task<IEnumerable<Pelatihan>> GetAvailableTrainings(string userPosition)
         {
-            // Get position ID
-            var posisi = await _context.Posisi
-                .FirstOrDefaultAsync(p => p.Name == userPosition && !p.IsDeleted);
-
-            if (posisi == null)
+            try
             {
+                // Get position ID
+                var posisi = await _context.Posisi
+                    .FirstOrDefaultAsync(p => p.Name == userPosition && !p.IsDeleted);
+
+                if (posisi == null)
+                {
+                    return new List<Pelatihan>();
+                }
+
+                // Get trainings for this position
+                var pelatihanIds = await _context.PelatihanPosisi
+                    .Where(pp => pp.PosisiId == posisi.Id)
+                    .Select(pp => pp.PelatihanId)
+                    .ToListAsync();
+
+                return await _context.Pelatihan
+                    .Where(p => pelatihanIds.Contains(p.Id) && !p.IsDeleted && p.IsActive)
+                    .OrderBy(p => p.Judul)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting available trainings for position {Position}", userPosition);
                 return new List<Pelatihan>();
             }
-
-            // Get trainings for this position
-            var pelatihanIds = await _context.PelatihanPosisi
-                .Where(pp => pp.PosisiId == posisi.Id)
-                .Select(pp => pp.PelatihanId)
-                .ToListAsync();
-
-            return await _context.Pelatihan
-                .Where(p => pelatihanIds.Contains(p.Id) && !p.IsDeleted && p.IsActive)
-                .OrderBy(p => p.Judul)
-                .ToListAsync();
         }
 
         private async Task<IEnumerable<PelatihanProgress>> GetUserTrainingProgress(int userId)
         {
-            return await _context.PelatihanProgress
-                .Include(p => p.Pelatihan)
-                .Where(p => p.UserId == userId && !p.IsCompleted)
-                .OrderByDescending(p => p.UpdatedAt ?? p.StartedAt)
-                .ToListAsync();
+            try
+            {
+                return await _context.PelatihanProgress
+                    .Include(p => p.Pelatihan)
+                    .Where(p => p.UserId == userId && !p.IsCompleted)
+                    .OrderByDescending(p => p.UpdatedAt ?? p.StartedAt)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting training progress for user {UserId}", userId);
+                return new List<PelatihanProgress>();
+            }
         }
 
         private async Task<IEnumerable<PelatihanHasil>> GetCompletedTrainings(int userId)
         {
-            return await _context.PelatihanHasil
-                .Include(h => h.Pelatihan)
-                .Where(h => h.UserId == userId)
-                .OrderByDescending(h => h.TanggalSelesai)
-                .ToListAsync();
+            try
+            {
+                return await _context.PelatihanHasil
+                    .Include(h => h.Pelatihan)
+                    .Where(h => h.UserId == userId)
+                    .OrderByDescending(h => h.TanggalSelesai) // CORRECTED
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting completed trainings for user {UserId}", userId);
+                return new List<PelatihanHasil>();
+            }
         }
 
-        private async Task<bool> HasAccessToTraining(string userPosition, int trainingId)
+        private async Task<bool> HasAccessToTraining(string userPosition, int pelatihanId)
         {
-            var posisi = await _context.Posisi
-                .FirstOrDefaultAsync(p => p.Name == userPosition && !p.IsDeleted);
+            try
+            {
+                var posisi = await _context.Posisi
+                    .FirstOrDefaultAsync(p => p.Name == userPosition && !p.IsDeleted);
 
-            if (posisi == null) return false;
+                if (posisi == null) return false;
 
-            return await _context.PelatihanPosisi
-                .AnyAsync(pp => pp.PosisiId == posisi.Id && pp.PelatihanId == trainingId);
+                return await _context.PelatihanPosisi
+                    .AnyAsync(pp => pp.PosisiId == posisi.Id && pp.PelatihanId == pelatihanId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking access to training {TrainingId} for position {Position}", pelatihanId, userPosition);
+                return false;
+            }
         }
 
         private async Task GenerateCertificate(int userId, int pelatihanId)
         {
             try
             {
-                // Check if certificate settings exist
-                var certificateSettings = await _context.PelatihanSertifikat
+                var user = await _context.User.FindAsync(userId);
+                var pelatihan = await _context.Pelatihan.FindAsync(pelatihanId);
+
+                if (user == null || pelatihan == null) return;
+
+                // Check if certificate config exists
+                var sertifikatConfig = await _context.PelatihanSertifikat
                     .FirstOrDefaultAsync(ps => ps.PelatihanId == pelatihanId && ps.IsSertifikatActive);
 
-                if (certificateSettings == null) return;
+                if (sertifikatConfig == null) return;
 
                 // Generate certificate number
                 var now = DateTime.Now;
-                var count = await _context.Sertifikat.CountAsync(s => s.PelatihanId == pelatihanId);
-                var certificateNumber = certificateSettings.CertificateNumberFormat
-                    .Replace("{YEAR}", now.ToString("yyyy"))
-                    .Replace("{MONTH}", now.ToString("MM"))
-                    .Replace("{DAY}", now.ToString("dd"))
-                    .Replace("{PELATIHAN_ID}", pelatihanId.ToString("D3"))
-                    .Replace("{INCREMENT}", (count + 1).ToString("D4"));
+                var existingCount = await _context.Sertifikat
+                    .CountAsync(s => s.TanggalTerbit.Year == now.Year && s.TanggalTerbit.Month == now.Month);
 
-                // Calculate expiration date
-                var expirationDate = certificateSettings.CalculateExpirationDate(now) ?? DateTime.MaxValue;
+                var nomorSertifikat = sertifikatConfig.CertificateNumberFormat
+                    .Replace("{YEAR}", now.Year.ToString())
+                    .Replace("{MONTH}", now.Month.ToString("D2"))
+                    .Replace("{INCREMENT}", (existingCount + 1).ToString("D4"));
 
+                // CORRECTED: Use TanggalKadaluarsa instead of TanggalBerlaku
                 var sertifikat = new Sertifikat
                 {
                     UserId = userId,
                     PelatihanId = pelatihanId,
-                    NomorSertifikat = certificateNumber,
+                    NomorSertifikat = nomorSertifikat,
                     TanggalTerbit = now,
-                    TanggalKadaluarsa = expirationDate
+                    TanggalKadaluarsa = sertifikatConfig.CalculateExpirationDate(now) ?? DateTime.MaxValue // CORRECTED
                 };
 
                 _context.Sertifikat.Add(sertifikat);
