@@ -1,0 +1,479 @@
+﻿@model RamaExpress.Areas.Karyawan.Models.SertifikatIndexViewModel
+@{
+    ViewData["Title"] = "Sertifikat Saya";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">Sertifikat Saya</h1>
+                    <p class="text-muted mb-0">Kelola dan unduh sertifikat pelatihan Anda</p>
+                </div>
+                <div>
+                    <span class="badge bg-primary fs-6">
+                        <i class="bi bi-award me-1"></i>@Model.TotalCertificates Sertifikat
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Total Sertifikat</h5>
+                            <h2 class="mb-0">@Model.TotalCertificates</h2>
+                            <small class="opacity-75">Semua sertifikat yang diperoleh</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-award fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Berlaku</h5>
+                            <h2 class="mb-0">@Model.ValidCertificates</h2>
+                            <small class="opacity-75">Sertifikat yang masih berlaku</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-warning text-dark shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Tidak Berlaku</h5>
+                            <h2 class="mb-0">@Model.ExpiredCertificates</h2>
+                            <small class="opacity-75">Sertifikat yang sudah berakhir</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Certificates List -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-collection me-2"></i>Daftar Sertifikat
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="filterCertificates('all')">
+                                Semua
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="filterCertificates('valid')">
+                                Berlaku
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="filterCertificates('expired')">
+                                Berakhir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Certificates.Any())
+                    {
+                        <div class="row" id="certificatesContainer">
+                            @foreach (var certificate in Model.Certificates)
+                            {
+                                var isValid = certificate.TanggalKadaluarsa > DateTime.Now || certificate.TanggalKadaluarsa == DateTime.MaxValue;
+                                var daysUntilExpiry = certificate.TanggalKadaluarsa == DateTime.MaxValue ?
+                                (int?)null : (int)(certificate.TanggalKadaluarsa - DateTime.Now).TotalDays;
+
+                                <div class="col-md-6 mb-4 certificate-item" data-status="@(isValid ? "valid" : "expired")">
+                                    <div class="card border-@(isValid ? "success" : "warning") h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <span class="badge bg-@(isValid ? "success" : "warning")">
+                                                    @(isValid ? "Berlaku" : "Tidak Berlaku")
+                                                </span>
+                                                <small class="text-muted">
+                                                    @certificate.TanggalTerbit.ToString("dd MMM yyyy")
+                                                </small>
+                                            </div>
+
+                                            <h6 class="card-title fw-bold mb-2">
+                                                @certificate.Pelatihan.Judul
+                                            </h6>
+
+                                            <p class="card-text small text-muted mb-3">
+                                                <strong>No. Sertifikat:</strong><br>
+                                                @certificate.NomorSertifikat
+                                            </p>
+
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between text-sm">
+                                                    <span class="text-muted">Berlaku hingga:</span>
+                                                    <span class="@(isValid ? "text-success" : "text-warning")">
+                                                        @if (certificate.TanggalKadaluarsa == DateTime.MaxValue)
+                                                        {
+                                                            <span>Selamanya</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            @certificate.TanggalKadaluarsa.ToString("dd MMM yyyy")
+                                                        }
+                                                    </span>
+                                                </div>
+
+                                                @if (isValid && daysUntilExpiry.HasValue && daysUntilExpiry.Value <= 30)
+                                                {
+                                                    <small class="text-warning">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                                        Berakhir dalam @daysUntilExpiry hari
+                                                    </small>
+                                                }
+                                            </div>
+
+                                            <div class="d-grid gap-1">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="Detail" asp-route-id="@certificate.Id"
+                                                       class="btn btn-outline-primary">
+                                                        <i class="bi bi-eye me-1"></i>Detail
+                                                    </a>
+                                                    <a asp-action="Download" asp-route-id="@certificate.Id"
+                                                       class="btn btn-primary">
+                                                        <i class="bi bi-download me-1"></i>Unduh
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                            onclick="shareCertificate(@certificate.Id)">
+                                                        <i class="bi bi-share"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-award display-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">Belum Ada Sertifikat</h5>
+                            <p class="text-muted">Anda belum memiliki sertifikat. Selesaikan pelatihan untuk mendapatkan sertifikat.</p>
+                            <a asp-area="Karyawan" asp-controller="Pelatihan" asp-action="Index"
+                               class="btn btn-primary">
+                                <i class="bi bi-book me-2"></i>Lihat Pelatihan
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Achievements -->
+            @if (Model.RecentCertificates.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-trophy me-2"></i>Pencapaian Terbaru
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var recent in Model.RecentCertificates.Take(3))
+                        {
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-award"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 small fw-semibold">@recent.Pelatihan.Judul</h6>
+                                    <p class="mb-0 text-muted small">
+                                        Sertifikat: @recent.NomorSertifikat
+                                    </p>
+                                    <small class="text-muted">@recent.TanggalTerbit.ToString("dd MMM yyyy")</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Certificate Verification -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-shield-check me-2"></i>Verifikasi Sertifikat
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Verify" method="get">
+                        <div class="mb-3">
+                            <label class="form-label">Nomor Sertifikat</label>
+                            <input type="text" name="nomorSertifikat" class="form-control"
+                                   placeholder="Masukkan nomor sertifikat" required>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-search me-2"></i>Verifikasi
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Statistik
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <h4 class="text-success mb-1">@Model.ValidPercentage%</h4>
+                            <small class="text-muted">Sertifikat Valid</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-primary mb-1">@Model.TotalCertificates</h4>
+                            <small class="text-muted">Total Sertifikat</small>
+                        </div>
+                    </div>
+
+                    @if (Model.TotalCertificates > 0)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">Status Sertifikat</small>
+                            </div>
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: @Model.ValidPercentage%">
+                                    @Model.ValidCertificates Valid
+                                </div>
+                                <div class="progress-bar bg-warning" style="width: @(100 - Model.ValidPercentage)%">
+                                    @Model.ExpiredCertificates Berakhir
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Terakhir diperbarui: @DateTime.Now.ToString("dd MMM yyyy HH:mm")
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel">
+                    <i class="bi bi-share me-2"></i>Bagikan Sertifikat
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Link Verifikasi</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shareUrl" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" onclick="shareToWhatsApp()">
+                        <i class="bi bi-whatsapp me-2"></i>Bagikan ke WhatsApp
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="shareToEmail()">
+                        <i class="bi bi-envelope me-2"></i>Bagikan via Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .certificate-item {
+        transition: all 0.3s ease;
+    }
+
+        .certificate-item.fade-out {
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
+
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+    .progress {
+        background-color: rgba(0,0,0,0.1);
+    }
+
+    .btn-group-sm .btn {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .border-success {
+        border-color: #198754 !important;
+    }
+
+    .border-warning {
+        border-color: #ffc107 !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let currentShareData = {};
+
+        function filterCertificates(status) {
+            const items = document.querySelectorAll('.certificate-item');
+            const buttons = document.querySelectorAll('.card-header .btn');
+
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('btn-primary'));
+            buttons.forEach(btn => btn.classList.add('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning'));
+
+            event.target.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning');
+            event.target.classList.add('btn-primary');
+
+            // Filter items
+            items.forEach(item => {
+                const itemStatus = item.dataset.status;
+                if (status === 'all' || itemStatus === status) {
+                    item.style.display = 'block';
+                    item.classList.remove('fade-out');
+                } else {
+                    item.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (item.classList.contains('fade-out')) {
+                            item.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+        }
+
+        async function shareCertificate(certificateId) {
+            try {
+                const response = await fetch(`/Karyawan/Sertifikat/Share/${certificateId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    currentShareData = data;
+                    document.getElementById('shareUrl').value = data.shareUrl;
+
+                    const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+                    modal.show();
+                } else {
+                    alert('Gagal membuat link berbagi: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat membuat link berbagi');
+            }
+        }
+
+        function copyToClipboard() {
+            const urlInput = document.getElementById('shareUrl');
+            urlInput.select();
+            document.execCommand('copy');
+
+            // Show feedback
+            const button = event.target.closest('button');
+            const originalIcon = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i>';
+            setTimeout(() => {
+                button.innerHTML = originalIcon;
+            }, 1000);
+
+            // Show toast or alert
+            showToast('Link berhasil disalin ke clipboard!');
+        }
+
+        function shareToWhatsApp() {
+            const message = `Saya telah memperoleh sertifikat "${currentShareData.trainingTitle}" dari PT Rama Express. Verifikasi sertifikat: ${currentShareData.shareUrl}`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function shareToEmail() {
+            const subject = `Sertifikat Pelatihan - ${currentShareData.trainingTitle}`;
+            const body = `Saya telah memperoleh sertifikat pelatihan "${currentShareData.trainingTitle}" dari PT Rama Express.\n\nNomor Sertifikat: ${currentShareData.certificateNumber}\nPemegang: ${currentShareData.holderName}\n\nUntuk verifikasi sertifikat, silakan kunjungi: ${currentShareData.shareUrl}`;
+            const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoUrl;
+        }
+
+        function showToast(message) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed top-0 end-0 m-3 alert alert-success alert-dismissible fade show';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltipElements.forEach(element => {
+                new bootstrap.Tooltip(element);
+            });
+
+            // Auto-refresh certificate status every 5 minutes
+            setInterval(() => {
+                // In a real app, you might want to check for certificate updates
+                console.log('Checking certificate status...');
+            }, 300000);
+        });
+    </script>
+}

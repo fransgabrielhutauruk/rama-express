@@ -151,11 +151,9 @@
                         <div class="row">
                             @foreach (var training in Model.AvailableTrainings)
                             {
-                                @{
                                     var isStarted = Model.OngoingTrainings.Any(o => o.PelatihanId == training.Id) ||
                                                    Model.CompletedTrainings.Any(c => c.PelatihanId == training.Id);
                                     var isCompleted = Model.CompletedTrainings.Any(c => c.PelatihanId == training.Id);
-                                }
                                 
                                 <div class="col-md-6 mb-4">
                                     <div class="card border-0 bg-light h-100">

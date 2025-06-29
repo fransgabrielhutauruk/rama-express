@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using RamaExpress.Areas.Admin.Data;
 using RamaExpress.Areas.Admin.Models;
+using RamaExpress.Areas.Karyawan.Models;
 
 namespace RamaExpress.Areas.Karyawan.Controllers
 {

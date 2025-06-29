@@ -79,9 +79,9 @@
                             <div class="text-center mb-4">
                                 @if (Model.CurrentMateri.Konten.Contains("youtube.com") || Model.CurrentMateri.Konten.Contains("youtu.be"))
                                 {
-                                    @{
+                                    
                                         var videoId = GetYouTubeVideoId(Model.CurrentMateri.Konten);
-                                    }
+                                    
                                     @if (!string.IsNullOrEmpty(videoId))
                                     {
                                         <div class="ratio ratio-16x9">
