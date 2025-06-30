@@ -72,7 +72,7 @@ namespace RamaExpress.Controllers
             }
             else
             {
-                return RedirectToAction("Index", "Home", new { area = "Karyawan" });
+                return RedirectToAction("Index", "Pelatihan", new { area = "Karyawan" });
             }
         }
 

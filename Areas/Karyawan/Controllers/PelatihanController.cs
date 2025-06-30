@@ -19,7 +19,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             _logger = logger;
         }
 
-        [Route("Karyawan/Pelatihan")]
+        [Route("Karyawan")]
         public async Task<IActionResult> Index()
         {
             try
