@@ -72,7 +72,7 @@
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                        onclick="confirmDeleteQuestion(@item.Id)" title="Hapus">
+                                    onclick="confirmDelete(@item.Id, '@item.Pertanyaan', 'Pelatihan', 'Admin', 'Exam')" title="Hapus">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -220,16 +220,6 @@
                 downButton.innerHTML = originalContent;
             });
         }
-
-        function confirmDeleteQuestion(id) {
-        if (confirm('Apakah Anda yakin ingin menghapus soal ini?')) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/Admin/Pelatihan/Exam/Delete/${id}`;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
 
       function showAlert(type, message) {
         // Remove existing alerts

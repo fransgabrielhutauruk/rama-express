@@ -90,7 +90,7 @@ namespace RamaExpress.Areas.Admin.Controllers
                         query = query.Where(x => x.IsLulus);
                         break;
                     case "tidak_lulus":
-                        query = query.Where(x => x.IsSelesai && !x.IsLulus);
+                        query = query.Where(x => x.IsSelesai && !x.IsLulus && x.Skor.HasValue);
                         break;
                 }
             }

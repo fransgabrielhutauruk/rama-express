@@ -147,7 +147,6 @@
                     <ul class="small mb-3">
                         <li>Pilih "Tidak Ada" untuk sertifikat permanen</li>
                         <li>Gunakan durasi sesuai standar industri</li>
-                        <li>Pelatihan safety biasanya 1-2 tahun</li>
                     </ul>
 
                     <h6 class="fw-bold text-primary">Format Nomor:</h6>
@@ -156,34 +155,6 @@
                         <li>Tambahkan tahun untuk referensi</li>
                         <li>Increment akan otomatis bertambah</li>
                     </ul>
-                </div>
-            </div>
-
-            <!-- Preview Card -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Preview Sertifikat</h5>
-                </div>
-                <div class="card-body text-center">
-                    <div class="border rounded p-4 bg-light">
-                        <i class="bi bi-award-fill text-warning display-1 mb-3"></i>
-                        <h6 class="fw-bold" id="previewTemplateName">Sertifikat @pelatihan.Judul</h6>
-                        <p class="text-muted small mb-3" id="previewDescription">Deskripsi template sertifikat</p>
-
-                        <div class="mb-3">
-                            <strong>@pelatihan.Judul</strong>
-                        </div>
-
-                        <small class="text-muted">
-                            Contoh Nomor: <span class="font-monospace" id="previewNumber">CERT-{YEAR}-{MONTH}-{INCREMENT}</span>
-                        </small>
-                    </div>
-
-                    <div class="mt-3">
-                        <small class="text-muted" id="previewExpiration">
-                            <i class="bi bi-infinity me-1"></i><span>Berlaku Selamanya</span>
-                        </small>
-                    </div>
                 </div>
             </div>
         </div>
@@ -222,44 +193,6 @@
         }
     }
 
-    // Real-time preview updates
-    document.addEventListener('DOMContentLoaded', function() {
-        toggleExpirationDuration();
-
-        // Update template name preview
-        document.querySelector('input[name="TemplateName"]').addEventListener('input', function() {
-            document.getElementById('previewTemplateName').textContent = this.value || 'Sertifikat @pelatihan.Judul';
-        });
-
-        // Update description preview
-        document.querySelector('textarea[name="TemplateDescription"]').addEventListener('input', function() {
-            document.getElementById('previewDescription').textContent = this.value || 'Deskripsi template sertifikat';
-        });
-
-        // Update certificate number format preview
-        document.querySelector('input[name="CertificateNumberFormat"]').addEventListener('input', function() {
-            let format = this.value || 'CERT-{YEAR}-{MONTH}-{INCREMENT}';
-            // Simple preview transformation
-            format = format.replace('{YEAR}', '2025')
-                          .replace('{MONTH}', '01')
-                          .replace('{DAY}', '15')
-                          .replace('{PELATIHAN_ID}', '@pelatihan.Id.ToString("D3")')
-                          .replace('{INCREMENT}', '0001');
-            document.getElementById('previewNumber').textContent = format;
-        });
-
-        // Update expiration duration preview
-        document.querySelector('input[name="ExpirationDuration"]').addEventListener('input', updateExpirationPreview);
-
-        // Initialize preview
-        const format = document.querySelector('input[name="CertificateNumberFormat"]').value || 'CERT-{YEAR}-{MONTH}-{INCREMENT}';
-        let previewFormat = format.replace('{YEAR}', '2025')
-                                 .replace('{MONTH}', '01')
-                                 .replace('{DAY}', '15')
-                                 .replace('{PELATIHAN_ID}', '@pelatihan.Id.ToString("D3")')
-                                 .replace('{INCREMENT}', '0001');
-        document.getElementById('previewNumber').textContent = previewFormat;
-    });
 </script>
 
 @section Scripts {

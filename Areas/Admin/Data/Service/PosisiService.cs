@@ -31,7 +31,6 @@ namespace RamaExpress.Areas.Admin.Data.Service
         {
             try
             {
-                // Normalize data
                 posisi.Name = posisi.Name.Trim();
                 posisi.IsDeleted = false;
                 posisi.DeletedAt = null;
@@ -57,7 +56,6 @@ namespace RamaExpress.Areas.Admin.Data.Service
                     return (false, "Posisi tidak ditemukan", null);
                 }
 
-                // Update fields
                 existingPosisi.Name = posisi.Name.Trim();
 
                 await _context.SaveChangesAsync();
@@ -80,7 +78,6 @@ namespace RamaExpress.Areas.Admin.Data.Service
                     return (false, "Posisi tidak ditemukan");
                 }
 
-                // Check if posisi is being used by any employee
                 var employeeCount = await _context.User
                     .Where(u => u.Posisi == posisi.Name && !u.IsDeleted)
                     .CountAsync();
@@ -90,7 +87,6 @@ namespace RamaExpress.Areas.Admin.Data.Service
                     return (false, $"Posisi '{posisi.Name}' tidak dapat dihapus karena masih digunakan oleh {employeeCount} karyawan");
                 }
 
-                // Soft delete
                 posisi.IsDeleted = true;
                 posisi.DeletedAt = DateTime.Now;
 

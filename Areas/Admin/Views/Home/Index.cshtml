@@ -96,12 +96,12 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Tingkat Kelulusan
+                                Tingkat Penyelesaian
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800" id="completionRate">
                                 @Model.CompletionRate%
                             </div>
-                            <small class="text-muted">Pelatihan selesai: <span id="completedTrainings">@Model.CompletedTrainings</span></small>
+                            <small class="text-muted">Pelatihan selesai: <span id="completedTrainings">@Model.CompletedTrainings / @Model.TotalProgress</span></small>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-graph-up fa-2x text-gray-300"></i>

@@ -6,10 +6,7 @@
         public string Name { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }
-        public int EmployeeCount { get; set; } // Jumlah karyawan dengan posisi ini
-
-        // Constructor untuk mapping dari Posisi
-        public PosisiWithCountViewModel() { }
+        public int EmployeeCount { get; set; }
 
         public PosisiWithCountViewModel(Posisi posisi, int employeeCount)
         {

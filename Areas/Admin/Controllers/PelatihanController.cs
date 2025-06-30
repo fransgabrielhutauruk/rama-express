@@ -303,8 +303,9 @@ namespace RamaExpress.Areas.Admin.Controllers
             return RedirectToAction(nameof(Materials), new { pelatihanId = model.PelatihanId });
         }
 
-        [Route("Admin/Pelatihan/Materials/Delete/{id}")]
+        [Route("Admin/Pelatihan/Materials/Delete")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteMaterial(int id)
         {
             var material = await _materiService.GetById(id);
@@ -437,7 +438,7 @@ namespace RamaExpress.Areas.Admin.Controllers
             return RedirectToAction(nameof(ExamQuestions), new { pelatihanId = model.PelatihanId });
         }
 
-        [Route("Admin/Pelatihan/Exam/Delete/{id}")]
+        [Route("Admin/Pelatihan/Exam/Delete")]
         [HttpPost]
         public async Task<IActionResult> DeleteQuestion(int id)
         {

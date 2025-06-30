@@ -34,7 +34,6 @@
                             <select asp-for="TipeKonten" class="form-select" id="tipeKonten" onchange="toggleContentInput()">
                                 <option value="text">Teks</option>
                                 <option value="video">Video (YouTube/URL)</option>
-                                <option value="image">Gambar</option>
                             </select>
                             <span asp-validation-for="TipeKonten" class="text-danger small"></span>
                         </div>
@@ -105,31 +104,14 @@
         // Hide all content inputs
         document.getElementById('textContent').style.display = 'none';
         document.getElementById('videoContent').style.display = 'none';
-        document.getElementById('imageContent').style.display = 'none';
 
         // Show selected content input
         if (tipeKonten === 'text') {
             document.getElementById('textContent').style.display = 'block';
         } else if (tipeKonten === 'video') {
             document.getElementById('videoContent').style.display = 'block';
-        } else if (tipeKonten === 'image') {
-            document.getElementById('imageContent').style.display = 'block';
         }
     }
-
-    // Image preview
-    document.getElementById('imageFile')?.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const preview = document.getElementById('imagePreview');
-
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;">`;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
 
     function prepareSubmit() {
         const tipeKonten = document.getElementById('tipeKonten').value;
@@ -139,12 +121,7 @@
             kontenInput.value = document.getElementById('textEditor').value;
         } else if (tipeKonten === 'video') {
             kontenInput.value = document.getElementById('videoUrl').value;
-        } else if (tipeKonten === 'image') {
-            // For existing image, keep current value if no new file selected
-            const fileInput = document.getElementById('imageFile');
-            if (fileInput.files[0]) {
-                kontenInput.value = fileInput.files[0].name; // In real implementation, upload to server
-            }
+        } 
         }
     }
 </script>

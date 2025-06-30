@@ -94,13 +94,6 @@
                                             </a>
                                         </p>
                                     }
-                                    else if (item.TipeKonten == "image")
-                                    {
-                                        <p class="text-muted small mb-3">
-                                            <i class="bi bi-image me-1"></i>
-                                            Gambar: @item.Konten
-                                        </p>
-                                    }
 
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="text-muted">
@@ -112,7 +105,7 @@
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger"
-                                                    onclick="confirmDeleteMaterial(@item.Id, '@item.Judul')" title="Hapus">
+                                                    onclick="confirmDelete(@item.Id, '@item.Judul', 'Pelatihan', 'Admin', 'Materials')" title="Hapus">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -148,7 +141,6 @@
         {
             "text" => "bg-info",
             "video" => "bg-danger",
-            "image" => "bg-success",
             _ => "bg-secondary"
         };
     }
@@ -159,7 +151,6 @@
         {
             "text" => "bi bi-file-text",
             "video" => "bi bi-play-circle",
-            "image" => "bi bi-image",
             _ => "bi bi-file"
         };
     }
@@ -170,7 +161,6 @@
         {
             "text" => "Teks",
             "video" => "Video",
-            "image" => "Gambar",
             _ => "Lainnya"
         };
     }
@@ -255,16 +245,6 @@
            });
        }
 
-       function confirmDeleteMaterial(id, title) {
-           if (confirm(`Apakah Anda yakin ingin menghapus materi "${title}"?`)) {
-               const form = document.createElement('form');
-               form.method = 'POST';
-               form.action = `/Admin/Pelatihan/Materials/Delete/${id}`;
-               document.body.appendChild(form);
-               form.submit();
-           }
-       }
-
        // Helper function to show alerts
        function showAlert(type, message) {
            // Remove existing alerts
@@ -316,14 +296,4 @@
                }
            });
        });
-
-    function confirmDeleteMaterial(id, title) {
-        if (confirm(`Apakah Anda yakin ingin menghapus materi "${title}"?`)) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/Admin/Pelatihan/Materials/Delete/${id}`;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
 </script>
