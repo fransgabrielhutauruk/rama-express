@@ -1,0 +1,324 @@
+﻿@model RamaExpress.Areas.Admin.Models.Sertifikat
+@{
+    ViewData["Title"] = $"Detail Sertifikat - {Model.NomorSertifikat}";
+    var isExpired = ViewBag.IsExpired as bool? ?? false;
+    var daysUntilExpiry = ViewBag.DaysUntilExpiry as int? ?? -1;
+
+    string statusClass = "success";
+    string statusText = "Aktif";
+
+    if (isExpired)
+    {
+        statusClass = "danger";
+        statusText = "Kadaluarsa";
+    }
+    else if (Model.TanggalKadaluarsa == DateTime.MaxValue)
+    {
+        statusClass = "success";
+        statusText = "Berlaku Selamanya";
+    }
+    else if (daysUntilExpiry <= 30)
+    {
+        statusClass = "warning";
+        statusText = $"Akan kadaluarsa dalam {daysUntilExpiry} hari";
+    }
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1 text-primary">
+                        <i class="bi bi-award me-2"></i>Detail Sertifikat
+                    </h1>
+                    <p class="text-muted mb-0">@Model.NomorSertifikat</p>
+                </div>
+                <div>
+                    <a asp-action="Sertifikat" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left me-2"></i>Kembali ke Sertifikat
+                    </a>
+                    <div class="btn-group">
+                        <a asp-action="PreviewSertifikat" asp-route-id="@Model.Id"
+                           class="btn btn-outline-info"
+                           target="_blank">
+                            <i class="bi bi-file-pdf me-2"></i>Preview
+                        </a>
+                        <a asp-action="DownloadSertifikat" asp-route-id="@Model.Id"
+                           class="btn btn-primary">
+                            <i class="bi bi-download me-2"></i>Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Card -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-@statusClass text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-award-fill me-2"></i>Sertifikat Pelatihan
+                        </h5>
+                        <span class="badge bg-white text-@statusClass">
+                            @statusText
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Certificate Preview -->
+                    <div class="certificate-preview bg-light p-4 mb-4 text-center border">
+                        <div class="certificate-header mb-3">
+                            <h2 class="text-primary mb-2">SERTIFIKAT PELATIHAN</h2>
+                            <p class="text-muted mb-0">No. @Model.NomorSertifikat</p>
+                        </div>
+
+                        <div class="certificate-content">
+                            <p class="mb-2">Diberikan kepada:</p>
+                            <h3 class="text-dark mb-3 fw-bold">@Model.User.Nama</h3>
+
+                            <p class="mb-2">Atas keberhasilannya menyelesaikan pelatihan</p>
+                            <h4 class="text-primary mb-4">@Model.Pelatihan.Judul</h4>
+
+                            <div class="row text-center">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Diterbitkan pada</small>
+                                    <p class="fw-semibold">@Model.TanggalTerbit.ToString("dd MMMM yyyy")</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Berlaku hingga</small>
+                                    <p class="fw-semibold">
+                                        @if (Model.TanggalKadaluarsa == DateTime.MaxValue)
+                                        {
+                                            <span class="text-success">Selamanya</span>
+                                        }
+                                        else
+                                        {
+                                            @Model.TanggalKadaluarsa.ToString("dd MMMM yyyy")
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="certificate-footer mt-4">
+                            <p class="text-end text-muted mb-0">PT. Rama Express</p>
+                        </div>
+                    </div>
+
+                    <!-- Certificate Details -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">Informasi Pelatihan</h6>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small">Judul Pelatihan</label>
+                                <p class="mb-0 fw-semibold">@Model.Pelatihan.Judul</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Pelatihan.Deskripsi))
+                            {
+                                <div class="info-item mb-3">
+                                    <label class="text-muted small">Deskripsi</label>
+                                    <p class="mb-0">@Model.Pelatihan.Deskripsi</p>
+                                </div>
+                            }
+                            <div class="info-item mb-3">
+                                <a asp-action="Detail" asp-route-id="@Model.PelatihanId"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-book me-2"></i>Lihat Detail Pelatihan
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">Informasi Sertifikat</h6>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small">Nomor Sertifikat</label>
+                                <p class="mb-0 font-monospace">@Model.NomorSertifikat</p>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small">Tanggal Terbit</label>
+                                <p class="mb-0">@Model.TanggalTerbit.ToString("dd MMMM yyyy")</p>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small">Status Berlaku</label>
+                                @if (Model.TanggalKadaluarsa == DateTime.MaxValue)
+                                {
+                                    <p class="mb-0 text-success fw-semibold">
+                                        <i class="bi bi-infinity me-1"></i>Berlaku Selamanya
+                                    </p>
+                                }
+                                else if (isExpired)
+                                {
+                                    <p class="mb-0 text-danger fw-semibold">
+                                        <i class="bi bi-x-circle me-1"></i>Kadaluarsa pada @Model.TanggalKadaluarsa.ToString("dd MMMM yyyy")
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p class="mb-0 text-success fw-semibold">
+                                        <i class="bi bi-check-circle me-1"></i>Berlaku hingga @Model.TanggalKadaluarsa.ToString("dd MMMM yyyy")
+                                    </p>
+                                    @if (daysUntilExpiry > 0 && daysUntilExpiry <= 30)
+                                    {
+                                        <small class="text-warning">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>Akan kadaluarsa dalam @daysUntilExpiry hari
+                                        </small>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Status Sertifikat
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    @if (isExpired)
+                    {
+                        <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
+                        <h6 class="text-danger mb-2">Sertifikat Kadaluarsa</h6>
+                        <p class="text-muted small mb-0">
+                            Sertifikat ini telah melewati masa berlaku pada
+                            @Model.TanggalKadaluarsa.ToString("dd MMMM yyyy")
+                        </p>
+                    }
+                    else if (Model.TanggalKadaluarsa == DateTime.MaxValue)
+                    {
+                        <i class="bi bi-infinity text-success display-4 mb-3"></i>
+                        <h6 class="text-success mb-2">Berlaku Selamanya</h6>
+                        <p class="text-muted small mb-0">
+                            Sertifikat ini tidak memiliki masa kadaluarsa
+                        </p>
+                    }
+                    else if (daysUntilExpiry <= 30)
+                    {
+                        <i class="bi bi-exclamation-triangle-fill text-warning display-4 mb-3"></i>
+                        <h6 class="text-warning mb-2">Segera Kadaluarsa</h6>
+                        <p class="text-muted small mb-0">
+                            Sertifikat akan kadaluarsa dalam @daysUntilExpiry hari
+                        </p>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                        <h6 class="text-success mb-2">Sertifikat Aktif</h6>
+                        <p class="text-muted small mb-0">
+                            Sertifikat berlaku hingga @Model.TanggalKadaluarsa.ToString("dd MMMM yyyy")
+                        </p>
+                    }
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Aksi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="PreviewSertifikat" asp-route-id="@Model.Id"
+                           class="btn btn-outline-info"
+                           target="_blank">
+                            <i class="bi bi-file-pdf me-2"></i>Buka Preview PDF
+                        </a>
+                        <a asp-action="DownloadSertifikat" asp-route-id="@Model.Id"
+                           class="btn btn-primary">
+                            <i class="bi bi-download me-2"></i>Download PDF
+                        </a>
+                        <hr>
+                        <a asp-action="Detail" asp-route-id="@Model.PelatihanId"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-book me-2"></i>Lihat Detail Pelatihan
+                        </a>
+                        <a asp-action="Sertifikat" class="btn btn-outline-warning">
+                            <i class="bi bi-collection me-2"></i>Lihat Semua Sertifikat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .certificate-preview {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px dashed #dee2e6;
+        border-radius: 15px;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .certificate-header h2 {
+        font-family: 'Times New Roman', serif;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+
+    .certificate-content h3 {
+        font-family: 'Times New Roman', serif;
+        border-bottom: 2px solid #007bff;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+
+    .certificate-content h4 {
+        font-style: italic;
+    }
+
+    .info-item label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: translateY(-1px);
+        }
+
+    @@media (max-width: 768px) {
+        .certificate-preview
+
+    {
+        padding: 2rem 1rem !important;
+    }
+
+    .certificate-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .certificate-content h3 {
+        font-size: 1.25rem;
+    }
+
+    .certificate-content h4 {
+        font-size: 1.1rem;
+    }
+
+    }
+</style>

@@ -4,6 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using RamaExpress.Areas.Admin.Data;
 using RamaExpress.Areas.Admin.Models;
 using RamaExpress.Areas.Karyawan.Models;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.Kernel.Font;
+using iText.IO.Font.Constants;
 
 namespace RamaExpress.Areas.Karyawan.Controllers
 {
@@ -750,6 +756,244 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             {
                 _logger.LogError(ex, "Error generating certificate for user {UserId} training {TrainingId}", userId, pelatihanId);
             }
+        }
+
+        // GET: Karyawan/Pelatihan/Sertifikat - Daftar semua sertifikat karyawan
+        [Route("Karyawan/Pelatihan/Sertifikat")]
+        public async Task<IActionResult> Sertifikat()
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                {
+                    return RedirectToAction("Login", "User", new { area = "" });
+                }
+
+                var sertifikats = await _context.Sertifikat
+                    .Include(s => s.User)
+                    .Include(s => s.Pelatihan)
+                    .Where(s => s.UserId == userId.Value)
+                    .OrderByDescending(s => s.TanggalTerbit)
+                    .ToListAsync();
+
+                ViewBag.TotalSertifikat = sertifikats.Count;
+                ViewBag.SertifikatAktif = sertifikats.Count(s => s.TanggalKadaluarsa == DateTime.MaxValue || s.TanggalKadaluarsa > DateTime.Now);
+                ViewBag.SertifikatKadaluarsa = sertifikats.Count(s => s.TanggalKadaluarsa != DateTime.MaxValue && s.TanggalKadaluarsa <= DateTime.Now);
+
+                return View(sertifikats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading certificates for user {UserId}", HttpContext.Session.GetInt32("UserId"));
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat memuat data sertifikat.";
+                return View(new List<Sertifikat>());
+            }
+        }
+
+        // GET: Karyawan/Pelatihan/SertifikatDetail/5 - Detail sertifikat
+        [Route("Karyawan/Pelatihan/SertifikatDetail/{id}")]
+        public async Task<IActionResult> SertifikatDetail(int id)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                {
+                    return RedirectToAction("Login", "User", new { area = "" });
+                }
+
+                var sertifikat = await _context.Sertifikat
+                    .Include(s => s.User)
+                    .Include(s => s.Pelatihan)
+                    .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId.Value);
+
+                if (sertifikat == null)
+                {
+                    TempData["ErrorMessage"] = "Sertifikat tidak ditemukan atau bukan milik Anda.";
+                    return RedirectToAction(nameof(Sertifikat));
+                }
+
+                ViewBag.IsExpired = sertifikat.TanggalKadaluarsa != DateTime.MaxValue && sertifikat.TanggalKadaluarsa < DateTime.Now;
+                ViewBag.DaysUntilExpiry = sertifikat.TanggalKadaluarsa != DateTime.MaxValue ?
+                    (int)(sertifikat.TanggalKadaluarsa - DateTime.Now).TotalDays : -1;
+
+                return View(sertifikat);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading certificate detail {CertificateId}", id);
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat memuat detail sertifikat.";
+                return RedirectToAction(nameof(Sertifikat));
+            }
+        }
+
+        // GET: Karyawan/Pelatihan/DownloadSertifikat/5 - Download PDF sertifikat
+        [Route("Karyawan/Pelatihan/DownloadSertifikat/{id}")]
+        public async Task<IActionResult> DownloadSertifikat(int id)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                {
+                    return RedirectToAction("Login", "User", new { area = "" });
+                }
+
+                var sertifikat = await _context.Sertifikat
+                    .Include(s => s.User)
+                    .Include(s => s.Pelatihan)
+                    .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId.Value);
+
+                if (sertifikat == null)
+                {
+                    TempData["ErrorMessage"] = "Sertifikat tidak ditemukan atau bukan milik Anda.";
+                    return RedirectToAction(nameof(Sertifikat));
+                }
+
+                // Generate PDF
+                var pdfBytes = await GenerateSertifikatPdf(sertifikat);
+                var fileName = $"Sertifikat_{sertifikat.NomorSertifikat.Replace("/", "_")}.pdf";
+
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading certificate {CertificateId}", id);
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat mendownload sertifikat.";
+                return RedirectToAction(nameof(Sertifikat));
+            }
+        }
+
+        // GET: Karyawan/Pelatihan/PreviewSertifikat/5 - Preview PDF sertifikat
+        [Route("Karyawan/Pelatihan/PreviewSertifikat/{id}")]
+        public async Task<IActionResult> PreviewSertifikat(int id)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                {
+                    return RedirectToAction("Login", "User", new { area = "" });
+                }
+
+                var sertifikat = await _context.Sertifikat
+                    .Include(s => s.User)
+                    .Include(s => s.Pelatihan)
+                    .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId.Value);
+
+                if (sertifikat == null)
+                {
+                    TempData["ErrorMessage"] = "Sertifikat tidak ditemukan atau bukan milik Anda.";
+                    return RedirectToAction(nameof(Sertifikat));
+                }
+
+                // Generate PDF and return as inline
+                var pdfBytes = await GenerateSertifikatPdf(sertifikat);
+                return File(pdfBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error previewing certificate {CertificateId}", id);
+                TempData["ErrorMessage"] = "Terjadi kesalahan saat memuat preview sertifikat.";
+                return RedirectToAction(nameof(Sertifikat));
+            }
+        }
+
+        // Private method untuk generate PDF sertifikat
+        private async Task<byte[]> GenerateSertifikatPdf(Sertifikat sertifikat)
+        {
+            using var memoryStream = new MemoryStream();
+            var writer = new PdfWriter(memoryStream);
+            var pdf = new PdfDocument(writer);
+            var document = new Document(pdf);
+
+            // Set up fonts
+            var titleFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+            var bodyFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+            // Title
+            var title = new Paragraph("SERTIFIKAT PELATIHAN")
+                .SetFont(titleFont)
+                .SetFontSize(24)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(30);
+            document.Add(title);
+
+            // Certificate number
+            var certNumber = new Paragraph($"No. {sertifikat.NomorSertifikat}")
+                .SetFont(bodyFont)
+                .SetFontSize(12)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(20);
+            document.Add(certNumber);
+
+            // Main content
+            var content = new Paragraph("Diberikan kepada:")
+                .SetFont(bodyFont)
+                .SetFontSize(14)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(10);
+            document.Add(content);
+
+            var userName = new Paragraph(sertifikat.User.Nama)
+                .SetFont(titleFont)
+                .SetFontSize(20)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(20);
+            document.Add(userName);
+
+            var description = new Paragraph($"Atas keberhasilannya menyelesaikan pelatihan")
+                .SetFont(bodyFont)
+                .SetFontSize(14)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(10);
+            document.Add(description);
+
+            var trainingTitle = new Paragraph(sertifikat.Pelatihan.Judul)
+                .SetFont(titleFont)
+                .SetFontSize(16)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(30);
+            document.Add(trainingTitle);
+
+            // Dates
+            var issueDate = new Paragraph($"Diterbitkan pada: {sertifikat.TanggalTerbit:dd MMMM yyyy}")
+                .SetFont(bodyFont)
+                .SetFontSize(12)
+                .SetTextAlignment(TextAlignment.CENTER)
+                .SetMarginBottom(5);
+            document.Add(issueDate);
+
+            if (sertifikat.TanggalKadaluarsa != DateTime.MaxValue)
+            {
+                var expiryDate = new Paragraph($"Berlaku hingga: {sertifikat.TanggalKadaluarsa:dd MMMM yyyy}")
+                    .SetFont(bodyFont)
+                    .SetFontSize(12)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetMarginBottom(30);
+                document.Add(expiryDate);
+            }
+            else
+            {
+                var permanentText = new Paragraph("Berlaku selamanya")
+                    .SetFont(bodyFont)
+                    .SetFontSize(12)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetMarginBottom(30);
+                document.Add(permanentText);
+            }
+
+            // Signature area
+            var signatureArea = new Paragraph("PT. Rama Express")
+                .SetFont(bodyFont)
+                .SetFontSize(12)
+                .SetTextAlignment(TextAlignment.RIGHT)
+                .SetMarginTop(50);
+            document.Add(signatureArea);
+
+            document.Close();
+            return memoryStream.ToArray();
         }
     }
 }
