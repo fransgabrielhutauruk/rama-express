@@ -2,6 +2,35 @@
     ViewData["Title"] = "Kontak";
 }
 
+<style>
+    .card {
+        border-radius: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.75rem 1.5rem rgba(13, 110, 253, 0.2);
+        }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+    .form-control::placeholder {
+        color: #adb5bd;
+    }
+
+    a.text-decoration-none:hover {
+        text-decoration: underline;
+    }
+</style>
+
 <div class="container py-5" data-aos="fade-up">
     <div class="text-center mb-5">
         <h1 class="display-4 text-primary">Kontak Kami</h1>
@@ -12,13 +41,13 @@
     </div>
 
     <!-- Informasi Kontak -->
-    <div class="row g-4 mb-5 text-center">
+    <div class="row g-4 mb-5 text-center"  id="formulir-kontak">
         <div class="col-md-4">
             <div class="card h-100 shadow border-0">
                 <div class="card-body">
                     <i class="bi bi-telephone-fill fs-2 text-primary"></i>
                     <h5 class="mt-3">Telepon</h5>
-                    <p class="text-muted">(021) 612 4086</p>
+                    <p class="text-muted">0821 2153 0019</p>
                 </div>
             </div>
         </div>
@@ -27,7 +56,7 @@
                 <div class="card-body">
                     <i class="bi bi-envelope-fill fs-2 text-primary"></i>
                     <h5 class="mt-3">Email</h5>
-                    <p><a href="mailto:marketing@ramaindonesia.com" class="text-decoration-none text-muted">marketing@ramaindonesia.com</a></p>
+                    <p><a href="mailto:marketing@ramaindonesia.com" class="text-decoration-none text-muted">marketing@@ramaindonesia.com</a></p>
                 </div>
             </div>
         </div>
@@ -48,20 +77,49 @@
             <div class="card shadow border-0">
                 <div class="card-body">
                     <h5 class="card-title mb-4 text-primary">Formulir Kontak</h5>
-                    <form>
+                    <form id="contactForm">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Nama</label>
-                            <input type="text" class="form-control" id="name" placeholder="Nama lengkap Anda">
+                            <label for="name" class="form-label">Nama <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" placeholder="Nama lengkap Anda" required>
+                            <div class="invalid-feedback">Nama harus diisi.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" placeholder="email@domain.com">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" placeholder="email@@gmail.com" required>
+                            <div class="invalid-feedback">Email harus diisi dengan format yang benar.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="message" class="form-label">Pesan</label>
-                            <textarea class="form-control" id="message" rows="4" placeholder="Tulis pesan Anda di sini..."></textarea>
+                            <label for="subject" class="form-label">Subjek</label>
+                            <select class="form-select" id="subject">
+                                <option value="">Pilih subjek pesan</option>
+                                <option value="Informasi Layanan">Informasi Layanan</option>
+                                <option value="Keluhan">Keluhan</option>
+                                <option value="Saran">Saran</option>
+                                <option value="Kerjasama">Kerjasama</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Kirim Pesan</button>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Pesan <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="message" rows="4" placeholder="Tulis pesan Anda di sini..." required></textarea>
+                            <div class="invalid-feedback">Pesan harus diisi.</div>
+                            <div class="form-text">
+                                <small class="text-muted">Minimal 10 karakter</small>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp Info -->
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class="bi bi-whatsapp me-2 fs-4"></i>
+                            <div>
+                                <strong>Kirim via WhatsApp</strong><br>
+                                <small>Pesan akan dikirim langsung ke WhatsApp kami untuk respon yang lebih cepat.</small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100" id="submitBtn">
+                            <i class="bi bi-whatsapp me-2"></i>Kirim via WhatsApp
+                        </button>
                     </form>
                 </div>
             </div>
@@ -71,7 +129,7 @@
     <!-- Google Map -->
     <div class="row mb-5">
         <div class="col">
-            <h5 class="text-center text-primary mb-3">Lokasi Kantor</h5>
+            <h5 class="text-center text-primary mb-4">Lokasi Kantor</h5>
             <div class="ratio ratio-16x9 shadow rounded">
                 <iframe src="https://www.google.com/maps?q=Jl+Mangga+Dua+Dalam,+Jakarta&output=embed"
                         width="100%" height="450" style="border:0;" allowfullscreen loading="lazy"></iframe>
@@ -80,49 +138,221 @@
     </div>
 </div>
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script>
-        AOS.init();
-    </script>
-}
+@section Scripts{
+<script>
+    // Konfigurasi WhatsApp - GANTI NOMOR INI!
+    var WHATSAPP_CONFIG = {
+        phoneNumber: '6289621530018'
+    };
 
-@section Styles {
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    var WhatsAppContact = {
+        init: function() {
+            this.bindEvents();
+        },
 
-    <style>
-        body {
-            background-color: #f5faff;
-            color: #212529;
-        }
+        bindEvents: function() {
+            var contactForm = document.getElementById('contactForm');
+            var nameField = document.getElementById('name');
+            var emailField = document.getElementById('email');
+            var messageField = document.getElementById('message');
 
-        .card {
-            border-radius: 1rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-            .card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 0.75rem 1.5rem rgba(13, 110, 253, 0.2);
+            if (contactForm) {
+                contactForm.addEventListener('submit', this.handleSubmit.bind(this));
             }
 
-        .btn-primary {
-            background-color: #0d6efd;
-            border: none;
-        }
-
-            .btn-primary:hover {
-                background-color: #0b5ed7;
+            if (nameField) {
+                nameField.addEventListener('input', function() {
+                    if (this.value.trim().length >= 2) {
+                        WhatsAppContact.setFieldSuccess('name');
+                    }
+                });
             }
 
-        .form-control::placeholder {
-            color: #adb5bd;
-        }
+            if (emailField) {
+                emailField.addEventListener('input', function() {
+                    var emailPattern = /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (emailPattern.test(this.value.trim())) {
+                        WhatsAppContact.setFieldSuccess('email');
+                    }
+                });
+            }
 
-        a.text-decoration-none:hover {
-            text-decoration: underline;
+            if (messageField) {
+                messageField.addEventListener('input', function() {
+                    var charCount = this.value.trim().length;
+                    var formText = this.parentNode.querySelector('.form-text small');
+
+                    if (charCount >= 10) {
+                        WhatsAppContact.setFieldSuccess('message');
+                        formText.textContent = charCount + ' karakter';
+                        formText.className = 'text-success';
+                    } else {
+                        formText.textContent = 'Minimal 10 karakter (' + charCount + '/10)';
+                        formText.className = 'text-muted';
+                    }
+                });
+            }
+        },
+
+        handleSubmit: function(event) {
+            event.preventDefault();
+
+            var name = document.getElementById('name').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var subject = document.getElementById('subject').value;
+            var message = document.getElementById('message').value.trim();
+
+            if (!this.validateForm(name, email, message)) {
+                return false;
+            }
+
+            this.sendToWhatsApp(name, email, subject, message);
+            return false;
+        },
+
+        validateForm: function(name, email, message) {
+            var isValid = true;
+            var form = document.getElementById('contactForm');
+
+            form.classList.remove('was-validated');
+
+            if (name.length < 2) {
+                this.setFieldError('name', 'Nama minimal 2 karakter');
+                isValid = false;
+            } else {
+                this.setFieldSuccess('name');
+            }
+
+            var emailPattern = /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(email)) {
+                this.setFieldError('email', 'Format email tidak valid');
+                isValid = false;
+            } else {
+                this.setFieldSuccess('email');
+            }
+
+            if (message.length < 10) {
+                this.setFieldError('message', 'Pesan minimal 10 karakter');
+                isValid = false;
+            } else {
+                this.setFieldSuccess('message');
+            }
+
+			if (isValid) {
+				form.classList.add('was-validated');
+			} else {
+				form.classList.remove('was-validated');
+			}
+
+            return isValid;
+        },
+
+        setFieldError: function(fieldId, errorMessage) {
+            var field = document.getElementById(fieldId);
+            var feedback = field.parentNode.querySelector('.invalid-feedback');
+
+            field.classList.add('is-invalid');
+            field.classList.remove('is-valid');
+
+            if (feedback) {
+                feedback.textContent = errorMessage;
+            }
+        },
+
+        setFieldSuccess: function(fieldId) {
+            var field = document.getElementById(fieldId);
+            field.classList.add('is-valid');
+            field.classList.remove('is-invalid');
+        },
+
+        sendToWhatsApp: function(name, email, subject, message) {
+            var whatsappMessage = '*PESAN DARI WEBSITE RAMA EXPRESS*\n\n';
+            whatsappMessage += '*Nama:* ' + name + '\n';
+            whatsappMessage += '*Email:* ' + email + '\n';
+
+            if (subject && subject.length > 0) {
+                whatsappMessage += '*Subjek:* ' + subject + '\n';
+            }
+
+            whatsappMessage += '\n*Pesan:*\n' + message + '\n\n';
+            whatsappMessage += '_---_\n';
+            whatsappMessage += '_Pesan dikirim melalui website pada ' + this.getCurrentDateTime() + '_';
+
+            var encodedMessage = encodeURIComponent(whatsappMessage);
+            var whatsappURL = 'https://wa.me/' + WHATSAPP_CONFIG.phoneNumber + '?text=' + encodedMessage;
+
+            this.showLoading();
+
+            var self = this;
+            setTimeout(function() {
+                window.open(whatsappURL, '_blank');
+                self.hideLoading();
+                self.showSuccessMessage();
+                self.resetForm();
+            }, 1000);
+        },
+
+        getCurrentDateTime: function() {
+            var now = new Date();
+            var day = String(now.getDate()).padStart(2, '0');
+            var month = String(now.getMonth() + 1).padStart(2, '0');
+            var year = now.getFullYear();
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            var seconds = String(now.getSeconds()).padStart(2, '0');
+
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
+        },
+
+        showLoading: function() {
+            var submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Mengirim...';
+        },
+
+        hideLoading: function() {
+            var submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-whatsapp me-2"></i>Kirim via WhatsApp';
+        },
+
+        showSuccessMessage: function() {
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+
+            var alertContent = '<i class="bi bi-check-circle me-2"></i>' +
+                                '<strong>Berhasil!</strong> WhatsApp sedang dibuka. Silakan kirim pesan Anda.' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+
+            alertDiv.innerHTML = alertContent;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(function() {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        },
+
+        resetForm: function() {
+            setTimeout(function() {
+                var form = document.getElementById('contactForm');
+                form.reset();
+                form.classList.remove('was-validated');
+
+                var fieldIds = ['name', 'email', 'message'];
+                for (var i = 0; i < fieldIds.length; i++) {
+                    var field = document.getElementById(fieldIds[i]);
+                    field.classList.remove('is-valid', 'is-invalid');
+                }
+            }, 2000);
         }
-    </style>
+    };
+
+    // Init when DOM ready
+    $(document).ready(function() {
+        WhatsAppContact.init();
+    });
+</script>
 }

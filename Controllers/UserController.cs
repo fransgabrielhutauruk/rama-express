@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RamaExpress.Models;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using RamaExpress.Areas.Admin.Data;
 using RamaExpress.Areas.Admin.Models;
@@ -37,7 +35,7 @@ namespace RamaExpress.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Invalid email or password");
+                ModelState.AddModelError("", "Email or Password Salah");
                 return View(model);
             }
 
@@ -46,7 +44,7 @@ namespace RamaExpress.Controllers
 
             if (result == PasswordVerificationResult.Failed)
             {
-                ModelState.AddModelError("", "Invalid email or password");
+                ModelState.AddModelError("", "Email or Password Salah");
                 return View(model);
             }
 
