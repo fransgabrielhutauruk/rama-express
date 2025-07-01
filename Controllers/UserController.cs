@@ -63,6 +63,7 @@ namespace RamaExpress.Controllers
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("Username", user.Nama);
             HttpContext.Session.SetString("UserRole", user.Role);
+            HttpContext.Session.SetString("Posisi", user.Posisi);
 
             if (user.Role?.ToLower() == "admin")
             {

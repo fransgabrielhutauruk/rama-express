@@ -6,43 +6,40 @@
     // Define breadcrumb items based on current route
     var breadcrumbItems = new List<(string Text, string Url, bool IsActive)>();
 
+    // Add Home/Dashboard as first breadcrumb for all pages except Dashboard itself
+    if (!(controller?.ToLower() == "home" && action?.ToLower() == "index"))
+    {
+        breadcrumbItems.Add(("Dashboard", Url.Action("Index", "Home", new { area = "Admin" }), false));
+    }
+
     // Add specific breadcrumb based on current action
     switch (action?.ToLower())
     {
-        case "pelatihan":
-            breadcrumbItems.Add(("Pelatihan", null, true));
+        case "index":
+            // Handle index pages for each controller
+            var controllerDisplayName = controller?.ToLower() switch
+            {
+                "home" => "Dashboard",
+                "pelatihan" => "Pelatihan",
+                "karyawan" => "Karyawan",
+                "posisi" => "Posisi",
+                "laporan" => "Laporan Pelatihan",
+                _ => controller
+            };
+            breadcrumbItems.Add((controllerDisplayName, null, true));
             break;
-        case "laporanpelatihan":
-            breadcrumbItems.Add(("Laporan Pelatihan", null, true));
-            break;
-        case "sertifikat":
-            breadcrumbItems.Add(("Sertifikat", null, true));
-            break;
-        case "pengguna":
-            breadcrumbItems.Add(("Pengguna", null, true));
-            break;
-        case "profile":
-            breadcrumbItems.Add(("Profile", null, true));
-            break;
-        case "preferences":
-            breadcrumbItems.Add(("Preferences", null, true));
-            break;
+
         case "create":
-            // Add parent page first
+            // Add parent page first, then create page
             if (controller?.ToLower() == "pelatihan")
             {
                 breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Tambah Pelatihan", null, true));
             }
-            else if (controller?.ToLower() == "pengguna")
-            {
-                breadcrumbItems.Add(("Pengguna", Url.Action("Index", "Pengguna", new { area = "Admin" }), false));
-                breadcrumbItems.Add(("Tambah Pengguna", null, true));
-            }
             else if (controller?.ToLower() == "karyawan")
             {
                 breadcrumbItems.Add(("Karyawan", Url.Action("Index", "Karyawan", new { area = "Admin" }), false));
-                breadcrumbItems.Add(("Tambah Akun Karyawan", null, true));
+                breadcrumbItems.Add(("Tambah Karyawan", null, true));
             }
             else if (controller?.ToLower() == "posisi")
             {
@@ -54,17 +51,13 @@
                 breadcrumbItems.Add(("Tambah Data", null, true));
             }
             break;
+
         case "edit":
-            // Add parent page first
+            // Add parent page first, then edit page
             if (controller?.ToLower() == "pelatihan")
             {
                 breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Edit Pelatihan", null, true));
-            }
-            else if (controller?.ToLower() == "pengguna")
-            {
-                breadcrumbItems.Add(("Pengguna", Url.Action("Index", "Pengguna", new { area = "Admin" }), false));
-                breadcrumbItems.Add(("Edit Pengguna", null, true));
             }
             else if (controller?.ToLower() == "karyawan")
             {
@@ -81,28 +74,54 @@
                 breadcrumbItems.Add(("Edit Data", null, true));
             }
             break;
+
         case "details":
-            // Add parent page first
+            // Add parent page first, then details page
             if (controller?.ToLower() == "pelatihan")
             {
                 breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Detail Pelatihan", null, true));
-            }
-            else if (controller?.ToLower() == "pengguna")
-            {
-                breadcrumbItems.Add(("Pengguna", Url.Action("Index", "Pengguna", new { area = "Admin" }), false));
-                breadcrumbItems.Add(("Detail Pengguna", null, true));
             }
             else if (controller?.ToLower() == "karyawan")
             {
                 breadcrumbItems.Add(("Karyawan", Url.Action("Index", "Karyawan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Detail Karyawan", null, true));
             }
+            else if (controller?.ToLower() == "posisi")
+            {
+                breadcrumbItems.Add(("Posisi", Url.Action("Index", "Posisi", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Detail Posisi", null, true));
+            }
             else
             {
                 breadcrumbItems.Add(("Detail", null, true));
             }
             break;
+
+        case "delete":
+            // Add parent page first, then delete confirmation page
+            if (controller?.ToLower() == "pelatihan")
+            {
+                breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Hapus Pelatihan", null, true));
+            }
+            else if (controller?.ToLower() == "karyawan")
+            {
+                breadcrumbItems.Add(("Karyawan", Url.Action("Index", "Karyawan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Hapus Karyawan", null, true));
+            }
+            else if (controller?.ToLower() == "posisi")
+            {
+                breadcrumbItems.Add(("Posisi", Url.Action("Index", "Posisi", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Hapus Posisi", null, true));
+            }
+            else
+            {
+                breadcrumbItems.Add(("Hapus Data", null, true));
+            }
+            break;
+
+        // Pelatihan specific actions
         case "materials":
             if (controller?.ToLower() == "pelatihan")
             {
@@ -110,9 +129,7 @@
                 breadcrumbItems.Add(("Kelola Materi", null, true));
             }
             break;
-        case "settings":
-            breadcrumbItems.Add(("Pengaturan", null, true));
-            break;
+
         case "examquestions":
             if (controller?.ToLower() == "pelatihan")
             {
@@ -120,6 +137,7 @@
                 breadcrumbItems.Add(("Kelola Soal Ujian", null, true));
             }
             break;
+
         case "certificate":
             if (controller?.ToLower() == "pelatihan")
             {
@@ -127,6 +145,7 @@
                 breadcrumbItems.Add(("Kelola Sertifikat", null, true));
             }
             break;
+
         case "creatematerial":
         case "editmaterial":
             if (controller?.ToLower() == "pelatihan")
@@ -134,13 +153,14 @@
                 var pelatihanId = ViewContext.RouteData.Values["pelatihanId"]?.ToString();
                 var materialsUrl = !string.IsNullOrEmpty(pelatihanId)
                     ? Url.Action("Materials", "Pelatihan", new { area = "Admin", pelatihanId = pelatihanId })
-                    : "#";
+                    : Url.Action("Index", "Pelatihan", new { area = "Admin" });
 
                 breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Materi", materialsUrl, false));
                 breadcrumbItems.Add((action?.ToLower() == "creatematerial" ? "Tambah Materi" : "Edit Materi", null, true));
             }
             break;
+
         case "createquestion":
         case "editquestion":
             if (controller?.ToLower() == "pelatihan")
@@ -148,13 +168,14 @@
                 var pelatihanId = ViewContext.RouteData.Values["pelatihanId"]?.ToString();
                 var questionsUrl = !string.IsNullOrEmpty(pelatihanId)
                     ? Url.Action("ExamQuestions", "Pelatihan", new { area = "Admin", pelatihanId = pelatihanId })
-                    : "#";
+                    : Url.Action("Index", "Pelatihan", new { area = "Admin" });
 
                 breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Soal Ujian", questionsUrl, false));
                 breadcrumbItems.Add((action?.ToLower() == "createquestion" ? "Tambah Soal" : "Edit Soal", null, true));
             }
             break;
+
         case "createcertificate":
         case "editcertificate":
             if (controller?.ToLower() == "pelatihan")
@@ -162,28 +183,122 @@
                 var pelatihanId = ViewContext.RouteData.Values["pelatihanId"]?.ToString();
                 var certificateUrl = !string.IsNullOrEmpty(pelatihanId)
                     ? Url.Action("Certificate", "Pelatihan", new { area = "Admin", pelatihanId = pelatihanId })
-                    : "#";
+                    : Url.Action("Index", "Pelatihan", new { area = "Admin" });
 
                 breadcrumbItems.Add(("Pelatihan", Url.Action("Index", "Pelatihan", new { area = "Admin" }), false));
                 breadcrumbItems.Add(("Sertifikat", certificateUrl, false));
                 breadcrumbItems.Add((action?.ToLower() == "createcertificate" ? "Buat Sertifikat" : "Edit Sertifikat", null, true));
             }
             break;
-        case "index":
-        default:
-            // Add controller name for index pages
-            if (action?.ToLower() == "index" && !string.IsNullOrEmpty(controller))
+
+        // Laporan specific actions
+        case "pelatihanreport":
+            if (controller?.ToLower() == "laporan")
             {
-                var controllerDisplayName = controller?.ToLower() switch
+                breadcrumbItems.Add(("Laporan Pelatihan", Url.Action("Index", "Laporan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Laporan Detail Pelatihan", null, true));
+            }
+            break;
+
+        case "karyawanreport":
+            if (controller?.ToLower() == "laporan")
+            {
+                breadcrumbItems.Add(("Laporan Pelatihan", Url.Action("Index", "Laporan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Laporan Karyawan", null, true));
+            }
+            break;
+
+        case "export":
+            if (controller?.ToLower() == "laporan")
+            {
+                breadcrumbItems.Add(("Laporan Pelatihan", Url.Action("Index", "Laporan", new { area = "Admin" }), false));
+                breadcrumbItems.Add(("Export Laporan", null, true));
+            }
+            break;
+
+        // Profile and Settings
+        case "profile":
+            breadcrumbItems.Add(("Profile", null, true));
+            break;
+
+        case "settings":
+            breadcrumbItems.Add(("Pengaturan", null, true));
+            break;
+
+        case "preferences":
+            breadcrumbItems.Add(("Preferensi", null, true));
+            break;
+
+        // Search and Filter actions
+        case "search":
+            var searchController = controller?.ToLower() switch
+            {
+                "pelatihan" => "Pelatihan",
+                "karyawan" => "Karyawan",
+                "posisi" => "Posisi",
+                "laporan" => "Laporan Pelatihan",
+                _ => "Data"
+            };
+            breadcrumbItems.Add((searchController, Url.Action("Index", controller, new { area = "Admin" }), false));
+            breadcrumbItems.Add(("Pencarian", null, true));
+            break;
+
+        // Import/Export actions
+        case "import":
+            var importController = controller?.ToLower() switch
+            {
+                "pelatihan" => "Pelatihan",
+                "karyawan" => "Karyawan",
+                "posisi" => "Posisi",
+                _ => "Data"
+            };
+            breadcrumbItems.Add((importController, Url.Action("Index", controller, new { area = "Admin" }), false));
+            breadcrumbItems.Add(("Import Data", null, true));
+            break;
+
+        // Bulk actions
+        case "bulkedit":
+        case "bulkdelete":
+            var bulkController = controller?.ToLower() switch
+            {
+                "pelatihan" => "Pelatihan",
+                "karyawan" => "Karyawan",
+                "posisi" => "Posisi",
+                _ => "Data"
+            };
+            var bulkAction = action?.ToLower() == "bulkedit" ? "Edit Massal" : "Hapus Massal";
+            breadcrumbItems.Add((bulkController, Url.Action("Index", controller, new { area = "Admin" }), false));
+            breadcrumbItems.Add((bulkAction, null, true));
+            break;
+
+        // Default fallback
+        default:
+            // If we don't have a specific case, try to create a generic breadcrumb
+            if (!string.IsNullOrEmpty(controller) && controller.ToLower() != "home")
+            {
+                var controllerName = controller?.ToLower() switch
                 {
-                    "home" => "Dashboard",
                     "pelatihan" => "Pelatihan",
                     "karyawan" => "Karyawan",
                     "posisi" => "Posisi",
-                    "laporan" => "Laporan",
+                    "laporan" => "Laporan Pelatihan",
                     _ => controller
                 };
-                breadcrumbItems.Add((controllerDisplayName, null, true));
+                breadcrumbItems.Add((controllerName, Url.Action("Index", controller, new { area = "Admin" }), false));
+
+                // Try to create a meaningful action name
+                var actionName = action?.ToLower() switch
+                {
+                    "manage" => "Kelola",
+                    "view" => "Lihat",
+                    "list" => "Daftar",
+                    "configure" => "Konfigurasi",
+                    _ => action
+                };
+                if (!string.IsNullOrEmpty(actionName))
+                {
+                    breadcrumbItems.Add((actionName, null, true));
+                }
             }
             break;
     }

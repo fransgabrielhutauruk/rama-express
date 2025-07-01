@@ -29,16 +29,7 @@
             </div>
         </a>
         <ul class="dropdown-menu">
-            @if (userRole?.ToLower() == "admin")
-            {
-                <li><a class="dropdown-item text-dark" asp-area="Admin" asp-controller="Settings" asp-action="Index"><i class="bi bi-gear me-2"></i>Pengaturan</a></li>
-            }
-            else if (userRole?.ToLower() == "karyawan")
-            {
-                <li><a class="dropdown-item text-dark" href="#"><i class="bi bi-person me-2"></i>Profile Saya</a></li>
-                <li><a class="dropdown-item text-dark" href="#"><i class="bi bi-book me-2"></i>Pelatihan Saya</a></li>
-            }
-
+            <li><a class="dropdown-item text-dark" asp-area="Admin" asp-controller="Settings" asp-action="Index"><i class="bi bi-person me-2"></i>Pengaturan</a></li>
             <li><hr class="dropdown-divider"></li>
             <li>
                 <a class="dropdown-item text-dark" href="@Url.Action("Logout", "User", new { area = "" })">

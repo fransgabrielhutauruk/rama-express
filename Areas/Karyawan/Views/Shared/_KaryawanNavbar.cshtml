@@ -1,38 +1,40 @@
-﻿ <!-- Top Navigation -->
-<nav class="navbar navbar-expand-lg top-navbar">
+﻿@{
+    // Get user data from session instead of model
+    var userId = Context.Session.GetInt32("UserId");
+    var userName = Context.Session.GetString("Username") ?? "User";
+    var userPosisi = Context.Session.GetString("Posisi") ?? "";
+    var userInitial = !string.IsNullOrEmpty(userName) ? userName.Substring(0, 1).ToUpper() : "U";
+}
+<nav class="navbar navbar-expand-lg top-navbar py-3">
     <div class="container">
         <a class="navbar-brand" href="@Url.Action("Index", "Pelatihan", new { area = "Karyawan" })">
             <i class="bi bi-mortarboard"></i>
             <span>Portal Karyawan</span>
         </a>
-
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarNav">
             <!-- User Menu -->
             <ul class="ms-auto navbar-nav">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle user-dropdown" href="#" id="navbarDropdown" role="button"
+                    <a class="nav-link " href="#" id="navbarDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="user-avatar">
-                            @if (!string.IsNullOrEmpty(User.Identity.Name))
-                            {
-                                @User.Identity.Name.Substring(0, 1).ToUpper()
-                            }
-                            else
-                            {
-                                <i class="bi bi-person"></i>
-                            }
+                        <div class="user-info d-flex align-items-center">
+                            <div class="user-avatar">
+                                @userInitial
+                            </div>
+                            <div class="user-details d-none d-md-block">
+                                <div class="fw-semibold">@userName</div>
+                                <small>@userPosisi</small>
+                            </div>
                         </div>
-                        <span class="d-none d-md-inline">@(User.Identity.Name ?? "Karyawan")</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <a class="dropdown-item" asp-area="Karyawan" asp-controller="Profile" asp-action="Index">
-                                <i class="bi bi-person me-2"></i>Profil Saya
+                                <i class="bi bi-person me-2"></i>Pengaturan
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
