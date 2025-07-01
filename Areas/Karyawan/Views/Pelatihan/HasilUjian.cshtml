@@ -260,15 +260,6 @@
                         <a asp-action="Index" class="btn btn-outline-secondary">
                             <i class="bi bi-list me-2"></i>Semua Pelatihan
                         </a>
-
-                        @if (!Model.Hasil.IsLulus)
-                        {
-                            <!-- Retake Exam (if failed) -->
-                            <button type="button" class="btn btn-warning"
-                                    onclick="showRetakeModal()">
-                                <i class="bi bi-arrow-clockwise me-2"></i>Ulangi Ujian
-                            </button>
-                        }
                     </div>
                 </div>
             </div>
@@ -276,49 +267,7 @@
     </div>
 </div>
 
-<!-- Retake Modal -->
-@if (!Model.Hasil.IsLulus)
-{
-    <div class="modal fade" id="retakeModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">
-                        <i class="bi bi-arrow-clockwise me-2"></i>Ulangi Ujian
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-3">
-                        <i class="bi bi-question-circle display-1 text-warning"></i>
-                    </div>
-                    <h6 class="text-center mb-3">Apakah Anda ingin mengulang ujian?</h6>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Catatan:</strong> Nilai sebelumnya akan terhapus dan diganti dengan hasil ujian yang baru.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x me-1"></i>Batal
-                    </button>
-                    <a asp-action="Ujian" asp-route-id="@Model.Hasil.PelatihanId"
-                       class="btn btn-warning">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Ya, Ulangi
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 <script>
-    // Show retake modal
-    function showRetakeModal() {
-        const modal = new bootstrap.Modal(document.getElementById('retakeModal'));
-        modal.show();
-    }
-
     // Toast notification
     function showToast(type, message) {
         const toastHtml = `
