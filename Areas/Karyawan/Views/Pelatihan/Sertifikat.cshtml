@@ -95,7 +95,7 @@
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody> 
                                     @foreach (var sertifikat in Model)
                                     {
                                         var isExpired = sertifikat.TanggalKadaluarsa != DateTime.MaxValue && sertifikat.TanggalKadaluarsa <= DateTime.Now;

@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -22,6 +22,8 @@ builder.Services.AddScoped<IPelatihanSoalService, PelatihanSoalService>();
 builder.Services.AddScoped<IPelatihanSertifikatService, PelatihanSertifikatService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
+builder.Services.AddScoped<RamaExpress.Areas.Karyawan.Data.Service.IKaryawanSettingsService,
+                           RamaExpress.Areas.Karyawan.Data.Service.KaryawanSettingsService>();
 
 var app = builder.Build();
 

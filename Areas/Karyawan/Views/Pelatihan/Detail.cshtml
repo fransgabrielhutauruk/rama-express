@@ -56,7 +56,7 @@
                     <div class="row">
                         <div class="col-md-8">
                             <!-- Action Buttons -->
-                            <div class="d-flex flex-wrap gap-2 mb-3">
+                            <div class="d-flex flex-wrap  align-items-center">
                                 @if (Model.CanStart)
                                 {
                                     <a href="@Url.Action("Mulai", new { id = Model.Pelatihan.Id })"
@@ -80,11 +80,11 @@
                                         <i class="bi bi-pencil-square me-2"></i>Ikuti Ujian
                                     </a>
                                 }
-
+                                
                                 @if (Model.IsCompleted)
                                 {
                                     <a href="@Url.Action("HasilUjian", new { id = Model.Pelatihan.Id })"
-                                       class="btn btn-success">
+                                       class="btn btn-success me-2">
                                         <i class="bi bi-file-text me-2"></i>Lihat Hasil
                                     </a>
 
@@ -108,15 +108,9 @@
                                     </div>
                                     <div class="progress mb-2" style="height: 12px;">
                                         <div class="progress-bar bg-@Model.StatusClass progress-bar-striped progress-bar-animated"
-                                             style="width: @Model.ProgressPercentage%"></div>
+                                             style="width: @Model.ProgressPercentage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)%">
+                                        </div>
                                     </div>
-                                    <small class="text-muted">
-                                        @{
-                                            var completedCount = Model.Progress.IsCompleted ? Model.TotalMaterials :
-                                            (Model.TotalMaterials > 0 ? Math.Max(0, Model.TotalMaterials * (int)Model.ProgressPercentage / 100) : 0);
-                                        }
-                                        @completedCount dari @Model.TotalMaterials materi selesai
-                                    </small>
                                 </div>
                             }
                         </div>
@@ -154,7 +148,16 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="bi bi-list-ul me-2"></i>Materi Pelatihan
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-list-ul me-2"></i>Materi Pelatihan
+                                @if (Model.Progress != null)
+                                {
+                                    <a href="@Url.Action("Materi", new { id = Model.Pelatihan.Id, materiId = Model.Progress.MateriTerakhirId })"
+                                       class="btn btn-secondary ms-auto">
+                                        <i class="bi bi-arrow-right me-2"></i>Lihat Materi
+                                    </a>
+                                }
+                            </div>
                         </h5>
                     </div>
                     <div class="card-body p-0">
@@ -225,9 +228,18 @@
             {
                 <div class="card shadow-sm">
                     <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-pencil-square me-2"></i>Informasi Ujian
-                        </h5>
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-pencil-square me-2"></i>Informasi Ujian
+                            </h5>
+                            @if (Model.CanTakeExam)
+                            {
+                                <a href="@Url.Action("Ujian", new { id = Model.Pelatihan.Id })"
+                                    class="btn btn-warning ms-auto">
+                                    <i class="bi bi-pencil-square me-2"></i>Ikuti Ujian
+                                </a>
+                            }
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -357,40 +369,6 @@
                                 <!-- CORRECTED: Use TanggalSelesai instead of TanggalUjian -->
                                 <div>Ujian: @Model.Hasil.TanggalSelesai.ToString("dd MMM yyyy")</div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            <!-- Certificate Info (if available) -->
-            @if (Model.Sertifikat != null)
-            {
-                <div class="card shadow-sm border-warning">
-                    <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0">
-                            <i class="bi bi-award me-2"></i>Sertifikat
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="text-center">
-                            <i class="bi bi-award-fill text-warning fs-1 mb-3"></i>
-                            <h6 class="mb-2">@Model.Sertifikat.NomorSertifikat</h6>
-                            <div class="small text-muted mb-3">
-                                <div>Terbit: @Model.Sertifikat.TanggalTerbit.ToString("dd MMM yyyy")</div>
-                                <!-- CORRECTED: Use TanggalKadaluarsa instead of TanggalBerlaku -->
-                                @if (Model.Sertifikat.TanggalKadaluarsa != DateTime.MaxValue)
-                                {
-                                    <div>Berlaku hingga: @Model.Sertifikat.TanggalKadaluarsa.ToString("dd MMM yyyy")</div>
-                                }
-                                else
-                                {
-                                    <div>Berlaku selamanya</div>
-                                }
-                            </div>
-                            <a href="@Url.Action("DownloadCertificate", new { id = Model.Sertifikat.Id })"
-                               class="btn btn-warning btn-sm">
-                                <i class="bi bi-download me-1"></i>Download
-                            </a>
                         </div>
                     </div>
                 </div>

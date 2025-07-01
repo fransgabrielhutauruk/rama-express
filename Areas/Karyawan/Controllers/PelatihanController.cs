@@ -10,6 +10,9 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using iText.Kernel.Font;
 using iText.IO.Font.Constants;
+using iText.Kernel.Colors;
+using iText.Kernel.Geom;
+using iText.Kernel.Pdf.Canvas;
 
 namespace RamaExpress.Areas.Karyawan.Controllers
 {
@@ -493,7 +496,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 {
                     Pelatihan = pelatihan,
                     Questions = pelatihan.PelatihanSoals.OrderBy(s => s.Urutan).ToList(),
-                    TimeLimit = pelatihan.DurasiMenit * 60, // Convert to seconds
+                    TimeLimit = 120 * 60, // Convert to seconds
                     MinScore = pelatihan.SkorMinimal
                 };
 
@@ -830,6 +833,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
         // GET: Karyawan/Pelatihan/DownloadSertifikat/5 - Download PDF sertifikat
         [Route("Karyawan/Pelatihan/DownloadSertifikat/{id}")]
+
         public async Task<IActionResult> DownloadSertifikat(int id)
         {
             try
@@ -839,22 +843,18 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
                 }
-
                 var sertifikat = await _context.Sertifikat
                     .Include(s => s.User)
                     .Include(s => s.Pelatihan)
                     .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId.Value);
-
                 if (sertifikat == null)
                 {
                     TempData["ErrorMessage"] = "Sertifikat tidak ditemukan atau bukan milik Anda.";
                     return RedirectToAction(nameof(Sertifikat));
                 }
-
                 // Generate PDF
                 var pdfBytes = await GenerateSertifikatPdf(sertifikat);
                 var fileName = $"Sertifikat_{sertifikat.NomorSertifikat.Replace("/", "_")}.pdf";
-
                 return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Exception ex)
@@ -900,97 +900,140 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
-        // Private method untuk generate PDF sertifikat
+        // Private method untuk generate PDF sertifikat yang sesuai dengan desain
+        // Private method untuk generate PDF sertifikat yang sesuai dengan desain
         private async Task<byte[]> GenerateSertifikatPdf(Sertifikat sertifikat)
         {
             using var memoryStream = new MemoryStream();
             var writer = new PdfWriter(memoryStream);
             var pdf = new PdfDocument(writer);
-            var document = new Document(pdf);
+            var document = new Document(pdf, PageSize.A4.Rotate());
+
+            // Set margins
+            document.SetMargins(0, 0, 0, 0);
+
+            // Define colors
+            var greenColor = new DeviceRgb(76, 175, 80);
+            var blueColor = new DeviceRgb(13, 110, 253);
+            var darkGrayColor = new DeviceRgb(102, 102, 102);
+            var lightGrayBg = new DeviceRgb(245, 245, 245);
 
             // Set up fonts
-            var titleFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+            var titleFont = PdfFontFactory.CreateFont(StandardFonts.TIMES_BOLD);
             var bodyFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+            var italicFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE);
 
-            // Title
-            var title = new Paragraph("SERTIFIKAT PELATIHAN")
+            // Add a page first before accessing it
+            var page = pdf.AddNewPage();
+            var pageSize = page.GetPageSize();
+            var canvas = new PdfCanvas(page);
+
+            // Draw light gray background for the certificate area
+            canvas.SetFillColor(lightGrayBg)
+                  .Rectangle(30, 100, pageSize.GetWidth() - 60, pageSize.GetHeight() - 200)
+                  .Fill();
+
+            // Header section with icon, title, and badge
+            var headerY = pageSize.GetHeight() - 100;
+
+            // Main content area
+            var contentY = headerY - 80;
+
+            // Main certificate title - Fixed positioning
+            document.ShowTextAligned(new Paragraph("SERTIFIKAT PELATIHAN")
                 .SetFont(titleFont)
-                .SetFontSize(24)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(30);
-            document.Add(title);
+                .SetFontSize(32)
+                .SetFontColor(blueColor),
+                pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // Certificate number
-            var certNumber = new Paragraph($"No. {sertifikat.NomorSertifikat}")
-                .SetFont(bodyFont)
-                .SetFontSize(12)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(20);
-            document.Add(certNumber);
-
-            // Main content
-            var content = new Paragraph("Diberikan kepada:")
-                .SetFont(bodyFont)
-                .SetFontSize(14)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(10);
-            document.Add(content);
-
-            var userName = new Paragraph(sertifikat.User.Nama)
-                .SetFont(titleFont)
-                .SetFontSize(20)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(20);
-            document.Add(userName);
-
-            var description = new Paragraph($"Atas keberhasilannya menyelesaikan pelatihan")
+            // Certificate number - Fixed positioning
+            contentY -= 40;
+            document.ShowTextAligned(new Paragraph($"No. {sertifikat.NomorSertifikat}")
                 .SetFont(bodyFont)
                 .SetFontSize(14)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(10);
-            document.Add(description);
+                .SetFontColor(darkGrayColor),
+                pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            var trainingTitle = new Paragraph(sertifikat.Pelatihan.Judul)
-                .SetFont(titleFont)
+            // "Diberikan kepada:" text - Fixed positioning
+            contentY -= 50;
+            document.ShowTextAligned(new Paragraph("Diberikan kepada:")
+                .SetFont(bodyFont)
                 .SetFontSize(16)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(30);
-            document.Add(trainingTitle);
+                .SetFontColor(darkGrayColor),
+                pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // Dates
-            var issueDate = new Paragraph($"Diterbitkan pada: {sertifikat.TanggalTerbit:dd MMMM yyyy}")
+            // User name - Fixed positioning
+            contentY -= 40;
+            document.ShowTextAligned(new Paragraph(sertifikat.User.Nama)
+                .SetFont(titleFont)
+                .SetFontSize(28)
+                .SetFontColor(ColorConstants.BLACK),
+                pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
+
+            // Underline for name
+            contentY -= 10;
+            var underlineLength = sertifikat.User.Nama.Length * 12; // Approximate width
+            var startX = (pageSize.GetWidth() - underlineLength) / 2;
+            canvas.SetStrokeColor(blueColor)
+                  .SetLineWidth(2)
+                  .MoveTo(startX, contentY)
+                  .LineTo(startX + underlineLength, contentY)
+                  .Stroke();
+
+            // Achievement text - Fixed positioning
+            contentY -= 50;
+            document.ShowTextAligned(new Paragraph("Atas keberhasilannya menyelesaikan pelatihan")
+                .SetFont(bodyFont)
+                .SetFontSize(16)
+                .SetFontColor(darkGrayColor),
+                pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
+
+            // Training title (italic blue) - Fixed positioning
+            contentY -= 40;
+            document.ShowTextAligned(new Paragraph(sertifikat.Pelatihan.Judul)
+                .SetFont(italicFont)
+                .SetFontSize(22)
+                .SetFontColor(blueColor),
+                pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
+
+            // Bottom section - Issue date (left) and validity/signature (right)
+            var bottomY = 200;
+
+            // Issue date - left side - Fixed positioning
+            document.ShowTextAligned(new Paragraph("Diterbitkan pada")
                 .SetFont(bodyFont)
                 .SetFontSize(12)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetMarginBottom(5);
-            document.Add(issueDate);
+                .SetFontColor(darkGrayColor),
+                100, bottomY, TextAlignment.LEFT);
 
-            if (sertifikat.TanggalKadaluarsa != DateTime.MaxValue)
-            {
-                var expiryDate = new Paragraph($"Berlaku hingga: {sertifikat.TanggalKadaluarsa:dd MMMM yyyy}")
-                    .SetFont(bodyFont)
-                    .SetFontSize(12)
-                    .SetTextAlignment(TextAlignment.CENTER)
-                    .SetMarginBottom(30);
-                document.Add(expiryDate);
-            }
-            else
-            {
-                var permanentText = new Paragraph("Berlaku selamanya")
-                    .SetFont(bodyFont)
-                    .SetFontSize(12)
-                    .SetTextAlignment(TextAlignment.CENTER)
-                    .SetMarginBottom(30);
-                document.Add(permanentText);
-            }
+            document.ShowTextAligned(new Paragraph(sertifikat.TanggalTerbit.ToString("dd MMMM yyyy"))
+                .SetFont(titleFont)
+                .SetFontSize(14)
+                .SetFontColor(ColorConstants.BLACK),
+                100, bottomY - 20, TextAlignment.LEFT);
 
-            // Signature area
-            var signatureArea = new Paragraph("PT. Rama Express")
+            // Validity - right side - Fixed positioning
+            document.ShowTextAligned(new Paragraph("Berlaku hingga")
                 .SetFont(bodyFont)
                 .SetFontSize(12)
-                .SetTextAlignment(TextAlignment.RIGHT)
-                .SetMarginTop(50);
-            document.Add(signatureArea);
+                .SetFontColor(darkGrayColor),
+                pageSize.GetWidth() - 100, bottomY, TextAlignment.RIGHT);
+
+            var validityValue = sertifikat.TanggalKadaluarsa == DateTime.MaxValue ? "Selamanya" : sertifikat.TanggalKadaluarsa.ToString("dd MMMM yyyy");
+            var validityColor = sertifikat.TanggalKadaluarsa == DateTime.MaxValue ? greenColor : ColorConstants.BLACK;
+
+            document.ShowTextAligned(new Paragraph(validityValue)
+                .SetFont(titleFont)
+                .SetFontSize(14)
+                .SetFontColor(validityColor),
+                pageSize.GetWidth() - 100, bottomY - 20, TextAlignment.RIGHT);
+
+            // Company signature - Fixed positioning
+            document.ShowTextAligned(new Paragraph("PT. Rama Express")
+                .SetFont(bodyFont)
+                .SetFontSize(12)
+                .SetFontColor(darkGrayColor),
+                pageSize.GetWidth() - 100, bottomY - 80, TextAlignment.RIGHT);
 
             document.Close();
             return memoryStream.ToArray();

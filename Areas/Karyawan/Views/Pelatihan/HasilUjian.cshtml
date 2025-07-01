@@ -34,6 +34,24 @@
         </div>
     </div>
 
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+
     <div class="row">
         <!-- Main Result Card -->
         <div class="col-lg-8">
@@ -177,38 +195,12 @@
             @if (Model.HasCertificate)
             {
                 <div class="card shadow-sm mb-4 border-warning">
-                    <div class="card-header bg-warning text-dark">
+                    <div class="card-header  text-dark">
                         <h6 class="mb-0">
                             <i class="bi bi-award me-2"></i>Sertifikat
                         </h6>
                     </div>
                     <div class="card-body text-center">
-                        <i class="bi bi-award display-1 text-warning mb-3"></i>
-                        <h6 class="mb-2">Sertifikat Kelulusan</h6>
-                        <p class="small text-muted mb-3">
-                            No. @Model.Sertifikat.NomorSertifikat
-                        </p>
-
-                        <div class="small mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-muted">Tanggal Terbit:</span>
-                                <span>@Model.Sertifikat.TanggalTerbit.ToString("dd MMM yyyy")</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Berlaku Hingga:</span>
-                                <span>
-                                    @if (Model.Sertifikat.TanggalKadaluarsa == DateTime.MaxValue)
-                                    {
-                                        <span class="text-success">Selamanya</span>
-                                    }
-                                    else
-                                    {
-                                        @Model.Sertifikat.TanggalKadaluarsa.ToString("dd MMM yyyy")
-                                    }
-                                </span>
-                            </div>
-                        </div>
-
                         <div class="d-grid gap-2">
                             <a asp-area="Karyawan" asp-controller="Pelatihan" asp-action="SertifikatDetail"
                                asp-route-id="@Model.Sertifikat.Id"
@@ -277,15 +269,6 @@
                                 <i class="bi bi-arrow-clockwise me-2"></i>Ulangi Ujian
                             </button>
                         }
-
-                        @if (Model.HasCertificate)
-                        {
-                            <!-- Share Certificate -->
-                            <button type="button" class="btn btn-success"
-                                    onclick="shareCertificate()">
-                                <i class="bi bi-share me-2"></i>Bagikan Sertifikat
-                            </button>
-                        }
                     </div>
                 </div>
             </div>
@@ -329,103 +312,11 @@
     </div>
 }
 
-<!-- Share Modal -->
-@if (Model.HasCertificate)
-{
-    <div class="modal fade" id="shareModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-share me-2"></i>Bagikan Sertifikat
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-award display-1 text-success"></i>
-                        <h6 class="mt-2">Sertifikat @Model.Hasil.Pelatihan.Judul</h6>
-                        <small class="text-muted">No. @Model.Sertifikat.NomorSertifikat</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Link Sertifikat:</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control"
-                                   id="certificateLink"
-                                   value=""
-                                   readonly>
-                            <button class="btn btn-outline-secondary" onclick="copyCertificateLink()">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" onclick="shareToLinkedIn()">
-                            <i class="bi bi-linkedin me-2"></i>Bagikan ke LinkedIn
-                        </button>
-                        <button class="btn btn-info" onclick="shareToTwitter()">
-                            <i class="bi bi-twitter me-2"></i>Bagikan ke Twitter
-                        </button>
-                        <button class="btn btn-success" onclick="shareToWhatsApp()">
-                            <i class="bi bi-whatsapp me-2"></i>Bagikan ke WhatsApp
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 <script>
     // Show retake modal
     function showRetakeModal() {
         const modal = new bootstrap.Modal(document.getElementById('retakeModal'));
         modal.show();
-    }
-
-    // Share certificate
-    function shareCertificate() {
-        const modal = new bootstrap.Modal(document.getElementById('shareModal'));
-        modal.show();
-    }
-
-    // Copy certificate link
-    function copyCertificateLink() {
-        const linkInput = document.getElementById('certificateLink');
-        linkInput.select();
-        linkInput.setSelectionRange(0, 99999);
-
-        navigator.clipboard.writeText(linkInput.value).then(() => {
-            showToast('success', 'Link sertifikat berhasil disalin!');
-        }).catch(() => {
-            // Fallback for older browsers
-            document.execCommand('copy');
-            showToast('success', 'Link sertifikat berhasil disalin!');
-        });
-    }
-
-    // Social media sharing
-    function shareToLinkedIn() {
-        const url = document.getElementById('certificateLink').value;
-        const text = `Saya telah menyelesaikan pelatihan @Model.Hasil.Pelatihan.Judul dengan nilai @Model.Hasil.Skor%!`;
-        const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`;
-        window.open(linkedinUrl, '_blank');
-    }
-
-    function shareToTwitter() {
-        const url = document.getElementById('certificateLink').value;
-        const text = `Saya telah menyelesaikan pelatihan @Model.Hasil.Pelatihan.Judul dengan nilai @Model.Hasil.Skor%! 🎉`;
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-        window.open(twitterUrl, '_blank');
-    }
-
-    function shareToWhatsApp() {
-        const url = document.getElementById('certificateLink').value;
-        const text = `Halo! Saya telah menyelesaikan pelatihan @Model.Hasil.Pelatihan.Judul dengan nilai @Model.Hasil.Skor%! Lihat sertifikat saya: ${url}`;
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-        window.open(whatsappUrl, '_blank');
     }
 
     // Toast notification

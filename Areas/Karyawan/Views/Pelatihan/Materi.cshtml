@@ -148,25 +148,63 @@
                     <div class="list-group list-group-flush">
                         @foreach (var materi in Model.AllMaterials)
                         {
-                            <div class="list-group-item @(materi.Id == Model.CurrentMateri.Id ? "active" : "") border-0">
-                                <div class="d-flex align-items-center">
-                                    <span class="badge @(materi.Id == Model.CurrentMateri.Id ? "bg-white text-primary" : "bg-primary") me-2">
-                                        @materi.Urutan
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1 @(materi.Id == Model.CurrentMateri.Id ? "text-white" : "")">
-                                            @materi.Judul
-                                        </h6>
-                                        <small class="@(materi.Id == Model.CurrentMateri.Id ? "text-white-50" : "text-muted")">
-                                            @GetTypeDisplayName(materi.TipeKonten)
-                                        </small>
+                            var isCurrentMaterial = materi.Id == Model.CurrentMateri.Id;
+                            var isUnlocked = Model.Progress.MateriTerakhirId >= materi.Urutan;
+                            var isCompleted = Model.Progress.MateriTerakhirId >= materi.Id;
+
+                            @if (isUnlocked)
+                            {
+                                <a asp-action="Materi"
+                                   asp-route-id="@Model.Pelatihan.Id"
+                                   asp-route-materiId="@materi.Id"
+                                   class="list-group-item list-group-item-action @(isCurrentMaterial ? "active" : "") border-0 text-decoration-none">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge @(isCurrentMaterial ? "bg-white text-primary" : "bg-primary") me-2">
+                                            @materi.Urutan
+                                        </span>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 @(isCurrentMaterial ? "text-white" : "")">
+                                                @materi.Judul
+                                            </h6>
+                                            <small class="@(isCurrentMaterial ? "text-white-50" : "text-muted")">
+                                                @GetTypeDisplayName(materi.TipeKonten)
+                                            </small>
+                                        </div>
+                                        @if (isCompleted)
+                                        {
+                                            <i class="bi bi-check-circle @(isCurrentMaterial ? "text-white" : "text-success")"></i>
+                                        }
+                                        else if (isCurrentMaterial)
+                                        {
+                                            <i class="bi bi-play-circle text-white"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-circle text-muted"></i>
+                                        }
                                     </div>
-                                    @if (Model.Progress.MateriTerakhirId >= materi.Urutan)
-                                    {
-                                        <i class="bi bi-check-circle @(materi.Id == Model.CurrentMateri.Id ? "text-white" : "text-success")"></i>
-                                    }
+                                </a>
+                            }
+                            else
+                            {
+                                <!-- Locked Material (Not Clickable) -->
+                                <div class="list-group-item border-0 bg-light">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-secondary me-2">
+                                            @materi.Urutan
+                                        </span>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 text-muted">
+                                                @materi.Judul
+                                            </h6>
+                                            <small class="text-muted">
+                                                @GetTypeDisplayName(materi.TipeKonten)
+                                            </small>
+                                        </div>
+                                        <i class="bi bi-lock text-muted"></i>
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         }
                     </div>
                 </div>
@@ -181,11 +219,6 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <small class="text-muted fw-semibold">Tipe Konten</small>
-                        <p class="mb-0">@GetTypeDisplayName(Model.CurrentMateri.TipeKonten)</p>
-                    </div>
-                    
-                    <div class="mb-3">
                         <small class="text-muted fw-semibold">Progress</small>
                         <p class="mb-0">@Model.CurrentMateri.Urutan dari @Model.AllMaterials.Count materi</p>
                     </div>
@@ -195,13 +228,6 @@
                         <p class="mb-0">@Model.CurrentMateri.CreatedAt.ToString("dd MMMM yyyy")</p>
                     </div>
 
-                    @if (Model.IsLastMaterial)
-                    {
-                        <div class="alert alert-success small mb-0">
-                            <i class="bi bi-check-circle me-1"></i>
-                            <strong>Selamat!</strong> Ini adalah materi terakhir. Setelah ini Anda dapat mengikuti ujian.
-                        </div>
-                    }
                 </div>
             </div>
         </div>
@@ -513,37 +539,6 @@
             if (activeItem) {
                 activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey || e.metaKey) {
-                    if (e.key === 'ArrowLeft') {
-                        // Previous material
-                        const prevButton = document.querySelector('a[href*="materiId"]:has(.bi-chevron-left)');
-                        if (prevButton) {
-                            e.preventDefault();
-                            prevButton.click();
-                        }
-                    } else if (e.key === 'ArrowRight') {
-                        // Next material
-                        const nextButton = document.querySelector('a[href*="materiId"]:has(.bi-chevron-right)');
-                        if (nextButton) {
-                            e.preventDefault();
-                            nextButton.click();
-                        }
-                    }
-                }
-            });
-            
-            // Show keyboard shortcuts hint
-            const shortcutHint = document.createElement('div');
-            shortcutHint.innerHTML = `
-                <small class="text-muted">
-                    <i class="bi bi-keyboard me-1"></i>
-                    Gunakan Ctrl+← / Ctrl+→ untuk navigasi cepat
-                </small>
-            `;
-            shortcutHint.className = 'text-center mt-2';
             
             const cardBody = document.querySelector('.card:last-child .card-body');
             if (cardBody) {
