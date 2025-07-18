@@ -1,5 +1,4 @@
-﻿// Areas/Karyawan/Controllers/SettingsController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RamaExpress.Areas.Karyawan.Data.Service;
 using RamaExpress.Areas.Karyawan.Models;
 using RamaExpress.Areas.Admin.Models;
@@ -16,13 +15,17 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             _settingsService = settingsService;
         }
 
+        protected virtual int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
+        }
+
         [Route("Karyawan/Settings")]
         public async Task<IActionResult> Index()
         {
             try
             {
-                // Get current user ID from session
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     TempData["ErrorMessage"] = "Sesi telah berakhir. Silakan login kembali.";
@@ -66,8 +69,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                // Get current user ID from session
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     TempData["ErrorMessage"] = "Sesi telah berakhir. Silakan login kembali.";

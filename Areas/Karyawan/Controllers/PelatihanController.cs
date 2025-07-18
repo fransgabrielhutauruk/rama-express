@@ -1,6 +1,8 @@
 ﻿// Areas/Karyawan/Controllers/PelatihanController.cs - CORRECTED VERSION
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using RamaExpress.Areas.Admin.Data;
 using RamaExpress.Areas.Admin.Models;
 using RamaExpress.Areas.Karyawan.Models;
@@ -28,12 +30,17 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             _logger = logger;
         }
 
+        protected virtual int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
+        }
+
         [Route("Karyawan")]
         public async Task<IActionResult> Index()
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -69,7 +76,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading training index for user {UserId}", HttpContext.Session.GetInt32("UserId"));
+                _logger.LogError(ex, "Error loading training index for user {UserId}", GetCurrentUserId()); // ✅ Changed
                 TempData["ErrorMessage"] = "Terjadi kesalahan saat memuat data pelatihan.";
                 return RedirectToAction("Index", "Home");
             }
@@ -80,7 +87,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -135,19 +142,18 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading training detail {TrainingId} for user {UserId}", id, HttpContext.Session.GetInt32("UserId"));
+                _logger.LogError(ex, "Error loading training detail {TrainingId} for user {UserId}", id, GetCurrentUserId()); // ✅ Changed
                 TempData["ErrorMessage"] = "Terjadi kesalahan saat memuat detail pelatihan.";
                 return RedirectToAction("Index");
             }
         }
 
-        // ===== 3. FIX MULAI METHOD =====
         [Route("Karyawan/Pelatihan/Mulai/{id}")]
         public async Task<IActionResult> Mulai(int id)
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -200,12 +206,12 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // 🔧 FIXED: Create progress with first material ID
+                // Create progress with first material ID
                 var progress = new PelatihanProgress
                 {
                     UserId = userId.Value,
                     PelatihanId = id,
-                    MateriTerakhirId = firstMaterial.Id, // Use actual material ID, not Urutan
+                    MateriTerakhirId = firstMaterial.Id,
                     IsCompleted = false,
                     StartedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
@@ -219,7 +225,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting training {TrainingId} for user {UserId}", id, HttpContext.Session.GetInt32("UserId"));
+                _logger.LogError(ex, "Error starting training {TrainingId} for user {UserId}", id, GetCurrentUserId()); // ✅ Changed
                 TempData["ErrorMessage"] = "Terjadi kesalahan saat memulai pelatihan.";
                 return RedirectToAction("Detail", new { id = id });
             }
@@ -230,7 +236,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -263,13 +269,12 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // 🔧 NEW: SEQUENTIAL ACCESS CONTROL
-                // Check if user is trying to access materials out of order
+                // Sequential access control
                 var allMaterials = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
                 var requestedMaterialIndex = allMaterials.FindIndex(m => m.Id == materiId);
                 var currentProgressIndex = allMaterials.FindIndex(m => m.Id == progress.MateriTerakhirId);
 
-                // 🔧 CRITICAL: Prevent jumping ahead to future materials
+                // Prevent jumping ahead to future materials
                 if (requestedMaterialIndex > currentProgressIndex + 1)
                 {
                     var currentMaterial = allMaterials.FirstOrDefault(m => m.Id == progress.MateriTerakhirId);
@@ -278,7 +283,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Materi", new { id = id, materiId = progress.MateriTerakhirId });
                 }
 
-                // 🔧 NEW: AUTO-UPDATE PROGRESS when accessing new material
+                // Auto-update progress when accessing new material
                 if (requestedMaterialIndex == currentProgressIndex + 1)
                 {
                     // User is accessing the next material in sequence
@@ -318,7 +323,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     return Json(new { success = false, message = "Session expired" });
@@ -332,7 +337,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return Json(new { success = false, message = "Progress tidak ditemukan" });
                 }
 
-                // 🔧 FIXED: Get pelatihan with materials ordered by Urutan
                 var pelatihan = await _context.Pelatihan
                     .Include(p => p.PelatihanMateris.OrderBy(m => m.Urutan))
                     .FirstOrDefaultAsync(p => p.Id == id);
@@ -352,26 +356,26 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 var currentIndex = allMaterials.FindIndex(m => m.Id == materiId);
 
-                // 🔧 CRITICAL FIX: Proper completion logic
+                // Proper completion logic
                 if (currentIndex < allMaterials.Count - 1)
                 {
                     // Not the last material, move to next
                     var nextMaterial = allMaterials[currentIndex + 1];
                     progress.MateriTerakhirId = nextMaterial.Id;
-                    progress.IsCompleted = false; // Ensure it's not marked completed yet
+                    progress.IsCompleted = false;
                 }
                 else
                 {
-                    // 🔧 CRITICAL FIX: This is the last material - mark as completed
+                    // This is the last material - mark as completed
                     progress.IsCompleted = true;
                     progress.CompletedAt = DateTime.Now;
-                    progress.MateriTerakhirId = currentMaterial.Id; // Keep current material ID
+                    progress.MateriTerakhirId = currentMaterial.Id;
                 }
 
                 progress.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
 
-                // 🔧 FIXED: Return proper response based on completion status
+                // Return proper response based on completion status
                 if (progress.IsCompleted)
                 {
                     return Json(new
@@ -406,7 +410,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -414,7 +418,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 var pelatihan = await _context.Pelatihan
                     .Include(p => p.PelatihanSoals.OrderBy(s => s.Urutan))
-                    .Include(p => p.PelatihanMateris.OrderBy(m => m.Urutan)) // Include materials for checking
+                    .Include(p => p.PelatihanMateris.OrderBy(m => m.Urutan))
                     .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted && p.IsActive);
 
                 if (pelatihan == null)
@@ -423,7 +427,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // 🔧 CRITICAL FIX: Check if user has completed all materials
+                // Check if user has completed all materials
                 var progress = await _context.PelatihanProgress
                     .FirstOrDefaultAsync(p => p.UserId == userId.Value && p.PelatihanId == id);
 
@@ -433,13 +437,11 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction("Detail", new { id = id });
                 }
 
-                // 🔧 CRITICAL FIX: Primary check using IsCompleted flag
+                // Primary check using IsCompleted flag
                 if (!progress.IsCompleted)
                 {
-                    // 🔧 ADDED: Secondary verification for completeness
                     var totalMaterials = pelatihan.PelatihanMateris?.Count() ?? 0;
 
-                    // If there are no materials, automatically mark as completed
                     if (totalMaterials == 0)
                     {
                         progress.IsCompleted = true;
@@ -449,15 +451,12 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     }
                     else
                     {
-                        // Check if user is actually on the last material
                         var materialsOrdered = pelatihan.PelatihanMateris.OrderBy(m => m.Urutan).ToList();
                         var lastMaterial = materialsOrdered.LastOrDefault();
                         var currentMaterialIndex = materialsOrdered.FindIndex(m => m.Id == progress.MateriTerakhirId);
 
-                        // If user is on the last material but not marked completed, allow access
                         if (lastMaterial != null && progress.MateriTerakhirId == lastMaterial.Id)
                         {
-                            // Auto-complete if they're on the last material
                             progress.IsCompleted = true;
                             progress.CompletedAt = DateTime.Now;
                             progress.UpdatedAt = DateTime.Now;
@@ -467,7 +466,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                         }
                         else
                         {
-                            // User hasn't completed all materials
                             var completedCount = Math.Max(0, currentMaterialIndex + 1);
                             TempData["ErrorMessage"] = $"Anda harus menyelesaikan semua materi terlebih dahulu. " +
                                 $"Progress: {completedCount}/{totalMaterials} materi selesai.";
@@ -496,7 +494,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 {
                     Pelatihan = pelatihan,
                     Questions = pelatihan.PelatihanSoals.OrderBy(s => s.Urutan).ToList(),
-                    TimeLimit = 120 * 60, // Convert to seconds
+                    TimeLimit = 120 * 60,
                     MinScore = pelatihan.SkorMinimal
                 };
 
@@ -516,7 +514,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return Json(new { success = false, message = "Session expired" });
@@ -542,7 +540,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 // Calculate score
                 var questions = pelatihan.PelatihanSoals.OrderBy(s => s.Urutan).ToList();
-
                 var correctAnswers = 0;
 
                 for (int i = 0; i < Math.Min(questions.Count, answers.Count); i++)
@@ -556,15 +553,14 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 var score = questions.Count > 0 ? (int)Math.Round((double)correctAnswers / questions.Count * 100) : 0;
                 var isLulus = score >= pelatihan.SkorMinimal;
 
-                // Save result - CORRECTED: Use TanggalSelesai instead of TanggalUjian
+                // Save result
                 var hasil = new PelatihanHasil
                 {
                     UserId = userId.Value,
                     PelatihanId = id,
-                    TanggalSelesai = DateTime.Now, // CORRECTED
+                    TanggalSelesai = DateTime.Now,
                     Skor = score,
                     IsLulus = isLulus
-                    // REMOVED: JawabanBenar and TotalSoal are not in the actual model
                 };
 
                 _context.PelatihanHasil.Add(hasil);
@@ -597,7 +593,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -638,7 +634,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
         {
             try
             {
-                // Get position ID
                 var posisi = await _context.Posisi
                     .FirstOrDefaultAsync(p => p.Name == userPosition && !p.IsDeleted);
 
@@ -647,7 +642,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return new List<Pelatihan>();
                 }
 
-                // Get trainings for this position
                 var pelatihanIds = await _context.PelatihanPosisi
                     .Where(pp => pp.PosisiId == posisi.Id)
                     .Select(pp => pp.PelatihanId)
@@ -689,7 +683,7 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 return await _context.PelatihanHasil
                     .Include(h => h.Pelatihan)
                     .Where(h => h.UserId == userId)
-                    .OrderByDescending(h => h.TanggalSelesai) // CORRECTED
+                    .OrderByDescending(h => h.TanggalSelesai)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -727,13 +721,11 @@ namespace RamaExpress.Areas.Karyawan.Controllers
 
                 if (user == null || pelatihan == null) return;
 
-                // Check if certificate config exists
                 var sertifikatConfig = await _context.PelatihanSertifikat
                     .FirstOrDefaultAsync(ps => ps.PelatihanId == pelatihanId && ps.IsSertifikatActive);
 
                 if (sertifikatConfig == null) return;
 
-                // Generate certificate number
                 var now = DateTime.Now;
                 var existingCount = await _context.Sertifikat
                     .CountAsync(s => s.TanggalTerbit.Year == now.Year && s.TanggalTerbit.Month == now.Month);
@@ -743,14 +735,13 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     .Replace("{MONTH}", now.Month.ToString("D2"))
                     .Replace("{INCREMENT}", (existingCount + 1).ToString("D4"));
 
-                // CORRECTED: Use TanggalKadaluarsa instead of TanggalBerlaku
                 var sertifikat = new Sertifikat
                 {
                     UserId = userId,
                     PelatihanId = pelatihanId,
                     NomorSertifikat = nomorSertifikat,
                     TanggalTerbit = now,
-                    TanggalKadaluarsa = sertifikatConfig.CalculateExpirationDate(now) ?? DateTime.MaxValue // CORRECTED
+                    TanggalKadaluarsa = sertifikatConfig.CalculateExpirationDate(now) ?? DateTime.MaxValue
                 };
 
                 _context.Sertifikat.Add(sertifikat);
@@ -761,13 +752,12 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
-        // GET: Karyawan/Pelatihan/Sertifikat - Daftar semua sertifikat karyawan
         [Route("Karyawan/Pelatihan/Sertifikat")]
         public async Task<IActionResult> Sertifikat()
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -788,19 +778,18 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading certificates for user {UserId}", HttpContext.Session.GetInt32("UserId"));
+                _logger.LogError(ex, "Error loading certificates for user {UserId}", GetCurrentUserId()); // ✅ Changed
                 TempData["ErrorMessage"] = "Terjadi kesalahan saat memuat data sertifikat.";
                 return View(new List<Sertifikat>());
             }
         }
 
-        // GET: Karyawan/Pelatihan/SertifikatDetail/5 - Detail sertifikat
         [Route("Karyawan/Pelatihan/SertifikatDetail/{id}")]
         public async Task<IActionResult> SertifikatDetail(int id)
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -831,28 +820,28 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
-        // GET: Karyawan/Pelatihan/DownloadSertifikat/5 - Download PDF sertifikat
         [Route("Karyawan/Pelatihan/DownloadSertifikat/{id}")]
-
         public async Task<IActionResult> DownloadSertifikat(int id)
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId(); 
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
                 }
+
                 var sertifikat = await _context.Sertifikat
                     .Include(s => s.User)
                     .Include(s => s.Pelatihan)
                     .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId.Value);
+
                 if (sertifikat == null)
                 {
                     TempData["ErrorMessage"] = "Sertifikat tidak ditemukan atau bukan milik Anda.";
                     return RedirectToAction(nameof(Sertifikat));
                 }
-                // Generate PDF
+
                 var pdfBytes = await GenerateSertifikatPdf(sertifikat);
                 var fileName = $"Sertifikat_{sertifikat.NomorSertifikat.Replace("/", "_")}.pdf";
                 return File(pdfBytes, "application/pdf", fileName);
@@ -865,13 +854,12 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
-        // GET: Karyawan/Pelatihan/PreviewSertifikat/5 - Preview PDF sertifikat
         [Route("Karyawan/Pelatihan/PreviewSertifikat/{id}")]
         public async Task<IActionResult> PreviewSertifikat(int id)
         {
             try
             {
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     return RedirectToAction("Login", "User", new { area = "" });
@@ -888,7 +876,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                     return RedirectToAction(nameof(Sertifikat));
                 }
 
-                // Generate PDF and return as inline
                 var pdfBytes = await GenerateSertifikatPdf(sertifikat);
                 return File(pdfBytes, "application/pdf");
             }
@@ -900,8 +887,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             }
         }
 
-        // Private method untuk generate PDF sertifikat yang sesuai dengan desain
-        // Private method untuk generate PDF sertifikat yang sesuai dengan desain
         private async Task<byte[]> GenerateSertifikatPdf(Sertifikat sertifikat)
         {
             using var memoryStream = new MemoryStream();
@@ -909,44 +894,34 @@ namespace RamaExpress.Areas.Karyawan.Controllers
             var pdf = new PdfDocument(writer);
             var document = new Document(pdf, PageSize.A4.Rotate());
 
-            // Set margins
             document.SetMargins(0, 0, 0, 0);
 
-            // Define colors
             var greenColor = new DeviceRgb(76, 175, 80);
             var blueColor = new DeviceRgb(13, 110, 253);
             var darkGrayColor = new DeviceRgb(102, 102, 102);
             var lightGrayBg = new DeviceRgb(245, 245, 245);
 
-            // Set up fonts
             var titleFont = PdfFontFactory.CreateFont(StandardFonts.TIMES_BOLD);
             var bodyFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
             var italicFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE);
 
-            // Add a page first before accessing it
             var page = pdf.AddNewPage();
             var pageSize = page.GetPageSize();
             var canvas = new PdfCanvas(page);
 
-            // Draw light gray background for the certificate area
             canvas.SetFillColor(lightGrayBg)
                   .Rectangle(30, 100, pageSize.GetWidth() - 60, pageSize.GetHeight() - 200)
                   .Fill();
 
-            // Header section with icon, title, and badge
             var headerY = pageSize.GetHeight() - 100;
-
-            // Main content area
             var contentY = headerY - 80;
 
-            // Main certificate title - Fixed positioning
             document.ShowTextAligned(new Paragraph("SERTIFIKAT PELATIHAN")
                 .SetFont(titleFont)
                 .SetFontSize(32)
                 .SetFontColor(blueColor),
                 pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // Certificate number - Fixed positioning
             contentY -= 40;
             document.ShowTextAligned(new Paragraph($"No. {sertifikat.NomorSertifikat}")
                 .SetFont(bodyFont)
@@ -954,7 +929,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(darkGrayColor),
                 pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // "Diberikan kepada:" text - Fixed positioning
             contentY -= 50;
             document.ShowTextAligned(new Paragraph("Diberikan kepada:")
                 .SetFont(bodyFont)
@@ -962,7 +936,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(darkGrayColor),
                 pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // User name - Fixed positioning
             contentY -= 40;
             document.ShowTextAligned(new Paragraph(sertifikat.User.Nama)
                 .SetFont(titleFont)
@@ -970,9 +943,8 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(ColorConstants.BLACK),
                 pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // Underline for name
             contentY -= 10;
-            var underlineLength = sertifikat.User.Nama.Length * 12; // Approximate width
+            var underlineLength = sertifikat.User.Nama.Length * 12;
             var startX = (pageSize.GetWidth() - underlineLength) / 2;
             canvas.SetStrokeColor(blueColor)
                   .SetLineWidth(2)
@@ -980,7 +952,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                   .LineTo(startX + underlineLength, contentY)
                   .Stroke();
 
-            // Achievement text - Fixed positioning
             contentY -= 50;
             document.ShowTextAligned(new Paragraph("Atas keberhasilannya menyelesaikan pelatihan")
                 .SetFont(bodyFont)
@@ -988,7 +959,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(darkGrayColor),
                 pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // Training title (italic blue) - Fixed positioning
             contentY -= 40;
             document.ShowTextAligned(new Paragraph(sertifikat.Pelatihan.Judul)
                 .SetFont(italicFont)
@@ -996,10 +966,8 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(blueColor),
                 pageSize.GetWidth() / 2, contentY, TextAlignment.CENTER);
 
-            // Bottom section - Issue date (left) and validity/signature (right)
             var bottomY = 200;
 
-            // Issue date - left side - Fixed positioning
             document.ShowTextAligned(new Paragraph("Diterbitkan pada")
                 .SetFont(bodyFont)
                 .SetFontSize(12)
@@ -1012,7 +980,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(ColorConstants.BLACK),
                 100, bottomY - 20, TextAlignment.LEFT);
 
-            // Validity - right side - Fixed positioning
             document.ShowTextAligned(new Paragraph("Berlaku hingga")
                 .SetFont(bodyFont)
                 .SetFontSize(12)
@@ -1028,7 +995,6 @@ namespace RamaExpress.Areas.Karyawan.Controllers
                 .SetFontColor(validityColor),
                 pageSize.GetWidth() - 100, bottomY - 20, TextAlignment.RIGHT);
 
-            // Company signature - Fixed positioning
             document.ShowTextAligned(new Paragraph("PT. Rama Express")
                 .SetFont(bodyFont)
                 .SetFontSize(12)

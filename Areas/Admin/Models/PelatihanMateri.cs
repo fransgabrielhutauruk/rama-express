@@ -31,7 +31,6 @@ namespace RamaExpress.Areas.Admin.Models
         [Display(Name = "Tanggal Diupdate")]
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation property
         public virtual Pelatihan? Pelatihan { get; set; }
     }
 }

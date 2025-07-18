@@ -14,6 +14,9 @@ namespace RamaExpress.Areas.Admin.Models
         [Display(Name = "Status Dihapus")]
         public bool IsDeleted { get; set; } = false;
 
+        [Display(Name = "Tanggal Diupdate")]
+        public DateTime? UpdatedAt { get; set; }
+
         [Display(Name = "Tanggal Dihapus")]
         public DateTime? DeletedAt { get; set; }
 
