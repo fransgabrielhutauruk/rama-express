@@ -4,7 +4,16 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	  <NoWarn>CS1998;CS8604;CS8601;CS8602;CS8618;CS8603;CS8767;CS8625;CS8620;CS0168</NoWarn>
   </PropertyGroup>
+
+	<PropertyGroup>
+		<CollectCoverage>true</CollectCoverage>
+		<CoverletOutputFormat>opencover</CoverletOutputFormat>
+		<ExcludeByFile>**/Views/**/*.cs,**/Areas/**/Views/**/*.cs</ExcludeByFile>
+		<Exclude>[*.Tests]*,[*]*AspNetCoreGeneratedDocument*</Exclude>
+	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
@@ -16,11 +25,21 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="MudBlazor" Version="8.6.0" />
 	  <PackageReference Include="itext7" Version="7.2.5" />
+	  <PackageReference Include="Selenium.Support" Version="4.34.0" />
+	  <PackageReference Include="Selenium.WebDriver" Version="4.34.0" />
+	  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="138.0.7204.15700" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Data\Service\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="RamaExpress.Tests/**" />
+        <Content Remove="RamaExpress.Tests/**" />
+        <EmbeddedResource Remove="RamaExpress.Tests/**" />
+        <None Remove="RamaExpress.Tests/**" />
+    </ItemGroup>
 
 </Project>

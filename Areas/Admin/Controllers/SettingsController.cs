@@ -1,4 +1,4 @@
-﻿// Areas/Admin/Controllers/SettingsController.cs - FIXED
+﻿// Areas/Admin/Controllers/SettingsController.cs - UPDATED WITH GetCurrentUserId()
 using Microsoft.AspNetCore.Mvc;
 using RamaExpress.Areas.Admin.Data.Service;
 using RamaExpress.Areas.Admin.Models;
@@ -15,13 +15,17 @@ namespace RamaExpress.Areas.Admin.Controllers
             _settingsService = settingsService;
         }
 
+        protected virtual int? GetCurrentUserId()
+        {
+            return HttpContext.Session.GetInt32("UserId");
+        }
+
         [Route("Admin/Settings")]
         public async Task<IActionResult> Index()
         {
             try
             {
-                // Get current user ID from session
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     TempData["ErrorMessage"] = "Sesi telah berakhir. Silakan login kembali.";
@@ -57,8 +61,7 @@ namespace RamaExpress.Areas.Admin.Controllers
         {
             try
             {
-                // Get current user ID from session
-                var userId = HttpContext.Session.GetInt32("UserId");
+                var userId = GetCurrentUserId();
                 if (userId == null)
                 {
                     TempData["ErrorMessage"] = "Sesi telah berakhir. Silakan login kembali.";

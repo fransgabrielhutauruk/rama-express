@@ -264,14 +264,6 @@
                         <div class="mb-2 mb-md-0">
                             @if (Model.HasNext)
                             {
-                                <!-- Complete Material Button -->
-                                <button type="button"
-                                        id="completeButton"
-                                        class="btn btn-success me-2"
-                                        onclick="completeCurrentMaterial()">
-                                    <i class="bi bi-check-circle me-2"></i>Selesaikan Materi
-                                </button>
-
                                 <!-- Direct Next Button (if material already completed) -->
                                 <a asp-action="Materi"
                                    asp-route-id="@Model.Pelatihan.Id"

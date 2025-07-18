@@ -45,7 +45,6 @@ namespace RamaExpress.Areas.Admin.Models
         [Display(Name = "Tanggal Dihapus")]
         public DateTime? DeletedAt { get; set; }
 
-        // Navigation properties
         public virtual ICollection<PelatihanPosisi>? PelatihanPosisis { get; set; }
         public virtual ICollection<PelatihanMateri>? PelatihanMateris { get; set; }
         public virtual ICollection<PelatihanSoal>? PelatihanSoals { get; set; }
